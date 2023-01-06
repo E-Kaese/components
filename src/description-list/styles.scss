@@ -1,0 +1,44 @@
+/*
+ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+*/
+@use '../internal/styles/tokens' as awsui;
+@use '../internal/styles' as styles;
+
+.list[data-direction='horizontal'] {
+  align-items: start;
+  column-gap: calc(2 * #{awsui.$space-grid-gutter});
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  row-gap: awsui.$space-grid-gutter;
+}
+
+.list[data-direction='vertical'] {
+  display: grid;
+  row-gap: awsui.$space-grid-gutter;
+}
+
+.item[data-direction='horizontal'] {
+  column-gap: calc(2 * #{awsui.$space-grid-gutter});
+  display: grid;
+  grid-template-columns: 1fr minmax(auto, 1fr);
+}
+
+.term {
+  @include styles.font-label;
+  color: awsui.$color-text-label;
+  margin-bottom: awsui.$space-scaled-xxxs;
+}
+
+.item[data-direction='horizontal'] > .term {
+  grid-column: 1;
+}
+
+.details {
+  margin: 0;
+}
+
+.item[data-direction='horizontal'] > .details {
+  grid-column: 2;
+}
