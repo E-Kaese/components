@@ -303,9 +303,7 @@ const InternalTreeGrid = React.forwardRef(
                 resizableColumns && styles['table-layout-fixed'],
                 contentDensity === 'compact' && getVisualContextClassname('compact-table')
               )}
-              // Browsers have weird mechanism to guess whether it's a data table or a layout table.
-              // If we state explicitly, they get it always correctly even with low number of rows.
-              role="table"
+              role="treegrid"
               aria-label={ariaLabels?.tableLabel}
               aria-rowcount={totalItemsCount ? totalItemsCount + 1 : -1}
             >
@@ -319,6 +317,7 @@ const InternalTreeGrid = React.forwardRef(
                 {loading || items.length === 0 ? (
                   <tr>
                     <td
+                      role="gridcell"
                       colSpan={selectionType ? visibleColumnDefinitions.length + 1 : visibleColumnDefinitions.length}
                       className={clsx(styles['cell-merged'], hasFooter && styles['has-footer'])}
                     >
@@ -349,6 +348,7 @@ const InternalTreeGrid = React.forwardRef(
                     const isNextSelected = !!selectionType && !lastVisible && isItemSelected(items[rowIndex + 1]);
                     return (
                       <tr
+                        role="row"
                         key={getItemKey(trackBy, item, rowIndex)}
                         className={clsx(styles.row, isSelected && styles['row-selected'])}
                         onFocus={({ currentTarget }) => {

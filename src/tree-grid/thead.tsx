@@ -100,7 +100,7 @@ const Thead = React.forwardRef(
     });
     return (
       <thead className={clsx(!hidden && styles['thead-active'])}>
-        <tr {...focusMarkers.all} ref={outerRef} aria-rowindex={1}>
+        <tr role="row" {...focusMarkers.all} ref={outerRef} aria-rowindex={1}>
           {selectionType ? (
             <th
               className={clsx(
