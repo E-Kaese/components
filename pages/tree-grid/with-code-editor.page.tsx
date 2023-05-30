@@ -111,7 +111,7 @@ export default function App() {
     <SpaceBetween size="l">
       <Header variant="h1">TreeGrid playground</Header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', padding: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '16px', padding: '16px' }}>
         <Box>
           <CodeEditor
             ace={ace}
