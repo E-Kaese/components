@@ -1,6 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Header from '~components/header';
 import Link from '~components/link';
 import SpaceBetween from '~components/space-between';
@@ -51,60 +51,141 @@ export default function App() {
 
   const hidePagination = typeof props.hidePagination === 'boolean' ? props.hidePagination : false;
   const pageSize = typeof props.pageSize === 'number' ? props.pageSize : 30;
-  const pages = Math.ceil(items.length / pageSize);
-  const [currentPageIndex, setCurrentPageIndex] = useState(1);
-  const pageItems = items.slice(pageSize * (currentPageIndex - 1), pageSize * currentPageIndex);
+  const [frameStart, setFrameStart] = useState(0);
+  const pageItems = items.slice(frameStart, frameStart + pageSize);
 
   return (
     <SpaceBetween size="l">
       <Header variant="h1">Smooth pagination experiment</Header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '16px', padding: '16px' }}>
-        <Box>
-          <CodeEditor
-            ace={ace}
-            value={propsStr}
-            language="json"
-            onDelayedChange={event => setPropsStr(event.detail.value)}
-            onPreferencesChange={() => {}}
-            loading={aceLoading}
-            i18nStrings={codeEditorI18nStrings}
-          />
-        </Box>
-
-        <div className={styles['custom-table']}>
-          {!hidePagination && (
-            <Pagination
-              currentPageIndex={currentPageIndex}
-              pagesCount={pages}
-              onChange={({ detail }) => setCurrentPageIndex(detail.currentPageIndex)}
+      <Box>
+        <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '16px', padding: '16px' }}>
+          <Box>
+            <CodeEditor
+              ace={ace}
+              value={propsStr}
+              language="json"
+              onDelayedChange={event => setPropsStr(event.detail.value)}
+              onPreferencesChange={() => {}}
+              loading={aceLoading}
+              i18nStrings={codeEditorI18nStrings}
             />
-          )}
+          </Box>
 
-          <table className={styles['custom-table-table']}>
-            <thead>
-              <tr>
-                {columnDefinitions.map(column => (
-                  <th key={column.key} className={styles['custom-table-cell']}>
-                    {column.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {pageItems.map(item => (
-                <tr key={item.id}>
+          <div className={styles['custom-table']}>
+            {!hidePagination && (
+              <SmoothPagination
+                pageSize={pageSize}
+                frameStart={frameStart}
+                frameStep={Math.ceil(pageSize / 3)}
+                totalItems={items.length}
+                onChange={setFrameStart}
+              />
+            )}
+
+            <table className={styles['custom-table-table']}>
+              <thead>
+                <tr>
                   {columnDefinitions.map(column => (
-                    <td key={column.key} className={styles['custom-table-cell']}>
-                      {column.render(item)}
-                    </td>
+                    <th key={column.key} className={styles['custom-table-cell']}>
+                      {column.label}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {pageItems.map(item => (
+                  <tr key={item.id}>
+                    {columnDefinitions.map(column => (
+                      <td key={column.key} className={styles['custom-table-cell']}>
+                        {column.render(item)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </Box>
     </SpaceBetween>
+  );
+}
+
+function SmoothPagination({
+  pageSize,
+  frameStart,
+  totalItems,
+  frameStep,
+  onChange,
+}: {
+  pageSize: number;
+  frameStart: number;
+  totalItems: number;
+  frameStep: number;
+  onChange: (frameStart: number) => void;
+}) {
+  const paginationRef = useRef<HTMLDivElement>(null);
+  const [frameOffset, setFrameOffset] = useState(0);
+
+  const pagesCount = Math.ceil(items.length / pageSize);
+
+  const indexBefore = Math.floor(frameStart / pageSize);
+  const indexAfter = indexBefore + 1;
+  const indexClosest =
+    frameStart - indexBefore * pageSize <= indexAfter * pageSize - frameStart ? indexBefore : indexAfter;
+
+  function onChangePage(pageIndex: number) {
+    onChange(pageIndex * pageSize);
+  }
+
+  function onNextPageClick() {
+    onChange(Math.min(totalItems - 1, frameStart + frameStep));
+  }
+
+  function onPrevPageClick() {
+    onChange(Math.max(0, frameStart - frameStep));
+  }
+
+  useEffect(() => {
+    if (!paginationRef.current) {
+      return;
+    }
+    const closestEl = paginationRef.current.querySelector(`button[aria-label="${indexClosest + 1}"]`)!;
+    const closestElOffset = closestEl.getBoundingClientRect().x - paginationRef.current.getBoundingClientRect().x;
+    const closestElWidth = closestEl.getBoundingClientRect().width;
+    const diff = closestElWidth * ((frameStart - indexClosest * pageSize) / pageSize);
+
+    setFrameOffset(closestElOffset - 2 + diff);
+  }, [indexClosest, pageSize, frameStart, totalItems]);
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div ref={paginationRef} style={{ position: 'relative' }}>
+        <Pagination
+          currentPageIndex={indexClosest + 1}
+          pagesCount={pagesCount}
+          onChange={({ detail }) => onChangePage(detail.currentPageIndex - 1)}
+          onNextPageClick={onNextPageClick}
+          onPreviousPageClick={onPrevPageClick}
+        />
+
+        <div
+          style={{
+            position: 'absolute',
+            left: frameOffset,
+            top: 4,
+            width: 24,
+            height: 24,
+            background: 'rgba(9, 114, 211, 0.33)',
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
+
+      <Box fontSize="body-s">
+        {frameStart} — {Math.min(totalItems, frameStart + pageSize)} of {totalItems}
+      </Box>
+    </div>
   );
 }
