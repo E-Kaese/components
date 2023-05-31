@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Header from '~components/header';
 import Link from '~components/link';
 import SpaceBetween from '~components/space-between';
-import { Box, CodeEditor, CodeEditorProps, Pagination } from '~components';
+import { Box, CodeEditor, CodeEditorProps, FramePagination } from '~components';
 import { i18nStrings as codeEditorI18nStrings } from '../code-editor/base-props';
 import styles from './styles.scss';
 import { Instance, generateItems } from '../table/generate-data';
@@ -55,6 +55,7 @@ export default function App() {
   const [frameStart, setFrameStart] = useState(0);
   const pageItems = items.slice(frameStart, frameStart + frameSize);
   const totalItems = items.length;
+  const frameStep = Math.ceil(frameSize / 3);
 
   const rowRefs = useRef<{ [index: number]: null | HTMLTableRowElement }>({});
 
@@ -99,15 +100,16 @@ export default function App() {
 
           <div style={{ overflowX: 'auto' }}>
             {!hidePagination && (
-              <SmoothPagination
+              <FramePagination
                 frameSize={frameSize}
                 frameStart={frameStart}
-                frameStep={Math.ceil(frameSize / 3)}
                 totalItems={items.length}
-                onChange={frameStart => {
-                  setFrameStart(frameStart);
+                onChange={({ detail }) => {
+                  setFrameStart(detail.frameStart);
                   // TODO: FORCE TABLE SCROLL
                 }}
+                onNextPageClick={() => setFrameStart(Math.min(totalItems, frameStart + frameStep))}
+                onPreviousPageClick={() => setFrameStart(Math.max(0, frameStart - frameStep))}
               />
             )}
 
@@ -168,84 +170,5 @@ export default function App() {
         </div>
       </Box>
     </SpaceBetween>
-  );
-}
-
-// TODO: create components/frame-pagination and improve its UX
-function SmoothPagination({
-  frameSize,
-  frameStart,
-  totalItems,
-  frameStep,
-  onChange,
-}: {
-  frameSize: number;
-  frameStart: number;
-  totalItems: number;
-  frameStep: number;
-  onChange: (frameStart: number) => void;
-}) {
-  const paginationRef = useRef<HTMLDivElement>(null);
-  const [frameOffset, setFrameOffset] = useState(0);
-
-  const pagesCount = Math.ceil(items.length / frameSize);
-
-  const indexBefore = Math.floor(frameStart / frameSize);
-  const indexAfter = indexBefore + 1;
-  const indexClosest =
-    frameStart - indexBefore * frameSize <= indexAfter * frameSize - frameStart ? indexBefore : indexAfter;
-
-  function onChangePage(pageIndex: number) {
-    onChange(pageIndex * frameSize);
-  }
-
-  function onNextPageClick() {
-    onChange(Math.min(totalItems - 1, frameStart + frameStep));
-  }
-
-  function onPrevPageClick() {
-    onChange(Math.max(0, frameStart - frameStep));
-  }
-
-  useEffect(() => {
-    if (!paginationRef.current) {
-      return;
-    }
-    const closestEl = paginationRef.current.querySelector(`button[aria-label="${indexClosest + 1}"]`)!;
-    const closestElOffset = closestEl.getBoundingClientRect().x - paginationRef.current.getBoundingClientRect().x;
-    const closestElWidth = closestEl.getBoundingClientRect().width;
-    const diff = closestElWidth * ((frameStart - indexClosest * frameSize) / frameSize);
-
-    setFrameOffset(closestElOffset - 2 + diff);
-  }, [indexClosest, frameSize, frameStart, totalItems]);
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-      <div ref={paginationRef} style={{ position: 'relative' }}>
-        <Pagination
-          currentPageIndex={indexClosest + 1}
-          pagesCount={pagesCount}
-          onChange={({ detail }) => onChangePage(detail.currentPageIndex - 1)}
-          onNextPageClick={onNextPageClick}
-          onPreviousPageClick={onPrevPageClick}
-        />
-
-        <div
-          style={{
-            position: 'absolute',
-            left: frameOffset,
-            top: 4,
-            width: 24,
-            height: 24,
-            background: 'rgba(9, 114, 211, 0.33)',
-            pointerEvents: 'none',
-          }}
-        />
-      </div>
-
-      <Box fontSize="body-s">
-        {frameStart} — {Math.min(totalItems, frameStart + frameSize)} of {totalItems}
-      </Box>
-    </div>
   );
 }
