@@ -20,13 +20,21 @@ const columnDefinitions = [
 items[0].id = 'FIRST';
 items[items.length - 1].id = 'LAST';
 
+interface PageSettings {
+  frameSize: number;
+  frameStep: number;
+  hidePagination: boolean;
+}
+
+const defaultPageSettings: PageSettings = {
+  frameSize: 20,
+  frameStep: 5,
+  hidePagination: false,
+};
+
 export default function App() {
   const [ace, setAce] = useState<CodeEditorProps['ace']>();
-  const [props, setProps] = useState<Record<string, unknown>>({
-    frameSize: 30,
-    frameStep: 10,
-    hidePagination: false,
-  });
+  const [props, setProps] = useState<PageSettings>(defaultPageSettings);
   const [propsStr, setPropsStr] = useState(JSON.stringify(props, null, 2));
   const [aceLoading, setAceLoading] = useState(true);
   useEffect(() => {
@@ -50,9 +58,10 @@ export default function App() {
     return () => clearTimeout(timeoutId);
   }, [propsStr]);
 
-  const hidePagination = typeof props.hidePagination === 'boolean' ? props.hidePagination : false;
-  const frameSize = typeof props.frameSize === 'number' ? props.frameSize : 30;
-  const frameStep = typeof props.frameStep === 'number' ? props.frameStep : Math.ceil(frameSize / 3);
+  const hidePagination =
+    typeof props.hidePagination === 'boolean' ? props.hidePagination : defaultPageSettings.hidePagination;
+  const frameSize = typeof props.frameSize === 'number' ? props.frameSize : defaultPageSettings.frameSize;
+  const frameStep = typeof props.frameStep === 'number' ? props.frameStep : defaultPageSettings.frameStep;
   const [frameStart, setFrameStart] = useState(0);
   const frameStartRef = useRef(0);
   const pageItems = items.slice(frameStart, frameStart + frameSize);
