@@ -67,9 +67,7 @@ export default function App() {
           frameSize={frameSize}
           frameStart={virtualScroll.frame.frameStart}
           totalItems={items.length}
-          onChange={({ detail }) => {
-            virtualScroll.functions.scrollToIndex(detail.frameStart);
-          }}
+          onChange={({ detail }) => virtualScroll.functions.scrollToIndex(detail.frameStart)}
           onNextPageClick={() => virtualScroll.functions.scrollToIndex(virtualScroll.frame.frameStart + frameStep)}
           onPreviousPageClick={() => virtualScroll.functions.scrollToIndex(virtualScroll.frame.frameStart - frameStep)}
         />
