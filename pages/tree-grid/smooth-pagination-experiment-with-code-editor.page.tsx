@@ -54,7 +54,8 @@ export default function App() {
 
   const hidePagination = typeof props.hidePagination === 'boolean' ? props.hidePagination : false;
   const frameSize = typeof props.pageSize === 'number' ? props.pageSize : 30;
-  const [frameStart, setFrameStart] = useState(0);
+  const [frameStart, _setFrameStart] = useState(0);
+  const frameStartRef = useRef(0);
   const pageItems = items.slice(frameStart, frameStart + frameSize);
   const totalItems = items.length;
   const frameStep = Math.ceil(frameSize / 3);
@@ -69,7 +70,11 @@ export default function App() {
     heightBefore: 0,
     heightAfter: 0,
   });
-  useEffect(() => {
+
+  function setFrameStart(frameStart: number) {
+    frameStartRef.current = frameStart;
+    _setFrameStart(frameStart);
+
     let renderedHeight = 0;
 
     const renderedRows = Math.min(frameSize, totalItems - frameStart);
@@ -87,7 +92,29 @@ export default function App() {
     const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
 
     setScrollProps({ averageRowHeight, headerHeight, renderedHeight, heightBefore, heightAfter });
-  }, [frameStart, frameSize, totalItems]);
+  }
+
+  useEffect(() => {
+    const frameStart = frameStartRef.current;
+
+    let renderedHeight = 0;
+
+    const renderedRows = Math.min(frameSize, totalItems - frameStart);
+    for (let i = 0; i < renderedRows; i++) {
+      const rowEl = rowRefs.current[i];
+      const rowHeight = rowEl ? rowEl.getBoundingClientRect().height : 0;
+      renderedHeight += rowHeight;
+    }
+
+    const averageRowHeight = renderedHeight / renderedRows;
+    const heightBefore = frameStart * averageRowHeight;
+    const heightAfter = Math.max(0, totalItems - frameStart - frameSize) * averageRowHeight;
+
+    const headerEl = rowRefs.current[-1];
+    const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
+
+    setScrollProps({ averageRowHeight, headerHeight, renderedHeight, heightBefore, heightAfter });
+  }, [frameSize, totalItems]);
 
   const scrollable = scrollProps.heightBefore + scrollProps.heightAfter > 2;
   const containerHeight = scrollProps.headerHeight + scrollProps.renderedHeight;
@@ -113,7 +140,9 @@ export default function App() {
   // TODO: debounce
   function onScroll(scrollTop: number) {
     const delta = Math.round((scrollTop - scrollProps.heightBefore) / scrollProps.averageRowHeight);
-    setFrameStart(Math.max(0, Math.min(totalItems - frameSize, frameStart + delta)));
+    const nextFrameStart = Math.max(0, Math.min(totalItems - frameSize, frameStart + delta));
+    setFrameStart(nextFrameStart);
+    frameStartRef.current = nextFrameStart;
   }
 
   return (
