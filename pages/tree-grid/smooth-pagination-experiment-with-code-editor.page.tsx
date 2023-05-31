@@ -1,10 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React, { useEffect, useRef, useState } from 'react';
-import Header from '~components/header';
-import Link from '~components/link';
-import SpaceBetween from '~components/space-between';
-import { Box, CodeEditor, CodeEditorProps, FramePagination } from '~components';
+import { Box, CodeEditor, CodeEditorProps, FramePagination, Header, Link } from '~components';
 import { i18nStrings as codeEditorI18nStrings } from '../code-editor/base-props';
 import styles from './styles.scss';
 import { Instance, generateItems } from '../table/generate-data';
@@ -26,7 +23,8 @@ items[items.length - 1].id = 'LAST';
 export default function App() {
   const [ace, setAce] = useState<CodeEditorProps['ace']>();
   const [props, setProps] = useState<Record<string, unknown>>({
-    pageSize: 30,
+    frameSize: 30,
+    frameStep: 10,
     hidePagination: false,
   });
   const [propsStr, setPropsStr] = useState(JSON.stringify(props, null, 2));
@@ -53,12 +51,12 @@ export default function App() {
   }, [propsStr]);
 
   const hidePagination = typeof props.hidePagination === 'boolean' ? props.hidePagination : false;
-  const frameSize = typeof props.pageSize === 'number' ? props.pageSize : 30;
+  const frameSize = typeof props.frameSize === 'number' ? props.frameSize : 30;
+  const frameStep = typeof props.frameStep === 'number' ? props.frameStep : Math.ceil(frameSize / 3);
   const [frameStart, _setFrameStart] = useState(0);
   const frameStartRef = useRef(0);
   const pageItems = items.slice(frameStart, frameStart + frameSize);
   const totalItems = items.length;
-  const frameStep = Math.ceil(frameSize / 3);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<{ [index: number]: null | HTMLTableRowElement }>({});
@@ -146,11 +144,13 @@ export default function App() {
   }
 
   return (
-    <SpaceBetween size="l">
-      <Header variant="h1">Smooth pagination experiment</Header>
+    <Box padding="l">
+      <Box margin={{ bottom: 'm' }}>
+        <Header variant="h1">Experiment: Virtual scroll with frame pagination</Header>
+      </Box>
 
       <Box>
-        <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '16px', padding: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '16px' }}>
           <Box>
             <CodeEditor
               ace={ace}
@@ -249,6 +249,6 @@ export default function App() {
           </div>
         </div>
       </Box>
-    </SpaceBetween>
+    </Box>
   );
 }
