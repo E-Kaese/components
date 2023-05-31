@@ -57,9 +57,11 @@ export default function App() {
   const totalItems = items.length;
   const frameStep = Math.ceil(frameSize / 3);
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<{ [index: number]: null | HTMLTableRowElement }>({});
 
   const [scrollProps, setScrollProps] = useState({
+    headerHeight: 0,
     renderedHeight: 0,
     heightBefore: 0,
     heightAfter: 0,
@@ -77,8 +79,33 @@ export default function App() {
     const averageRowHeight = renderedHeight / renderedRows;
     const heightBefore = frameStart * averageRowHeight;
     const heightAfter = Math.max(0, totalItems - frameStart - frameSize) * averageRowHeight;
-    setScrollProps({ renderedHeight, heightBefore, heightAfter });
+
+    const headerEl = rowRefs.current[-1];
+    const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
+
+    setScrollProps({ headerHeight, renderedHeight, heightBefore, heightAfter });
   }, [frameStart, frameSize, totalItems]);
+
+  const scrollable = scrollProps.heightBefore + scrollProps.heightAfter > 2;
+  const containerHeight = scrollProps.headerHeight + scrollProps.renderedHeight;
+
+  function scrollToIndex(index: number) {
+    let renderedHeight = 0;
+
+    const renderedRows = Math.min(frameSize, totalItems - index);
+    for (let i = 0; i < renderedRows; i++) {
+      const rowEl = rowRefs.current[i];
+      const rowHeight = rowEl ? rowEl.getBoundingClientRect().height : 0;
+      renderedHeight += rowHeight;
+    }
+
+    const averageRowHeight = renderedHeight / renderedRows;
+    const heightBefore = index * averageRowHeight;
+
+    setTimeout(() => {
+      containerRef.current?.scrollTo({ top: heightBefore });
+    }, 0);
+  }
 
   return (
     <SpaceBetween size="l">
@@ -106,14 +133,29 @@ export default function App() {
                 totalItems={items.length}
                 onChange={({ detail }) => {
                   setFrameStart(detail.frameStart);
-                  // TODO: FORCE TABLE SCROLL
+                  scrollToIndex(detail.frameStart);
                 }}
-                onNextPageClick={() => setFrameStart(Math.min(totalItems, frameStart + frameStep))}
-                onPreviousPageClick={() => setFrameStart(Math.max(0, frameStart - frameStep))}
+                onNextPageClick={() => {
+                  const nextFrameStart = Math.min(totalItems, frameStart + frameStep);
+                  setFrameStart(nextFrameStart);
+                  scrollToIndex(nextFrameStart);
+                }}
+                onPreviousPageClick={() => {
+                  const nextFrameStart = Math.max(0, frameStart - frameStep);
+                  setFrameStart(nextFrameStart);
+                  scrollToIndex(nextFrameStart);
+                }}
               />
             )}
 
-            <div className={styles['custom-table']}>
+            <div
+              ref={containerRef}
+              className={styles['custom-table']}
+              style={{
+                overflowY: scrollable ? 'auto' : 'unset',
+                height: scrollable ? containerHeight : 'unset',
+              }}
+            >
               <table
                 className={styles['custom-table-table']}
                 onScroll={() => {
@@ -121,7 +163,11 @@ export default function App() {
                 }}
               >
                 <thead>
-                  <tr>
+                  <tr
+                    ref={node => {
+                      rowRefs.current[-1] = node;
+                    }}
+                  >
                     {columnDefinitions.map(column => (
                       <th key={column.key} className={clsx(styles['custom-table-cell'], styles['custom-table-header'])}>
                         {column.label}
