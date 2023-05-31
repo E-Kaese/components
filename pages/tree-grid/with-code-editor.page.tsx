@@ -1,13 +1,13 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import range from 'lodash/range';
 import Header from '~components/header';
 import Link from '~components/link';
 import SpaceBetween from '~components/space-between';
 import TreeGrid, { TreeGridProps } from '~components/tree-grid';
-import { Box, CodeEditor, CodeEditorProps, TableProps } from '~components';
-import { i18nStrings as codeEditorI18nStrings } from '../code-editor/base-props';
+import { Box, TableProps } from '~components';
+import { SettingsEditor } from './settings-editor';
 
 interface Item {
   id: number;
@@ -80,32 +80,9 @@ const items: Item[] = [
 ];
 
 export default function App() {
-  const [ace, setAce] = useState<CodeEditorProps['ace']>();
   const [props, setProps] = useState<Omit<TableProps, 'items' | 'columnDefinitions'>>({
     resizableColumns: true,
   });
-  const [propsStr, setPropsStr] = useState(JSON.stringify(props, null, 2));
-  const [aceLoading, setAceLoading] = useState(true);
-  useEffect(() => {
-    import('ace-builds').then(ace => {
-      ace.config.set('basePath', './ace/');
-      ace.config.set('useStrictCSP', true);
-      setAce(ace);
-      setAceLoading(false);
-    });
-  }, []);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      try {
-        setProps(JSON.parse(propsStr));
-      } catch {
-        // ignore
-      }
-    }, 2000);
-
-    return () => clearTimeout(timeoutId);
-  }, [propsStr]);
 
   return (
     <SpaceBetween size="l">
@@ -113,15 +90,7 @@ export default function App() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '16px', padding: '16px' }}>
         <Box>
-          <CodeEditor
-            ace={ace}
-            value={propsStr}
-            language="json"
-            onDelayedChange={event => setPropsStr(event.detail.value)}
-            onPreferencesChange={() => {}}
-            loading={aceLoading}
-            i18nStrings={codeEditorI18nStrings}
-          />
+          <SettingsEditor settings={props} onChange={setProps} />
         </Box>
 
         <TreeGrid<Item> items={items} columnDefinitions={columnsConfig} {...props} />

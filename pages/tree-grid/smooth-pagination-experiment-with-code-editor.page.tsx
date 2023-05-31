@@ -1,13 +1,16 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, CodeEditor, CodeEditorProps, FramePagination, Header, Link } from '~components';
-import { i18nStrings as codeEditorI18nStrings } from '../code-editor/base-props';
+import { Box, FramePagination, Header, Link } from '~components';
 import styles from './styles.scss';
 import { Instance, generateItems } from '../table/generate-data';
 import clsx from 'clsx';
+import { SettingsEditor } from './settings-editor';
 
 const items = generateItems(313);
+items[0].id = 'FIRST';
+items[items.length - 1].id = 'LAST';
+
 const columnDefinitions = [
   { key: 'id', label: 'ID', render: (item: Instance) => <Link>{item.id}</Link> },
   { key: 'state', label: 'State', render: (item: Instance) => item.state },
@@ -17,8 +20,6 @@ const columnDefinitions = [
   { key: 'dnsName2', label: 'DNS name 2', render: (item: Instance) => (item.dnsName ?? '?') + ':2' },
   { key: 'dnsName3', label: 'DNS name 3', render: (item: Instance) => (item.dnsName ?? '?') + ':3' },
 ];
-items[0].id = 'FIRST';
-items[items.length - 1].id = 'LAST';
 
 interface PageSettings {
   frameSize: number;
@@ -33,30 +34,7 @@ const defaultPageSettings: PageSettings = {
 };
 
 export default function App() {
-  const [ace, setAce] = useState<CodeEditorProps['ace']>();
   const [props, setProps] = useState<PageSettings>(defaultPageSettings);
-  const [propsStr, setPropsStr] = useState(JSON.stringify(props, null, 2));
-  const [aceLoading, setAceLoading] = useState(true);
-  useEffect(() => {
-    import('ace-builds').then(ace => {
-      ace.config.set('basePath', './ace/');
-      ace.config.set('useStrictCSP', true);
-      setAce(ace);
-      setAceLoading(false);
-    });
-  }, []);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      try {
-        setProps(JSON.parse(propsStr));
-      } catch {
-        // ignore
-      }
-    }, 2000);
-
-    return () => clearTimeout(timeoutId);
-  }, [propsStr]);
 
   const hidePagination =
     typeof props.hidePagination === 'boolean' ? props.hidePagination : defaultPageSettings.hidePagination;
@@ -160,15 +138,7 @@ export default function App() {
       <Box>
         <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '16px' }}>
           <Box>
-            <CodeEditor
-              ace={ace}
-              value={propsStr}
-              language="json"
-              onDelayedChange={event => setPropsStr(event.detail.value)}
-              onPreferencesChange={() => {}}
-              loading={aceLoading}
-              i18nStrings={codeEditorI18nStrings}
-            />
+            <SettingsEditor settings={props} onChange={setProps} />
           </Box>
 
           <div style={{ overflowX: 'auto' }}>
