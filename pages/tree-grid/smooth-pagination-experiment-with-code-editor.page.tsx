@@ -26,12 +26,14 @@ interface PageSettings {
   frameSize: number;
   frameStep: number;
   hidePagination: boolean;
+  containerHeight?: number;
 }
 
 const defaultPageSettings: PageSettings = {
   frameSize: 20,
   frameStep: 5,
   hidePagination: false,
+  containerHeight: 0,
 };
 
 export default function App() {
@@ -52,7 +54,7 @@ export default function App() {
 
   const virtualScroll = useVirtualScroll({ items, frameSize });
 
-  const containerHeight = headerHeight + virtualScroll.scroll.renderedHeight;
+  const containerHeight = settings.containerHeight || headerHeight + virtualScroll.scroll.renderedHeight;
 
   return (
     <ConfigurablePage
