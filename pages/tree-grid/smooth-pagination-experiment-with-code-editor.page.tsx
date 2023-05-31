@@ -6,6 +6,7 @@ import styles from './styles.scss';
 import { Instance, generateItems } from '../table/generate-data';
 import clsx from 'clsx';
 import { ConfigurablePage } from './configurable-page';
+import { useVirtualScroll } from './use-virtual-scroll';
 
 const items = generateItems(313);
 items[0].id = 'FIRST';
@@ -40,94 +41,18 @@ export default function App() {
     typeof settings.hidePagination === 'boolean' ? settings.hidePagination : defaultPageSettings.hidePagination;
   const frameSize = typeof settings.frameSize === 'number' ? settings.frameSize : defaultPageSettings.frameSize;
   const frameStep = typeof settings.frameStep === 'number' ? settings.frameStep : defaultPageSettings.frameStep;
-  const [frameStart, setFrameStart] = useState(0);
-  const frameStartRef = useRef(0);
-  const pageItems = items.slice(frameStart, frameStart + frameSize);
-  const totalItems = items.length;
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const rowRefs = useRef<{ [index: number]: null | HTMLTableRowElement }>({});
-
-  const [scrollProps, setScrollProps] = useState({
-    averageRowHeight: 0,
-    headerHeight: 0,
-    renderedHeight: 0,
-    heightBefore: 0,
-    heightAfter: 0,
-  });
-
-  function updateFramePosition(frameStart: number) {
-    frameStartRef.current = frameStart;
-    setFrameStart(frameStart);
-
-    let renderedHeight = 0;
-
-    const renderedRows = Math.min(frameSize, totalItems - frameStart);
-    for (let i = 0; i < renderedRows; i++) {
-      const rowEl = rowRefs.current[i];
-      const rowHeight = rowEl ? rowEl.getBoundingClientRect().height : 0;
-      renderedHeight += rowHeight;
-    }
-
-    const averageRowHeight = renderedHeight / renderedRows;
-    const heightBefore = frameStart * averageRowHeight;
-    const heightAfter = Math.max(0, totalItems - frameStart - frameSize) * averageRowHeight;
-
-    const headerEl = rowRefs.current[-1];
-    const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
-
-    setScrollProps({ averageRowHeight, headerHeight, renderedHeight, heightBefore, heightAfter });
-  }
-
+  const tableHeaderRef = useRef<HTMLTableRowElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
   useEffect(() => {
-    const frameStart = frameStartRef.current;
-
-    let renderedHeight = 0;
-
-    const renderedRows = Math.min(frameSize, totalItems - frameStart);
-    for (let i = 0; i < renderedRows; i++) {
-      const rowEl = rowRefs.current[i];
-      const rowHeight = rowEl ? rowEl.getBoundingClientRect().height : 0;
-      renderedHeight += rowHeight;
+    if (tableHeaderRef.current) {
+      setHeaderHeight(tableHeaderRef.current.getBoundingClientRect().height);
     }
+  }, []);
 
-    const averageRowHeight = renderedHeight / renderedRows;
-    const heightBefore = frameStart * averageRowHeight;
-    const heightAfter = Math.max(0, totalItems - frameStart - frameSize) * averageRowHeight;
+  const virtualScroll = useVirtualScroll({ items, frameSize });
 
-    const headerEl = rowRefs.current[-1];
-    const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
-
-    setScrollProps({ averageRowHeight, headerHeight, renderedHeight, heightBefore, heightAfter });
-  }, [frameSize, totalItems]);
-
-  const scrollable = scrollProps.heightBefore + scrollProps.heightAfter > 2;
-  const containerHeight = scrollProps.headerHeight + scrollProps.renderedHeight;
-
-  function scrollToIndex(index: number) {
-    let renderedHeight = 0;
-
-    const renderedRows = Math.min(frameSize, totalItems - index);
-    for (let i = 0; i < renderedRows; i++) {
-      const rowEl = rowRefs.current[i];
-      const rowHeight = rowEl ? rowEl.getBoundingClientRect().height : 0;
-      renderedHeight += rowHeight;
-    }
-
-    const averageRowHeight = renderedHeight / renderedRows;
-    const heightBefore = index * averageRowHeight;
-
-    setTimeout(() => {
-      containerRef.current?.scrollTo({ top: heightBefore });
-    }, 0);
-  }
-
-  // TODO: debounce
-  function onScroll(scrollTop: number) {
-    const delta = Math.round((scrollTop - scrollProps.heightBefore) / scrollProps.averageRowHeight);
-    const nextFrameStart = Math.max(0, Math.min(totalItems - frameSize, frameStart + delta));
-    updateFramePosition(nextFrameStart);
-  }
+  const containerHeight = headerHeight + virtualScroll.scroll.renderedHeight;
 
   return (
     <ConfigurablePage
@@ -138,38 +63,28 @@ export default function App() {
       {!hidePagination && (
         <FramePagination
           frameSize={frameSize}
-          frameStart={frameStart}
+          frameStart={virtualScroll.frame.frameStart}
           totalItems={items.length}
           onChange={({ detail }) => {
-            scrollToIndex(detail.frameStart);
+            virtualScroll.functions.scrollToIndex(detail.frameStart);
           }}
-          onNextPageClick={() => {
-            const nextFrameStart = Math.min(totalItems, frameStart + frameStep);
-            scrollToIndex(nextFrameStart);
-          }}
-          onPreviousPageClick={() => {
-            const nextFrameStart = Math.max(0, frameStart - frameStep);
-            scrollToIndex(nextFrameStart);
-          }}
+          onNextPageClick={() => virtualScroll.functions.scrollToIndex(virtualScroll.frame.frameStart + frameStep)}
+          onPreviousPageClick={() => virtualScroll.functions.scrollToIndex(virtualScroll.frame.frameStart - frameStep)}
         />
       )}
 
       <div
-        ref={containerRef}
+        ref={virtualScroll.refs.container}
         className={styles['custom-table']}
         style={{
-          overflowY: scrollable ? 'auto' : 'unset',
-          height: scrollable ? containerHeight : 'unset',
+          overflowY: virtualScroll.scrollable ? 'auto' : 'unset',
+          height: virtualScroll.scrollable ? containerHeight : 'unset',
         }}
-        onScroll={event => onScroll((event.target as HTMLElement).scrollTop)}
+        onScroll={event => virtualScroll.handlers.onScroll((event.target as HTMLElement).scrollTop)}
       >
         <table className={styles['custom-table-table']}>
           <thead>
-            <tr
-              ref={node => {
-                rowRefs.current[-1] = node;
-              }}
-            >
+            <tr ref={tableHeaderRef}>
               {columnDefinitions.map(column => (
                 <th key={column.key} className={clsx(styles['custom-table-cell'], styles['custom-table-header'])}>
                   {column.label}
@@ -179,22 +94,17 @@ export default function App() {
           </thead>
 
           <tbody>
-            {scrollProps.heightBefore > 1 ? (
+            {virtualScroll.scroll.heightBefore > 0 ? (
               <tr>
                 <td
                   colSpan={columnDefinitions.length}
-                  style={{ padding: 0, margin: 0, height: scrollProps.heightBefore }}
+                  style={{ padding: 0, margin: 0, height: virtualScroll.scroll.heightBefore }}
                 />
               </tr>
             ) : null}
 
-            {pageItems.map((item, index) => (
-              <tr
-                key={item.id}
-                ref={node => {
-                  rowRefs.current[index] = node;
-                }}
-              >
+            {virtualScroll.frame.items.map((item, index) => (
+              <tr key={item.id} ref={virtualScroll.refs.row.bind(null, index)}>
                 {columnDefinitions.map(column => (
                   <td key={column.key} className={styles['custom-table-cell']}>
                     {column.render(item)}
@@ -203,11 +113,11 @@ export default function App() {
               </tr>
             ))}
 
-            {scrollProps.heightAfter > 1 ? (
+            {virtualScroll.scroll.heightAfter > 0 ? (
               <tr>
                 <td
                   colSpan={columnDefinitions.length}
-                  style={{ padding: 0, margin: 0, height: scrollProps.heightAfter }}
+                  style={{ padding: 0, margin: 0, height: virtualScroll.scroll.heightAfter }}
                 />
               </tr>
             ) : null}
