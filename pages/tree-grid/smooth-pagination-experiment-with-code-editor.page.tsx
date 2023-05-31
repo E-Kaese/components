@@ -1,11 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, FramePagination, Header, Link } from '~components';
+import { FramePagination, Link } from '~components';
 import styles from './styles.scss';
 import { Instance, generateItems } from '../table/generate-data';
 import clsx from 'clsx';
-import { SettingsEditor } from './settings-editor';
+import { ConfigurablePage } from './configurable-page';
 
 const items = generateItems(313);
 items[0].id = 'FIRST';
@@ -34,12 +34,12 @@ const defaultPageSettings: PageSettings = {
 };
 
 export default function App() {
-  const [props, setProps] = useState<PageSettings>(defaultPageSettings);
+  const [settings, setSettings] = useState<PageSettings>(defaultPageSettings);
 
   const hidePagination =
-    typeof props.hidePagination === 'boolean' ? props.hidePagination : defaultPageSettings.hidePagination;
-  const frameSize = typeof props.frameSize === 'number' ? props.frameSize : defaultPageSettings.frameSize;
-  const frameStep = typeof props.frameStep === 'number' ? props.frameStep : defaultPageSettings.frameStep;
+    typeof settings.hidePagination === 'boolean' ? settings.hidePagination : defaultPageSettings.hidePagination;
+  const frameSize = typeof settings.frameSize === 'number' ? settings.frameSize : defaultPageSettings.frameSize;
+  const frameStep = typeof settings.frameStep === 'number' ? settings.frameStep : defaultPageSettings.frameStep;
   const [frameStart, setFrameStart] = useState(0);
   const frameStartRef = useRef(0);
   const pageItems = items.slice(frameStart, frameStart + frameSize);
@@ -130,100 +130,90 @@ export default function App() {
   }
 
   return (
-    <Box padding="l">
-      <Box margin={{ bottom: 'm' }}>
-        <Header variant="h1">Experiment: Virtual scroll with frame pagination</Header>
-      </Box>
+    <ConfigurablePage
+      title="Experiment: Virtual scroll with frame pagination"
+      settings={settings}
+      onChangeSettings={setSettings}
+    >
+      {!hidePagination && (
+        <FramePagination
+          frameSize={frameSize}
+          frameStart={frameStart}
+          totalItems={items.length}
+          onChange={({ detail }) => {
+            scrollToIndex(detail.frameStart);
+          }}
+          onNextPageClick={() => {
+            const nextFrameStart = Math.min(totalItems, frameStart + frameStep);
+            scrollToIndex(nextFrameStart);
+          }}
+          onPreviousPageClick={() => {
+            const nextFrameStart = Math.max(0, frameStart - frameStep);
+            scrollToIndex(nextFrameStart);
+          }}
+        />
+      )}
 
-      <Box>
-        <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '16px' }}>
-          <Box>
-            <SettingsEditor settings={props} onChange={setProps} />
-          </Box>
-
-          <div style={{ overflowX: 'auto' }}>
-            {!hidePagination && (
-              <FramePagination
-                frameSize={frameSize}
-                frameStart={frameStart}
-                totalItems={items.length}
-                onChange={({ detail }) => {
-                  scrollToIndex(detail.frameStart);
-                }}
-                onNextPageClick={() => {
-                  const nextFrameStart = Math.min(totalItems, frameStart + frameStep);
-                  scrollToIndex(nextFrameStart);
-                }}
-                onPreviousPageClick={() => {
-                  const nextFrameStart = Math.max(0, frameStart - frameStep);
-                  scrollToIndex(nextFrameStart);
-                }}
-              />
-            )}
-
-            <div
-              ref={containerRef}
-              className={styles['custom-table']}
-              style={{
-                overflowY: scrollable ? 'auto' : 'unset',
-                height: scrollable ? containerHeight : 'unset',
+      <div
+        ref={containerRef}
+        className={styles['custom-table']}
+        style={{
+          overflowY: scrollable ? 'auto' : 'unset',
+          height: scrollable ? containerHeight : 'unset',
+        }}
+        onScroll={event => onScroll((event.target as HTMLElement).scrollTop)}
+      >
+        <table className={styles['custom-table-table']}>
+          <thead>
+            <tr
+              ref={node => {
+                rowRefs.current[-1] = node;
               }}
-              onScroll={event => onScroll((event.target as HTMLElement).scrollTop)}
             >
-              <table className={styles['custom-table-table']}>
-                <thead>
-                  <tr
-                    ref={node => {
-                      rowRefs.current[-1] = node;
-                    }}
-                  >
-                    {columnDefinitions.map(column => (
-                      <th key={column.key} className={clsx(styles['custom-table-cell'], styles['custom-table-header'])}>
-                        {column.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
+              {columnDefinitions.map(column => (
+                <th key={column.key} className={clsx(styles['custom-table-cell'], styles['custom-table-header'])}>
+                  {column.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-                <tbody>
-                  {scrollProps.heightBefore > 1 ? (
-                    <tr>
-                      <td
-                        colSpan={columnDefinitions.length}
-                        style={{ padding: 0, margin: 0, height: scrollProps.heightBefore }}
-                      />
-                    </tr>
-                  ) : null}
+          <tbody>
+            {scrollProps.heightBefore > 1 ? (
+              <tr>
+                <td
+                  colSpan={columnDefinitions.length}
+                  style={{ padding: 0, margin: 0, height: scrollProps.heightBefore }}
+                />
+              </tr>
+            ) : null}
 
-                  {pageItems.map((item, index) => (
-                    <tr
-                      key={item.id}
-                      ref={node => {
-                        rowRefs.current[index] = node;
-                      }}
-                    >
-                      {columnDefinitions.map(column => (
-                        <td key={column.key} className={styles['custom-table-cell']}>
-                          {column.render(item)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
+            {pageItems.map((item, index) => (
+              <tr
+                key={item.id}
+                ref={node => {
+                  rowRefs.current[index] = node;
+                }}
+              >
+                {columnDefinitions.map(column => (
+                  <td key={column.key} className={styles['custom-table-cell']}>
+                    {column.render(item)}
+                  </td>
+                ))}
+              </tr>
+            ))}
 
-                  {scrollProps.heightAfter > 1 ? (
-                    <tr>
-                      <td
-                        colSpan={columnDefinitions.length}
-                        style={{ padding: 0, margin: 0, height: scrollProps.heightAfter }}
-                      />
-                    </tr>
-                  ) : null}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </Box>
-    </Box>
+            {scrollProps.heightAfter > 1 ? (
+              <tr>
+                <td
+                  colSpan={columnDefinitions.length}
+                  style={{ padding: 0, margin: 0, height: scrollProps.heightAfter }}
+                />
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
+    </ConfigurablePage>
   );
 }

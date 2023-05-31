@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React, { useEffect, useState } from 'react';
-import { Box, CodeEditor, CodeEditorProps } from '~components';
+import { CodeEditor, CodeEditorProps } from '~components';
 import { i18nStrings as codeEditorI18nStrings } from '../code-editor/base-props';
 
 export function SettingsEditor<S extends object>({ settings, onChange }: { settings: S; onChange(settings: S): void }) {
@@ -31,16 +31,14 @@ export function SettingsEditor<S extends object>({ settings, onChange }: { setti
   }, [propsStr]);
 
   return (
-    <Box>
-      <CodeEditor
-        ace={ace}
-        value={propsStr}
-        language="json"
-        onDelayedChange={event => setPropsStr(event.detail.value)}
-        onPreferencesChange={() => {}}
-        loading={aceLoading}
-        i18nStrings={codeEditorI18nStrings}
-      />
-    </Box>
+    <CodeEditor
+      ace={ace}
+      value={propsStr}
+      language="json"
+      onDelayedChange={event => setPropsStr(event.detail.value)}
+      onPreferencesChange={() => {}}
+      loading={aceLoading}
+      i18nStrings={codeEditorI18nStrings}
+    />
   );
 }

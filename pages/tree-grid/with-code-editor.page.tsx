@@ -2,12 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 import React, { useState } from 'react';
 import range from 'lodash/range';
-import Header from '~components/header';
 import Link from '~components/link';
-import SpaceBetween from '~components/space-between';
 import TreeGrid, { TreeGridProps } from '~components/tree-grid';
-import { Box, TableProps } from '~components';
-import { SettingsEditor } from './settings-editor';
+import { TableProps } from '~components';
+import { ConfigurablePage } from './configurable-page';
 
 interface Item {
   id: number;
@@ -80,21 +78,13 @@ const items: Item[] = [
 ];
 
 export default function App() {
-  const [props, setProps] = useState<Omit<TableProps, 'items' | 'columnDefinitions'>>({
+  const [settings, setSettings] = useState<Omit<TableProps, 'items' | 'columnDefinitions'>>({
     resizableColumns: true,
   });
 
   return (
-    <SpaceBetween size="l">
-      <Header variant="h1">TreeGrid playground</Header>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '16px', padding: '16px' }}>
-        <Box>
-          <SettingsEditor settings={props} onChange={setProps} />
-        </Box>
-
-        <TreeGrid<Item> items={items} columnDefinitions={columnsConfig} {...props} />
-      </div>
-    </SpaceBetween>
+    <ConfigurablePage title="TreeGrid playground" settings={settings} onChangeSettings={setSettings}>
+      <TreeGrid<Item> items={items} columnDefinitions={columnsConfig} {...settings} />
+    </ConfigurablePage>
   );
 }
