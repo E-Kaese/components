@@ -20,6 +20,8 @@ const columnDefinitions = [
   { key: 'dnsName2', label: 'DNS name 2', render: (item: Instance) => (item.dnsName ?? '?') + ':2' },
   { key: 'dnsName3', label: 'DNS name 3', render: (item: Instance) => (item.dnsName ?? '?') + ':3' },
 ];
+items[0].id = 'FIRST';
+items[items.length - 1].id = 'LAST';
 
 export default function App() {
   const [ace, setAce] = useState<CodeEditorProps['ace']>();
@@ -61,6 +63,7 @@ export default function App() {
   const rowRefs = useRef<{ [index: number]: null | HTMLTableRowElement }>({});
 
   const [scrollProps, setScrollProps] = useState({
+    averageRowHeight: 0,
     headerHeight: 0,
     renderedHeight: 0,
     heightBefore: 0,
@@ -83,7 +86,7 @@ export default function App() {
     const headerEl = rowRefs.current[-1];
     const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
 
-    setScrollProps({ headerHeight, renderedHeight, heightBefore, heightAfter });
+    setScrollProps({ averageRowHeight, headerHeight, renderedHeight, heightBefore, heightAfter });
   }, [frameStart, frameSize, totalItems]);
 
   const scrollable = scrollProps.heightBefore + scrollProps.heightAfter > 2;
@@ -105,6 +108,12 @@ export default function App() {
     setTimeout(() => {
       containerRef.current?.scrollTo({ top: heightBefore });
     }, 0);
+  }
+
+  // TODO: debounce
+  function onScroll(scrollTop: number) {
+    const delta = Math.round((scrollTop - scrollProps.heightBefore) / scrollProps.averageRowHeight);
+    setFrameStart(Math.max(0, Math.min(totalItems - frameSize, frameStart + delta)));
   }
 
   return (
@@ -155,13 +164,9 @@ export default function App() {
                 overflowY: scrollable ? 'auto' : 'unset',
                 height: scrollable ? containerHeight : 'unset',
               }}
+              onScroll={event => onScroll((event.target as HTMLElement).scrollTop)}
             >
-              <table
-                className={styles['custom-table-table']}
-                onScroll={() => {
-                  // TODO: MOVE FRAME
-                }}
-              >
+              <table className={styles['custom-table-table']}>
                 <thead>
                   <tr
                     ref={node => {
