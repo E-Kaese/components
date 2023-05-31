@@ -53,7 +53,7 @@ export default function App() {
   const hidePagination = typeof props.hidePagination === 'boolean' ? props.hidePagination : false;
   const frameSize = typeof props.frameSize === 'number' ? props.frameSize : 30;
   const frameStep = typeof props.frameStep === 'number' ? props.frameStep : Math.ceil(frameSize / 3);
-  const [frameStart, _setFrameStart] = useState(0);
+  const [frameStart, setFrameStart] = useState(0);
   const frameStartRef = useRef(0);
   const pageItems = items.slice(frameStart, frameStart + frameSize);
   const totalItems = items.length;
@@ -69,9 +69,9 @@ export default function App() {
     heightAfter: 0,
   });
 
-  function setFrameStart(frameStart: number) {
+  function updateFramePosition(frameStart: number) {
     frameStartRef.current = frameStart;
-    _setFrameStart(frameStart);
+    setFrameStart(frameStart);
 
     let renderedHeight = 0;
 
@@ -139,8 +139,7 @@ export default function App() {
   function onScroll(scrollTop: number) {
     const delta = Math.round((scrollTop - scrollProps.heightBefore) / scrollProps.averageRowHeight);
     const nextFrameStart = Math.max(0, Math.min(totalItems - frameSize, frameStart + delta));
-    setFrameStart(nextFrameStart);
-    frameStartRef.current = nextFrameStart;
+    updateFramePosition(nextFrameStart);
   }
 
   return (
@@ -170,17 +169,14 @@ export default function App() {
                 frameStart={frameStart}
                 totalItems={items.length}
                 onChange={({ detail }) => {
-                  setFrameStart(detail.frameStart);
                   scrollToIndex(detail.frameStart);
                 }}
                 onNextPageClick={() => {
                   const nextFrameStart = Math.min(totalItems, frameStart + frameStep);
-                  setFrameStart(nextFrameStart);
                   scrollToIndex(nextFrameStart);
                 }}
                 onPreviousPageClick={() => {
                   const nextFrameStart = Math.max(0, frameStart - frameStep);
-                  setFrameStart(nextFrameStart);
                   scrollToIndex(nextFrameStart);
                 }}
               />
