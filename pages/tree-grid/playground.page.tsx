@@ -1,11 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useState } from 'react';
+import React from 'react';
 import range from 'lodash/range';
 import Link from '~components/link';
 import TreeGrid, { TreeGridProps } from '~components/tree-grid';
 import { TableProps } from '~components';
-import { ConfigurablePage } from './configurable-page';
+import { PageTemplate } from './page-template';
+import { useAppSettings } from '../app/app-context';
 
 interface Item {
   id: number;
@@ -77,14 +78,14 @@ const items: Item[] = [
   })),
 ];
 
-export default function App() {
-  const [settings, setSettings] = useState<Omit<TableProps, 'items' | 'columnDefinitions'>>({
+export default function Page() {
+  const [settings] = useAppSettings<Omit<TableProps, 'items' | 'columnDefinitions'>>({
     resizableColumns: true,
   });
 
   return (
-    <ConfigurablePage title="TreeGrid playground" settings={settings} onChangeSettings={setSettings}>
+    <PageTemplate title="TreeGrid playground">
       <TreeGrid<Item> items={items} columnDefinitions={columnsConfig} {...settings} />
-    </ConfigurablePage>
+    </PageTemplate>
   );
 }

@@ -5,8 +5,9 @@ import { FramePagination, Link } from '~components';
 import styles from './styles.scss';
 import { Instance, generateItems } from '../table/generate-data';
 import clsx from 'clsx';
-import { ConfigurablePage } from './configurable-page';
+import { PageTemplate } from './page-template';
 import { useVirtualScroll } from './use-virtual-scroll';
+import { useAppSettings } from '../app/app-context';
 
 const items = generateItems(313);
 items[0].id = 'FIRST';
@@ -37,7 +38,7 @@ const defaultPageSettings: PageSettings = {
 };
 
 export default function App() {
-  const [settings, setSettings] = useState<PageSettings>(defaultPageSettings);
+  const [settings] = useAppSettings<PageSettings>(defaultPageSettings);
 
   const hidePagination =
     typeof settings.hidePagination === 'boolean' ? settings.hidePagination : defaultPageSettings.hidePagination;
@@ -57,11 +58,7 @@ export default function App() {
   const containerHeight = settings.containerHeight || headerHeight + virtualScroll.scroll.renderedHeight;
 
   return (
-    <ConfigurablePage
-      title="Experiment: Virtual scroll with frame pagination"
-      settings={settings}
-      onChangeSettings={setSettings}
-    >
+    <PageTemplate title="Experiment: Virtual scroll with frame pagination">
       {!hidePagination && (
         <FramePagination
           frameSize={frameSize}
@@ -124,6 +121,6 @@ export default function App() {
           </tbody>
         </table>
       </div>
-    </ConfigurablePage>
+    </PageTemplate>
   );
 }
