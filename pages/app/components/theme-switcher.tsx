@@ -5,6 +5,7 @@ import { THEME, ALWAYS_VISUAL_REFRESH } from '~components/internal/environment';
 import SpaceBetween from '~components/space-between';
 import AppContext from '../app-context';
 import { Density, Mode } from '@cloudscape-design/global-styles';
+import { Icon } from '~components';
 
 export default function ThemeSwitcher() {
   const { mode, urlParams, setUrlParams, setMode } = useContext(AppContext);
@@ -63,6 +64,15 @@ export default function ThemeSwitcher() {
           onChange={event => setUrlParams({ motionDisabled: event.target.checked })}
         />
         Disable motion
+      </label>
+      <label>
+        <input
+          id="settings-editor-toggle"
+          type="checkbox"
+          checked={urlParams.showSettingsEditor}
+          onChange={event => setUrlParams({ showSettingsEditor: event.target.checked })}
+        />
+        <Icon name="settings" size="small" />
       </label>
     </SpaceBetween>
   );
