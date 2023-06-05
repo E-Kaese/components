@@ -6,7 +6,7 @@ import styles from './styles.scss';
 import { Instance, generateItems } from '../table/generate-data';
 import clsx from 'clsx';
 import { PageTemplate } from './page-template';
-import { useVirtualScroll } from './use-virtual-scroll';
+import { useVirtualScroll } from '~components/tree-grid/use-virtual-scroll';
 import { useAppSettings } from '../app/app-context';
 
 const items = generateItems(313);

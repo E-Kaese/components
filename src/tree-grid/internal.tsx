@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import clsx from 'clsx';
-import React, { useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { TreeGridForwardRefType, TreeGridProps } from './interfaces';
 import { getVisualContextClassname } from '../internal/components/visual-context';
 import InternalContainer from '../container/internal';
@@ -34,6 +34,7 @@ import useTableFocusNavigation from './use-table-focus-navigation';
 import { SomeRequired } from '../internal/types';
 import { TableTdElement } from './body-cell/td-element';
 import { useStickyColumns, selectionColumnId } from './use-sticky-columns';
+import { useVirtualScroll } from './use-virtual-scroll';
 
 type InternalTreeGridProps<T> = SomeRequired<TreeGridProps<T>, 'items' | 'selectedItems' | 'variant'> &
   InternalBaseComponentProps;
@@ -222,6 +223,19 @@ const InternalTreeGrid = React.forwardRef(
     const toolsHeaderHeight =
       (toolsHeaderWrapper?.current as HTMLDivElement | null)?.getBoundingClientRect().height ?? 0;
 
+    const [headerHeight, setHeaderHeight] = useState(0);
+    useEffect(() => {
+      if (theadRef.current) {
+        setHeaderHeight(theadRef.current.getBoundingClientRect().height);
+      }
+    }, []);
+
+    const virtualScroll = useVirtualScroll({ items, frameSize: 25 });
+
+    const containerHeight = headerHeight + virtualScroll.scroll.renderedHeight;
+
+    const containerRef = useMergeRefs(wrapperRef, virtualScroll.refs.container);
+
     return (
       <ColumnWidthsProvider
         tableRef={tableRefObject}
@@ -283,13 +297,20 @@ const InternalTreeGrid = React.forwardRef(
           {...focusMarkers.root}
         >
           <div
-            ref={wrapperRef}
+            ref={containerRef}
             className={clsx(styles.wrapper, styles[`variant-${computedVariant}`], {
               [styles['has-footer']]: hasFooter,
               [styles['has-header']]: hasHeader,
             })}
-            onScroll={handleScroll}
+            onScroll={event => {
+              handleScroll?.(event);
+              virtualScroll.handlers.onScroll((event.target as HTMLElement).scrollTop);
+            }}
             {...wrapperProps}
+            style={{
+              overflowY: virtualScroll.scrollable ? 'auto' : 'unset',
+              height: virtualScroll.scrollable ? containerHeight : 'unset',
+            }}
           >
             {!!renderAriaLive && !!firstIndex && (
               <LiveRegion>
@@ -314,6 +335,15 @@ const InternalTreeGrid = React.forwardRef(
                 {...theadProps}
               />
               <tbody>
+                {virtualScroll.scroll.heightBefore > 0 ? (
+                  <tr>
+                    <td
+                      colSpan={columnDefinitions.length}
+                      style={{ padding: 0, margin: 0, height: virtualScroll.scroll.heightBefore }}
+                    />
+                  </tr>
+                ) : null}
+
                 {loading || items.length === 0 ? (
                   <tr>
                     <td
@@ -339,7 +369,8 @@ const InternalTreeGrid = React.forwardRef(
                     </td>
                   </tr>
                 ) : (
-                  items.map((item, rowIndex) => {
+                  // TODO: expose item original index for isItemSelected to work expectedly
+                  virtualScroll.frame.items.map((item, rowIndex) => {
                     const firstVisible = rowIndex === 0;
                     const lastVisible = rowIndex === items.length - 1;
                     const isEven = rowIndex % 2 === 0;
@@ -348,6 +379,7 @@ const InternalTreeGrid = React.forwardRef(
                     const isNextSelected = !!selectionType && !lastVisible && isItemSelected(items[rowIndex + 1]);
                     return (
                       <tr
+                        ref={virtualScroll.refs.row.bind(null, rowIndex)}
                         role="row"
                         key={getItemKey(trackBy, item, rowIndex)}
                         className={clsx(styles.row, isSelected && styles['row-selected'])}
@@ -449,6 +481,15 @@ const InternalTreeGrid = React.forwardRef(
                     );
                   })
                 )}
+
+                {virtualScroll.scroll.heightAfter > 0 ? (
+                  <tr>
+                    <td
+                      colSpan={columnDefinitions.length}
+                      style={{ padding: 0, margin: 0, height: virtualScroll.scroll.heightAfter }}
+                    />
+                  </tr>
+                ) : null}
               </tbody>
             </table>
             {resizableColumns && <ResizeTracker />}

@@ -78,6 +78,9 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
   }
 
   useEffect(() => {
+    // TODO: re-evaluate frameStart when items change.
+    // It could be that the item is pushed up or down once more items become available.
+    // This can only be done when trackBy is provided.
     const frameStart = frameStartRef.current;
 
     let renderedHeight = 0;

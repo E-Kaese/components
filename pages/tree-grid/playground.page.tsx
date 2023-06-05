@@ -18,7 +18,7 @@ interface MetaItem<Item> {
 export default function Page() {
   const [settings] = useAppSettings({
     features: {
-      stickyHeader: false,
+      stickyHeader: true,
       resizableColumns: true,
     },
     asyncProps: {
