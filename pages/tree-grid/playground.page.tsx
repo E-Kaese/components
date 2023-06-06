@@ -34,14 +34,26 @@ export default function Page() {
     },
   });
 
-  const [expanded, setExpanded] = useState<{ [id: string]: boolean }>({});
+  const [expanded, setExpanded] = useState<{ [id: string]: number }>({});
   const lastExpandedRef = useRef<string | null>(null);
   const visibleInstances = useMemo(() => {
     const visibleInstances: InstanceItem[] = [];
     for (const instance of instances) {
       visibleInstances.push(instance);
       if (expanded[instance.id] && instance.replicas) {
-        visibleInstances.push(...instance.replicas);
+        visibleInstances.push(...instance.replicas.slice(0, expanded[instance.id]));
+
+        if (expanded[instance.id] < instance.replicas.length) {
+          visibleInstances.push({
+            id: `${instance.id}-load-more`,
+            name: '',
+            url: '',
+            state: 'ERROR',
+            cpuCores: 0,
+            memoryGib: 0,
+            availabilityZone: '',
+          });
+        }
       }
     }
     return visibleInstances;
@@ -75,7 +87,10 @@ export default function Page() {
       new Map<InstanceItem, MetaItem<InstanceItem>>()
     );
     return (item: InstanceItem) => {
-      const { ...meta } = mapping.get(item)!;
+      const meta = mapping.get(item);
+      if (!meta) {
+        return { level: 2, isLast: true };
+      }
       return { ...meta };
     };
   }, []);
@@ -174,7 +189,7 @@ export default function Page() {
                         variant="icon"
                         iconName={expanded[item.id] ? 'treeview-collapse' : 'treeview-expand'}
                         onClick={() => {
-                          setExpanded(prev => ({ ...prev, [item.id]: !prev[item.id] }));
+                          setExpanded(prev => ({ ...prev, [item.id]: prev[item.id] ? 0 : 5 }));
                           lastExpandedRef.current = item.id;
                         }}
                         disabled={item.replicas.length === 0}
@@ -182,7 +197,19 @@ export default function Page() {
                     </div>
                   ) : null}
 
-                  <Link href={`#${item.id}`}>{item.id}</Link>
+                  {item.id.includes('load-more') ? (
+                    <Link
+                      onFollow={e => {
+                        e.preventDefault();
+                        const id = item.id.replace('-load-more', '');
+                        setExpanded(prev => ({ ...prev, [id]: prev[id] + 5 }));
+                      }}
+                    >
+                      Show 5 more
+                    </Link>
+                  ) : (
+                    <Link href={`#${item.id}`}>{item.id}</Link>
+                  )}
                 </div>
               );
             },
@@ -190,7 +217,7 @@ export default function Page() {
           {
             id: 'name',
             header: 'Name',
-            cell: item => item.name,
+            cell: item => (item.id.includes('load-more') ? '' : item.name),
             minWidth: 130,
             sortingField: 'region',
           },
@@ -198,13 +225,17 @@ export default function Page() {
             id: 'url',
             header: 'URL',
             minWidth: 100,
-            cell: item => item.url,
+            cell: item => (item.id.includes('load-more') ? '' : item.url),
           },
           {
             id: 'state',
             header: 'State',
             maxWidth: 150,
             cell: item => {
+              if (item.id.includes('load-more')) {
+                return '';
+              }
+
               const type: StatusIndicatorProps.Type = (() => {
                 switch (item.state) {
                   case 'RUNNING':
@@ -225,17 +256,17 @@ export default function Page() {
           {
             id: 'cpuCores',
             header: 'vCPU',
-            cell: item => item.cpuCores,
+            cell: item => (item.id.includes('load-more') ? '' : item.cpuCores),
           },
           {
             id: 'memoryGib',
             header: 'Memory (GiB)',
-            cell: item => item.memoryGib,
+            cell: item => (item.id.includes('load-more') ? '' : item.memoryGib),
           },
           {
             id: 'availabilityZone',
             header: 'Availability zone',
-            cell: item => item.availabilityZone,
+            cell: item => (item.id.includes('load-more') ? '' : item.availabilityZone),
           },
         ]}
         stickyHeader={settings.features.stickyHeader}
