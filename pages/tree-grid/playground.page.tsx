@@ -8,6 +8,7 @@ import { useAppSettings } from '../app/app-context';
 import { Box, Button, Header, StatusIndicator, StatusIndicatorProps } from '~components';
 import { InstanceItem, generateInstances } from './server';
 import { colorBorderControlDefault } from '~design-tokens';
+import pseudoRandom from '../utils/pseudo-random';
 
 const instances = generateInstances({ instances: 250 });
 
@@ -37,6 +38,8 @@ export default function Page() {
   const [loadingItem, setLoadingItem] = useState<null | string>(null);
 
   const [expanded, setExpanded] = useState<{ [id: string]: number }>({});
+  const [error, setError] = useState<{ [id: string]: string }>({});
+
   const lastExpandedRef = useRef<string | null>(null);
   const visibleInstances = useMemo(() => {
     const visibleInstances: InstanceItem[] = [];
@@ -110,13 +113,16 @@ export default function Page() {
         items={visibleInstances}
         trackBy={item => item.id}
         getIsShaded={item => getInstanceMeta(item).level === 2}
+        stickyColumns={{ first: 1 }}
         columnDefinitions={[
           {
             id: 'id',
             header: 'ID',
-            minWidth: 200,
+            minWidth: 300,
             cell: item => {
               const meta = getInstanceMeta(item);
+
+              const id = item.id.replace('-control', '');
 
               return (
                 <div
@@ -198,7 +204,7 @@ export default function Page() {
                           if (expanded[item.id] !== undefined) {
                             setExpanded(prev => {
                               const copy = { ...prev };
-                              delete copy[item.id];
+                              delete copy[id];
                               return copy;
                             });
                           } else {
@@ -206,7 +212,17 @@ export default function Page() {
                             setExpanded(prev => ({ ...prev, [item.id]: 0 }));
 
                             setTimeout(() => {
-                              setExpanded(prev => ({ ...prev, [item.id]: 5 }));
+                              if (pseudoRandom() > 0.3) {
+                                setExpanded(prev => ({ ...prev, [item.id]: 5 }));
+                                setError(prev => {
+                                  const copy = { ...prev };
+                                  delete copy[id];
+                                  return copy;
+                                });
+                              } else {
+                                setError(prev => ({ ...prev, [id]: 'Server error' }));
+                              }
+
                               setLoadingItem(null);
                               lastExpandedRef.current = item.id;
                             }, 500);
@@ -221,20 +237,30 @@ export default function Page() {
                       onFollow={e => {
                         e.preventDefault();
 
-                        const id = item.id.replace('-control', '');
-
                         if (loadingItem !== id) {
                           setLoadingItem(id);
 
                           setTimeout(() => {
-                            setExpanded(prev => ({ ...prev, [id]: prev[id] + 5 }));
+                            if (pseudoRandom() > 0.3) {
+                              setExpanded(prev => ({ ...prev, [id]: prev[id] + 5 }));
+                              setError(prev => {
+                                const copy = { ...prev };
+                                delete copy[id];
+                                return copy;
+                              });
+                            } else {
+                              setError(prev => ({ ...prev, [id]: 'Server error' }));
+                            }
+
                             setLoadingItem(null);
                           }, 500);
                         }
                       }}
                     >
-                      {loadingItem === item.id.replace('-control', '') ? (
+                      {loadingItem === id ? (
                         <StatusIndicator type="loading">Loading more items</StatusIndicator>
+                      ) : error[id] ? (
+                        <StatusIndicator type="error">{error[id]}. Click to retry</StatusIndicator>
                       ) : (
                         'Show 5 more'
                       )}
