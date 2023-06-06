@@ -5,14 +5,19 @@ import Link from '~components/link';
 import TreeGrid from '~components/tree-grid';
 import { PageTemplate } from './page-template';
 import { useAppSettings } from '../app/app-context';
-import { Button, StatusIndicator, StatusIndicatorProps } from '~components';
+import { Button, Header, StatusIndicator, StatusIndicatorProps } from '~components';
 import { InstanceItem, generateInstances } from './server';
+import { colorBorderControlDefault } from '~design-tokens';
 
 const instances = generateInstances({ instances: 250 });
 
-interface MetaItem<Item> {
+interface MetaItem<Item> extends MetaData {
   item: Item;
+}
+
+interface MetaData {
   level: number;
+  isLast: boolean;
 }
 
 export default function Page() {
@@ -43,10 +48,18 @@ export default function Page() {
 
   const getInstanceMeta = useMemo(() => {
     const allInstances: MetaItem<InstanceItem>[] = [];
-    for (const instance of instances) {
-      allInstances.push({ item: instance, level: 1 });
+    for (let instanceIndex = 0; instanceIndex < instances.length; instanceIndex++) {
+      const instance = instances[instanceIndex];
+
+      allInstances.push({ item: instance, level: 1, isLast: instanceIndex === instances.length - 1 });
       if (instance.replicas) {
-        allInstances.push(...instance.replicas.map(item => ({ item, level: 2 })));
+        allInstances.push(
+          ...instance.replicas.map((item, replicaIndex) => ({
+            item,
+            level: 2,
+            isLast: replicaIndex === (instance.replicas?.length || 0) - 1,
+          }))
+        );
       }
     }
     const mapping = allInstances.reduce(
@@ -54,43 +67,113 @@ export default function Page() {
       new Map<InstanceItem, MetaItem<InstanceItem>>()
     );
     return (item: InstanceItem) => {
-      const meta = mapping.get(item)!;
-      return { level: meta.level };
+      const { ...meta } = mapping.get(item)!;
+      return { ...meta };
     };
   }, []);
 
   return (
     <PageTemplate title="TreeGrid playground">
       <TreeGrid
+        header={<Header>Instances</Header>}
         items={visibleInstances}
         trackBy={item => item.id}
         columnDefinitions={[
           {
             id: 'id',
             header: 'ID',
-            cell: item => (
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '8px',
-                  alignItems: 'center',
-                  paddingLeft: (getInstanceMeta(item).level - 1) * 36 + 'px',
-                }}
-              >
-                {item.replicas ? (
-                  <Button
-                    variant="icon"
-                    iconName={expanded[item.id] ? 'treeview-collapse' : 'treeview-expand'}
-                    onClick={() => {
-                      setExpanded(prev => ({ ...prev, [item.id]: !prev[item.id] }));
-                    }}
-                    disabled={item.replicas.length === 0}
-                  />
-                ) : null}
+            minWidth: 200,
+            cell: item => {
+              const meta = getInstanceMeta(item);
 
-                <Link href={`#${item.id}`}>{item.id}</Link>
-              </div>
-            ),
+              return (
+                <div
+                  style={{
+                    position: 'relative',
+                    display: 'flex',
+                    gap: '8px',
+                    alignItems: 'center',
+                    paddingLeft: (meta.level - 1) * 36 + 'px',
+                  }}
+                >
+                  {meta.level > 1 ? (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        width: (meta.level - 1) * 20 + 'px',
+                        left: (meta.level - 1) * 12 + 'px',
+                        top: -8 - 1,
+                        bottom: -8 - 1,
+                      }}
+                    >
+                      <svg aria-hidden={true} style={{ position: 'absolute', width: '100%', height: '100%' }}>
+                        <line
+                          x1="0"
+                          x2="100%"
+                          y1="50%"
+                          y2="50%"
+                          style={{
+                            stroke: colorBorderControlDefault,
+                            strokeWidth: 1,
+                          }}
+                        />
+
+                        <line
+                          x1="0"
+                          x2="0"
+                          y1="0%"
+                          y2={meta.isLast ? '50%' : '100%'}
+                          style={{
+                            stroke: colorBorderControlDefault,
+                            strokeWidth: 2,
+                          }}
+                        />
+                      </svg>
+                    </div>
+                  ) : null}
+
+                  {expanded[item.id] ? (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        width: '2px',
+                        left: '12px',
+                        top: -8 - 1,
+                        bottom: -8 - 1,
+                      }}
+                    >
+                      <svg aria-hidden={true} style={{ position: 'absolute', width: '100%', height: '100%' }}>
+                        <line
+                          x1="0"
+                          x2="0"
+                          y1="calc(50% + 6px)"
+                          y2="100%"
+                          style={{
+                            stroke: colorBorderControlDefault,
+                            strokeWidth: 2,
+                          }}
+                        />
+                      </svg>
+                    </div>
+                  ) : null}
+
+                  {item.replicas ? (
+                    <div style={{ marginLeft: '-2px' }}>
+                      <Button
+                        variant="icon"
+                        iconName={expanded[item.id] ? 'treeview-collapse' : 'treeview-expand'}
+                        onClick={() => {
+                          setExpanded(prev => ({ ...prev, [item.id]: !prev[item.id] }));
+                        }}
+                        disabled={item.replicas.length === 0}
+                      />
+                    </div>
+                  ) : null}
+
+                  <Link href={`#${item.id}`}>{item.id}</Link>
+                </div>
+              );
+            },
           },
           {
             id: 'name',
