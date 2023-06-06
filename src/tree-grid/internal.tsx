@@ -81,6 +81,7 @@ const InternalTreeGrid = React.forwardRef(
       renderAriaLive,
       stickyColumns,
       columnDisplay,
+      getIsShaded,
       ...rest
     }: InternalTreeGridProps<T>,
     ref: React.Ref<TreeGridProps.Ref>
@@ -431,6 +432,7 @@ const InternalTreeGrid = React.forwardRef(
                           const isEditable = !!column.editConfig && !currentEditLoading;
                           return (
                             <TableBodyCell
+                              isShaded={!!getIsShaded?.(item)}
                               key={getColumnKey(column, colIndex)}
                               style={
                                 resizableColumns

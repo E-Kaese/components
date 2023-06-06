@@ -31,6 +31,7 @@ export interface TableTdElementProps {
   columnId: string;
   stickyState: StickyColumnsModel;
   isVisualRefresh?: boolean;
+  isShaded?: boolean;
 }
 
 export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElementProps>(
@@ -57,6 +58,7 @@ export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElem
       hasFooter,
       columnId,
       stickyState,
+      isShaded,
     },
     ref
   ) => {
@@ -86,7 +88,7 @@ export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElem
           isSelected && styles['body-cell-selected'],
           isNextSelected && styles['body-cell-next-selected'],
           isPrevSelected && styles['body-cell-prev-selected'],
-          !isEvenRow && stripedRows && styles['body-cell-shaded'],
+          ((!isEvenRow && stripedRows) || isShaded) && styles['body-cell-shaded'],
           stripedRows && styles['has-striped-rows'],
           isVisualRefresh && styles['is-visual-refresh'],
           hasSelection && styles['has-selection'],

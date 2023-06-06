@@ -314,6 +314,8 @@ export interface TreeGridProps<T = any> extends BaseComponentProps {
    * validation states, or show warning for unsaved changes.
    */
   onEditCancel?: CancelableEventHandler;
+
+  getIsShaded?: (item: T) => void;
 }
 
 export namespace TreeGridProps {

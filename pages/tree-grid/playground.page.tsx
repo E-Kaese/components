@@ -109,6 +109,7 @@ export default function Page() {
         header={<Header>Instances</Header>}
         items={visibleInstances}
         trackBy={item => item.id}
+        getIsShaded={item => getInstanceMeta(item).level === 2}
         columnDefinitions={[
           {
             id: 'id',
