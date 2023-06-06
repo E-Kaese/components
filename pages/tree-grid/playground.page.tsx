@@ -34,6 +34,8 @@ export default function Page() {
     },
   });
 
+  const [isMoreLoading, setMoreLoading] = useState(false);
+
   const [expanded, setExpanded] = useState<{ [id: string]: number }>({});
   const lastExpandedRef = useRef<string | null>(null);
   const visibleInstances = useMemo(() => {
@@ -194,11 +196,23 @@ export default function Page() {
                     <Link
                       onFollow={e => {
                         e.preventDefault();
-                        const id = item.id.replace('-load-more', '');
-                        setExpanded(prev => ({ ...prev, [id]: prev[id] + 5 }));
+
+                        if (!isMoreLoading) {
+                          setMoreLoading(true);
+
+                          setTimeout(() => {
+                            const id = item.id.replace('-load-more', '');
+                            setExpanded(prev => ({ ...prev, [id]: prev[id] + 5 }));
+                            setMoreLoading(false);
+                          }, 500);
+                        }
                       }}
                     >
-                      Show 5 more
+                      {isMoreLoading ? (
+                        <StatusIndicator type="loading">Loading more items</StatusIndicator>
+                      ) : (
+                        'Show 5 more'
+                      )}
                     </Link>
                   ) : (
                     <Link href={`#${item.id}`}>{item.id}</Link>
