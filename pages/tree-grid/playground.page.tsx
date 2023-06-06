@@ -1,6 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import Link from '~components/link';
 import TreeGrid, { TreeGridProps } from '~components/tree-grid';
 import { PageTemplate } from './page-template';
@@ -58,13 +58,6 @@ export default function Page() {
     }
     return visibleInstances;
   }, [expanded]);
-
-  useEffect(() => {
-    const lastExpandedIndex = visibleInstances.findIndex(i => i.id === lastExpandedRef.current);
-    if (lastExpandedIndex !== -1) {
-      gridRef.current?.scrollToIndex(lastExpandedIndex);
-    }
-  }, [visibleInstances]);
 
   const getInstanceMeta = useMemo(() => {
     const allInstances: MetaItem<InstanceItem>[] = [];

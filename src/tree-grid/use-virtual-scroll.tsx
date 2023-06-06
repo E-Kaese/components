@@ -13,10 +13,6 @@ interface VirtualItem<Item> {
   index: number;
 }
 
-/**
-  TODO: maintain scroll position when new items are added (auto-detect using track-by)?
- */
-
 interface VirtualScrollModel<Item> {
   scrollable: boolean;
   frame: {
@@ -55,6 +51,7 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
 
   const [frameStart, setFrameStart] = useState(0);
   const frameStartRef = useRef(0);
+  const frameStartItem = useRef<null | Item>(null);
 
   const [scrollProps, setScrollProps] = useState({
     averageRowHeight: 0,
@@ -67,13 +64,11 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
   const totalItems = items.length;
 
   const rowHeightsRef = useRef<{ [index: number]: number }>({});
-  useEffect(() => {
-    rowHeightsRef.current = {};
-  }, [items]);
 
   function updateFramePosition(frameStart: number) {
     const prevFrameStart = frameStartRef.current;
     frameStartRef.current = frameStart;
+    frameStartItem.current = items[frameStart];
     setFrameStart(frameStart);
 
     let renderedHeight = 0;
@@ -102,15 +97,16 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
     setScrollProps({ averageRowHeight, renderedHeight, heightBefore, heightAfter });
   }
 
+  const skipNextScrollRef = useRef(false);
+
   useEffect(() => {
-    // TODO: re-evaluate frameStart when items change.
-    // It could be that the item is pushed up or down once more items become available.
-    // This can only be done when trackBy is provided.
+    rowHeightsRef.current = {};
+
     const frameStart = frameStartRef.current;
 
     let renderedHeight = 0;
 
-    const renderedRows = Math.min(frameSize, totalItems - frameStart);
+    const renderedRows = Math.min(frameSize, items.length - frameStart);
     for (let i = frameStart; i < frameStart + renderedRows; i++) {
       const rowEl = rowRefs.current[i];
       const rowHeight = rowEl ? rowEl.getBoundingClientRect().height : 0;
@@ -120,7 +116,7 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
 
     let cachedRows = 0;
     let cachedRowHeight = 0;
-    for (let i = 0; i < totalItems; i++) {
+    for (let i = 0; i < items.length; i++) {
       if (rowHeightsRef.current[i] !== undefined) {
         cachedRows++;
         cachedRowHeight += rowHeightsRef.current[i];
@@ -129,10 +125,18 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
 
     const averageRowHeight = cachedRowHeight / cachedRows;
     const heightBefore = frameStart * averageRowHeight;
-    const heightAfter = Math.max(0, totalItems - frameStart - frameSize) * averageRowHeight;
+    const heightAfter = Math.max(0, items.length - frameStart - frameSize) * averageRowHeight;
 
     setScrollProps({ averageRowHeight, renderedHeight, heightBefore, heightAfter });
-  }, [frameSize, totalItems]);
+
+    setTimeout(() => {
+      const el = containerRef.current;
+      if (el && Math.abs(el.scrollTop - heightBefore) > 10) {
+        skipNextScrollRef.current = true;
+        el.scrollTo({ top: heightBefore });
+      }
+    }, 0);
+  }, [frameSize, items]);
 
   const scrollable = scrollProps.heightBefore + scrollProps.heightAfter > 0;
 
@@ -142,7 +146,7 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
     let renderedHeight = 0;
 
     const renderedRows = Math.min(frameSize, totalItems - index);
-    for (let i = 0; i < renderedRows; i++) {
+    for (let i = index; i < index + renderedRows; i++) {
       const rowEl = rowRefs.current[i];
       const rowHeight = rowEl ? rowEl.getBoundingClientRect().height : 0;
       renderedHeight += rowHeight;
@@ -152,12 +156,17 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
     const heightBefore = index * averageRowHeight;
 
     setTimeout(() => {
-      containerRef.current?.scrollTo({ top: heightBefore });
+      containerRef.current?.scrollTo({ top: heightBefore, behavior: 'smooth' });
     }, 0);
   }
 
   // TODO: debounce
   function onScroll(scrollTop: number) {
+    if (skipNextScrollRef.current) {
+      skipNextScrollRef.current = false;
+      return;
+    }
+
     const delta = Math.round((scrollTop - scrollProps.heightBefore) / scrollProps.averageRowHeight);
     const nextFrameStart = Math.max(0, Math.min(totalItems - frameSize, frameStart + delta));
     updateFramePosition(nextFrameStart);
