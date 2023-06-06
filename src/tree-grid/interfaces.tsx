@@ -438,6 +438,8 @@ export namespace TreeGridProps {
      */
     scrollToTop(): void;
 
+    scrollToIndex(index: number): void;
+
     /**
      * Dismiss an inline edit if currently active.
      */

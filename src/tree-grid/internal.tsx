@@ -102,15 +102,6 @@ const InternalTreeGrid = React.forwardRef(
     const [lastSuccessfulEditCell, setLastSuccessfulEditCell] = useState<[number, number] | null>(null);
     const [currentEditLoading, setCurrentEditLoading] = useState(false);
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        scrollToTop: stickyHeaderRef.current?.scrollToTop || (() => undefined),
-        cancelEdit: () => setCurrentEditCell(null),
-      }),
-      []
-    );
-
     const handleScroll = useScrollSync([wrapperRefObject, scrollbarRef, secondaryWrapperRef]);
 
     const { moveFocusDown, moveFocusUp, moveFocus } = useFocusMove(selectionType, items.length);
@@ -235,6 +226,16 @@ const InternalTreeGrid = React.forwardRef(
     const containerHeight = headerHeight + virtualScroll.scroll.renderedHeight;
 
     const containerRef = useMergeRefs(wrapperRef, virtualScroll.refs.container);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        scrollToTop: stickyHeaderRef.current?.scrollToTop || (() => undefined),
+        scrollToIndex: virtualScroll.functions.scrollToIndex,
+        cancelEdit: () => setCurrentEditCell(null),
+      }),
+      [virtualScroll]
+    );
 
     return (
       <ColumnWidthsProvider

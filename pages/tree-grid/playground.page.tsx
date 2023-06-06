@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from '~components/link';
-import TreeGrid from '~components/tree-grid';
+import TreeGrid, { TreeGridProps } from '~components/tree-grid';
 import { PageTemplate } from './page-template';
 import { useAppSettings } from '../app/app-context';
 import { Button, Header, StatusIndicator, StatusIndicatorProps } from '~components';
@@ -35,6 +35,7 @@ export default function Page() {
   });
 
   const [expanded, setExpanded] = useState<{ [id: string]: boolean }>({});
+  const lastExpandedRef = useRef<string | null>(null);
   const visibleInstances = useMemo(() => {
     const visibleInstances: InstanceItem[] = [];
     for (const instance of instances) {
@@ -45,6 +46,13 @@ export default function Page() {
     }
     return visibleInstances;
   }, [expanded]);
+
+  useEffect(() => {
+    const lastExpandedIndex = visibleInstances.findIndex(i => i.id === lastExpandedRef.current);
+    if (lastExpandedIndex !== -1) {
+      gridRef.current?.scrollToIndex(lastExpandedIndex);
+    }
+  }, [visibleInstances]);
 
   const getInstanceMeta = useMemo(() => {
     const allInstances: MetaItem<InstanceItem>[] = [];
@@ -72,9 +80,12 @@ export default function Page() {
     };
   }, []);
 
+  const gridRef = useRef<TreeGridProps.Ref>(null);
+
   return (
     <PageTemplate title="TreeGrid playground">
       <TreeGrid
+        ref={gridRef}
         header={<Header>Instances</Header>}
         items={visibleInstances}
         trackBy={item => item.id}
@@ -164,6 +175,7 @@ export default function Page() {
                         iconName={expanded[item.id] ? 'treeview-collapse' : 'treeview-expand'}
                         onClick={() => {
                           setExpanded(prev => ({ ...prev, [item.id]: !prev[item.id] }));
+                          lastExpandedRef.current = item.id;
                         }}
                         disabled={item.replicas.length === 0}
                       />
