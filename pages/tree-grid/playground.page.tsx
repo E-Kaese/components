@@ -5,7 +5,7 @@ import Link from '~components/link';
 import TreeGrid, { TreeGridProps } from '~components/tree-grid';
 import { PageTemplate } from './page-template';
 import { useAppSettings } from '../app/app-context';
-import { Button, Header, StatusIndicator, StatusIndicatorProps } from '~components';
+import { Box, Button, Header, StatusIndicator, StatusIndicatorProps } from '~components';
 import { InstanceItem, generateInstances } from './server';
 import { colorBorderControlDefault } from '~design-tokens';
 
@@ -34,7 +34,7 @@ export default function Page() {
     },
   });
 
-  const [isMoreLoading, setMoreLoading] = useState(false);
+  const [loadingItem, setLoadingItem] = useState<null | string>(null);
 
   const [expanded, setExpanded] = useState<{ [id: string]: number }>({});
   const lastExpandedRef = useRef<string | null>(null);
@@ -42,12 +42,22 @@ export default function Page() {
     const visibleInstances: InstanceItem[] = [];
     for (const instance of instances) {
       visibleInstances.push(instance);
-      if (expanded[instance.id] && instance.replicas) {
+      if (expanded[instance.id] !== undefined && instance.replicas) {
         visibleInstances.push(...instance.replicas.slice(0, expanded[instance.id]));
 
-        if (expanded[instance.id] < instance.replicas.length) {
+        if (instance.replicas.length === 0) {
           visibleInstances.push({
-            id: `${instance.id}-load-more`,
+            id: loadingItem === instance.id ? `${instance.id}-control` : `${instance.id}-empty`,
+            name: '',
+            url: '',
+            state: 'ERROR',
+            cpuCores: 0,
+            memoryGib: 0,
+            availabilityZone: '',
+          });
+        } else if (expanded[instance.id] < instance.replicas.length) {
+          visibleInstances.push({
+            id: `${instance.id}-control`,
             name: '',
             url: '',
             state: 'ERROR',
@@ -59,7 +69,7 @@ export default function Page() {
       }
     }
     return visibleInstances;
-  }, [expanded]);
+  }, [expanded, loadingItem]);
 
   const getInstanceMeta = useMemo(() => {
     const allInstances: MetaItem<InstanceItem>[] = [];
@@ -153,7 +163,7 @@ export default function Page() {
                     </div>
                   ) : null}
 
-                  {expanded[item.id] ? (
+                  {expanded[item.id] !== undefined ? (
                     <div
                       style={{
                         position: 'absolute',
@@ -184,38 +194,62 @@ export default function Page() {
                         variant="icon"
                         iconName={expanded[item.id] ? 'treeview-collapse' : 'treeview-expand'}
                         onClick={() => {
-                          setExpanded(prev => ({ ...prev, [item.id]: prev[item.id] ? 0 : 5 }));
-                          lastExpandedRef.current = item.id;
+                          if (expanded[item.id] !== undefined) {
+                            setExpanded(prev => {
+                              const copy = { ...prev };
+                              delete copy[item.id];
+                              return copy;
+                            });
+                          } else {
+                            setLoadingItem(item.id);
+                            setExpanded(prev => ({ ...prev, [item.id]: 0 }));
+
+                            setTimeout(() => {
+                              setExpanded(prev => ({ ...prev, [item.id]: 5 }));
+                              setLoadingItem(null);
+                              lastExpandedRef.current = item.id;
+                            }, 500);
+                          }
                         }}
-                        disabled={item.replicas.length === 0}
                       />
                     </div>
                   ) : null}
 
-                  {item.id.includes('load-more') ? (
+                  {item.id.includes('control') ? (
                     <Link
                       onFollow={e => {
                         e.preventDefault();
 
-                        if (!isMoreLoading) {
-                          setMoreLoading(true);
+                        const id = item.id.replace('-control', '');
+
+                        if (loadingItem !== id) {
+                          setLoadingItem(id);
 
                           setTimeout(() => {
-                            const id = item.id.replace('-load-more', '');
                             setExpanded(prev => ({ ...prev, [id]: prev[id] + 5 }));
-                            setMoreLoading(false);
+                            setLoadingItem(null);
                           }, 500);
                         }
                       }}
                     >
-                      {isMoreLoading ? (
+                      {loadingItem === item.id.replace('-control', '') ? (
                         <StatusIndicator type="loading">Loading more items</StatusIndicator>
                       ) : (
                         'Show 5 more'
                       )}
                     </Link>
+                  ) : item.id.includes('empty') ? (
+                    <Box color="text-body-secondary">No replicas</Box>
                   ) : (
-                    <Link href={`#${item.id}`}>{item.id}</Link>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <Link href={`#${item.id}`}>{item.id}</Link>
+
+                      {item.replicas ? (
+                        <Box color="text-body-secondary" fontSize="body-s">
+                          ({item.replicas?.length || 0})
+                        </Box>
+                      ) : null}
+                    </div>
                   )}
                 </div>
               );
@@ -224,7 +258,7 @@ export default function Page() {
           {
             id: 'name',
             header: 'Name',
-            cell: item => (item.id.includes('load-more') ? '' : item.name),
+            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.name),
             minWidth: 130,
             sortingField: 'region',
           },
@@ -232,14 +266,14 @@ export default function Page() {
             id: 'url',
             header: 'URL',
             minWidth: 100,
-            cell: item => (item.id.includes('load-more') ? '' : item.url),
+            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.url),
           },
           {
             id: 'state',
             header: 'State',
             maxWidth: 150,
             cell: item => {
-              if (item.id.includes('load-more')) {
+              if (item.id.includes('control') || item.id.includes('empty')) {
                 return '';
               }
 
@@ -263,17 +297,17 @@ export default function Page() {
           {
             id: 'cpuCores',
             header: 'vCPU',
-            cell: item => (item.id.includes('load-more') ? '' : item.cpuCores),
+            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.cpuCores),
           },
           {
             id: 'memoryGib',
             header: 'Memory (GiB)',
-            cell: item => (item.id.includes('load-more') ? '' : item.memoryGib),
+            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.memoryGib),
           },
           {
             id: 'availabilityZone',
             header: 'Availability zone',
-            cell: item => (item.id.includes('load-more') ? '' : item.availabilityZone),
+            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
           },
         ]}
         stickyHeader={settings.features.stickyHeader}

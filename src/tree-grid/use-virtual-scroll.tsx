@@ -167,7 +167,7 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
     const heightBefore = index * averageRowHeight;
 
     setTimeout(() => {
-      containerRef.current?.scrollTo({ top: heightBefore, behavior: 'smooth' });
+      containerRef.current?.scrollTo({ top: heightBefore });
     }, 0);
   }
 
