@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { useStableEventHandler } from '../internal/hooks/use-stable-event-handler';
+import { throttle } from '../internal/utils/throttle';
 
 /**
  TODO:
@@ -171,17 +173,18 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
     }, 0);
   }
 
-  // TODO: debounce
-  function onScroll(scrollTop: number) {
-    if (skipNextScrollRef.current) {
-      skipNextScrollRef.current = false;
-      return;
-    }
+  const onScroll = useStableEventHandler(
+    throttle((scrollTop: number) => {
+      if (skipNextScrollRef.current) {
+        skipNextScrollRef.current = false;
+        return;
+      }
 
-    const delta = Math.round((scrollTop - scrollProps.heightBefore) / scrollProps.averageRowHeight);
-    const nextFrameStart = Math.max(0, Math.min(totalItems - frameSize, frameStart + delta));
-    updateFramePosition(nextFrameStart);
-  }
+      const delta = Math.round((scrollTop - scrollProps.heightBefore) / scrollProps.averageRowHeight);
+      const nextFrameStart = Math.max(0, Math.min(totalItems - frameSize, frameStart + delta));
+      updateFramePosition(nextFrameStart);
+    }, 25)
+  );
 
   return {
     scrollable,
