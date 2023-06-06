@@ -370,8 +370,7 @@ const InternalTreeGrid = React.forwardRef(
                     </td>
                   </tr>
                 ) : (
-                  // TODO: expose item original index for isItemSelected to work expectedly
-                  virtualScroll.frame.items.map((item, rowIndex) => {
+                  virtualScroll.frame.items.map(({ item, index: rowIndex }) => {
                     const firstVisible = rowIndex === 0;
                     const lastVisible = rowIndex === items.length - 1;
                     const isEven = rowIndex % 2 === 0;

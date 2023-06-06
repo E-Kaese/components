@@ -100,7 +100,7 @@ export default function App() {
               </tr>
             ) : null}
 
-            {virtualScroll.frame.items.map((item, index) => (
+            {virtualScroll.frame.items.map(({ item, index }) => (
               <tr key={item.id} ref={virtualScroll.refs.row.bind(null, index)}>
                 {columnDefinitions.map(column => (
                   <td key={column.key} className={styles['custom-table-cell']}>

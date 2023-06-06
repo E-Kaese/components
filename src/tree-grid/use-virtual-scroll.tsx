@@ -8,10 +8,15 @@ interface VirtualScrollProps<Item> {
   frameSize: number;
 }
 
+interface VirtualItem<Item> {
+  item: Item;
+  index: number;
+}
+
 interface VirtualScrollModel<Item> {
   scrollable: boolean;
   frame: {
-    items: readonly Item[];
+    items: readonly VirtualItem<Item>[];
     frameStart: number;
     frameEnd: number;
   };
@@ -57,20 +62,36 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
   const frameItems = items.slice(frameStart, frameStart + frameSize);
   const totalItems = items.length;
 
+  const rowHeightsRef = useRef<{ [index: number]: number }>({});
+  useEffect(() => {
+    rowHeightsRef.current = {};
+  }, [items]);
+
   function updateFramePosition(frameStart: number) {
+    const prevFrameStart = frameStartRef.current;
     frameStartRef.current = frameStart;
     setFrameStart(frameStart);
 
     let renderedHeight = 0;
 
     const renderedRows = Math.min(frameSize, totalItems - frameStart);
-    for (let i = 0; i < renderedRows; i++) {
+    for (let i = prevFrameStart; i < prevFrameStart + renderedRows; i++) {
       const rowEl = rowRefs.current[i];
       const rowHeight = rowEl ? rowEl.getBoundingClientRect().height : 0;
       renderedHeight += rowHeight;
+      rowHeightsRef.current[i] = rowHeight;
     }
 
-    const averageRowHeight = renderedHeight / renderedRows;
+    let cachedRows = 0;
+    let cachedRowHeight = 0;
+    for (let i = 0; i < items.length; i++) {
+      if (rowHeightsRef.current[i] !== undefined) {
+        cachedRows++;
+        cachedRowHeight += rowHeightsRef.current[i];
+      }
+    }
+
+    const averageRowHeight = cachedRowHeight / cachedRows;
     const heightBefore = frameStart * averageRowHeight;
     const heightAfter = Math.max(0, totalItems - frameStart - frameSize) * averageRowHeight;
 
@@ -86,13 +107,23 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
     let renderedHeight = 0;
 
     const renderedRows = Math.min(frameSize, totalItems - frameStart);
-    for (let i = 0; i < renderedRows; i++) {
+    for (let i = frameStart; i < frameStart + renderedRows; i++) {
       const rowEl = rowRefs.current[i];
       const rowHeight = rowEl ? rowEl.getBoundingClientRect().height : 0;
       renderedHeight += rowHeight;
+      rowHeightsRef.current[i] = rowHeight;
     }
 
-    const averageRowHeight = renderedHeight / renderedRows;
+    let cachedRows = 0;
+    let cachedRowHeight = 0;
+    for (let i = 0; i < totalItems; i++) {
+      if (rowHeightsRef.current[i] !== undefined) {
+        cachedRows++;
+        cachedRowHeight += rowHeightsRef.current[i];
+      }
+    }
+
+    const averageRowHeight = cachedRowHeight / cachedRows;
     const heightBefore = frameStart * averageRowHeight;
     const heightAfter = Math.max(0, totalItems - frameStart - frameSize) * averageRowHeight;
 
@@ -131,7 +162,7 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
   return {
     scrollable,
     frame: {
-      items: frameItems,
+      items: frameItems.map((item, index) => ({ item, index: index + frameStart })),
       frameStart,
       frameEnd: Math.min(totalItems, frameStart + frameSize),
     },
