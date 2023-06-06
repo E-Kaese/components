@@ -13,6 +13,10 @@ interface VirtualItem<Item> {
   index: number;
 }
 
+/**
+  TODO: maintain scroll position when new items are added (auto-detect using track-by)?
+ */
+
 interface VirtualScrollModel<Item> {
   scrollable: boolean;
   frame: {
