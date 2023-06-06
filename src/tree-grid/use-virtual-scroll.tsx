@@ -3,6 +3,17 @@
 
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 
+/**
+ TODO:
+
+ 1. Debounce onScroll;
+ 2. Try settings scroll props imperatively on the respective refs;
+ 3. Remove repetitive blocks;
+ 4. Make code less coupled with React lifecycle;
+ 5. Validate if the same hook can work for autosuggest;
+
+ */
+
 interface VirtualScrollProps<Item> {
   items: readonly Item[];
   frameSize: number;
