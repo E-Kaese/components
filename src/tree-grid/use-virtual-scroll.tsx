@@ -4,6 +4,7 @@
 import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { useStableEventHandler } from '../internal/hooks/use-stable-event-handler';
 import { throttle } from '../internal/utils/throttle';
+import { usePrevious } from '../internal/hooks/use-previous';
 
 /**
  TODO:
@@ -80,8 +81,13 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
 
   function updateFramePosition(frameStart: number) {
     const prevFrameStart = frameStartRef.current;
+    if (prevFrameStart === frameStart) {
+      return;
+    }
+
     frameStartRef.current = frameStart;
     frameStartItem.current = items[frameStart];
+
     setFrameStart(frameStart);
 
     let renderedHeight = 0;
@@ -91,7 +97,9 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
       const rowEl = rowRefs.current[i];
       const rowHeight = rowEl ? rowEl.getBoundingClientRect().height : 0;
       renderedHeight += rowHeight;
-      rowHeightsRef.current[i] = rowHeight;
+      if (rowHeightsRef.current[i] === undefined) {
+        rowHeightsRef.current[i] = rowHeight;
+      }
     }
 
     let cachedRows = 0;
@@ -112,6 +120,7 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
 
   const skipNextScrollRef = useRef(false);
 
+  const prevItems = usePrevious(items);
   useEffect(() => {
     rowHeightsRef.current = {};
 
@@ -140,16 +149,28 @@ export function useVirtualScroll<Item>({ items, frameSize }: VirtualScrollProps<
     const heightBefore = frameStart * averageRowHeight;
     const heightAfter = Math.max(0, items.length - frameStart - frameSize) * averageRowHeight;
 
-    setScrollProps({ averageRowHeight, renderedHeight, heightBefore, heightAfter });
+    let itemsBeforeChanged = false;
+    for (let i = 0; i < frameStart; i++) {
+      if (!prevItems || prevItems[i] !== items[i]) {
+        itemsBeforeChanged = true;
+        break;
+      }
+    }
+
+    if (itemsBeforeChanged) {
+      setScrollProps({ averageRowHeight, renderedHeight, heightBefore, heightAfter });
+    } else {
+      setScrollProps(prev => ({ ...prev, averageRowHeight, renderedHeight, heightAfter }));
+    }
 
     setTimeout(() => {
       const el = containerRef.current;
       if (el && Math.abs(el.scrollTop - heightBefore) > 10) {
         skipNextScrollRef.current = true;
-        el.scrollTo({ top: heightBefore });
+        el.scrollTop = heightBefore;
       }
     }, 0);
-  }, [frameSize, items]);
+  }, [frameSize, items, prevItems]);
 
   const scrollable = scrollProps.heightBefore + scrollProps.heightAfter > 0;
 
