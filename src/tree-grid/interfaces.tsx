@@ -316,6 +316,8 @@ export interface TreeGridProps<T = any> extends BaseComponentProps {
   onEditCancel?: CancelableEventHandler;
 
   getIsShaded?: (item: T) => void;
+
+  onRowAction?: (rowIndex: number) => void;
 }
 
 export namespace TreeGridProps {

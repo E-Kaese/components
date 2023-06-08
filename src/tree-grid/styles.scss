@@ -233,4 +233,11 @@ the default white background of the container component.
     }
     outline: none;
   }
+
+  > td {
+    @include focus-visible.when-visible {
+      background-color: lightcyan !important;
+      outline: none;
+    }
+  }
 }

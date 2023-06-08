@@ -84,6 +84,7 @@ const InternalTreeGrid = React.forwardRef(
       stickyColumns,
       columnDisplay,
       getIsShaded,
+      onRowAction,
       ...rest
     }: InternalTreeGridProps<T>,
     ref: React.Ref<TreeGridProps.Ref>
@@ -234,7 +235,7 @@ const InternalTreeGrid = React.forwardRef(
     const nextFrame = Math.min(items.length - 25, frameStart + 25);
 
     const tbodyRef = useRef<HTMLTableSectionElement>(null);
-    useGridFocus({ getContainer: () => tbodyRef.current });
+    useGridFocus({ rows: items.length, getContainer: () => tbodyRef.current, onRowAction });
 
     useImperativeHandle(
       ref,

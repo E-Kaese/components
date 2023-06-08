@@ -113,6 +113,60 @@ export default function Page() {
         items={visibleInstances}
         trackBy={item => item.id}
         getIsShaded={item => getInstanceMeta(item).level === 2}
+        onRowAction={rowIndex => {
+          const item = visibleInstances[rowIndex];
+          const id = item.id.replace('-control', '');
+
+          if (!item.replicas && !item.id.includes('-control')) {
+            return;
+          }
+
+          if (!item.id.includes('-control') && expanded[id] !== undefined) {
+            setExpanded(prev => {
+              const copy = { ...prev };
+              delete copy[id];
+              return copy;
+            });
+          } else if (expanded[id] !== undefined) {
+            if (loadingItem !== id) {
+              setLoadingItem(id);
+
+              setTimeout(() => {
+                if (pseudoRandom() > 0.3) {
+                  setExpanded(prev => ({ ...prev, [id]: prev[id] + 5 }));
+                  setError(prev => {
+                    const copy = { ...prev };
+                    delete copy[id];
+                    return copy;
+                  });
+                } else {
+                  setError(prev => ({ ...prev, [id]: 'Server error' }));
+                }
+
+                setLoadingItem(null);
+              }, 500);
+            }
+          } else {
+            setLoadingItem(id);
+            setExpanded(prev => ({ ...prev, [id]: 0 }));
+
+            setTimeout(() => {
+              if (pseudoRandom() > 0.3) {
+                setExpanded(prev => ({ ...prev, [id]: 5 }));
+                setError(prev => {
+                  const copy = { ...prev };
+                  delete copy[id];
+                  return copy;
+                });
+              } else {
+                setError(prev => ({ ...prev, [id]: 'Server error' }));
+              }
+
+              setLoadingItem(null);
+              lastExpandedRef.current = id;
+            }, 500);
+          }
+        }}
         stickyColumns={{ first: 1 }}
         columnDefinitions={[
           {

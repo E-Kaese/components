@@ -3,21 +3,33 @@
 
 import { useEffect, useState } from 'react';
 import { findUpUntil } from '../internal/utils/dom';
+import { KeyCode } from '../internal/keycode';
+import { useStableEventHandler } from '../internal/hooks/use-stable-event-handler';
 
 interface GridFocusProps {
+  rows: number;
   getContainer: () => null | HTMLElement;
   onRowAction?: (rowIndex: number) => void;
   onCellAction?: (rowIndex: number, colIndex: number) => void;
 }
 
-export function useGridFocus({ getContainer }: GridFocusProps) {
+export function useGridFocus({ rows, getContainer, onRowAction, onCellAction }: GridFocusProps) {
   const [model, setModel] = useState(() => {
     const container = getContainer();
     if (!container) {
       return null;
     }
-    return new GridFocusModel(container);
+    return new GridFocusModel(container, onRowAction, onCellAction);
   });
+
+  useEffect(() => {
+    if (model) {
+      model.setRows(rows);
+    }
+  }, [model, rows]);
+
+  const stableOnRowAction = useStableEventHandler(onRowAction ?? (() => {}));
+  const stableOnCellAction = useStableEventHandler(onCellAction ?? (() => {}));
 
   // TODO: add cleanup
   useEffect(() => {
@@ -28,8 +40,8 @@ export function useGridFocus({ getContainer }: GridFocusProps) {
     if (!container) {
       return;
     }
-    setModel(new GridFocusModel(container));
-  }, [model, getContainer]);
+    setModel(new GridFocusModel(container, stableOnRowAction, stableOnCellAction));
+  }, [model, getContainer, stableOnRowAction, stableOnCellAction]);
 }
 
 /**
@@ -42,16 +54,24 @@ export function useGridFocus({ getContainer }: GridFocusProps) {
 export class GridFocusModel {
   // Props
   private container: HTMLElement;
+  private onRowAction?: (rowIndex: number) => void;
+  private onCellAction?: (rowIndex: number, columnIndex: number) => void;
   private columns = 0;
   private rows = 0;
 
   // State
   private focusedRow: null | number = null;
   private focusedColumn: null | number = null;
-  private focusedElement: null | HTMLElement;
+  private focusedElement: null | HTMLElement = null;
 
-  constructor(container: HTMLElement) {
+  constructor(
+    container: HTMLElement,
+    onRowAction?: (rowIndex: number) => void,
+    onCellAction?: (rowIndex: number, columnIndex: number) => void
+  ) {
     this.container = container;
+    this.onRowAction = onRowAction;
+    this.onCellAction = onCellAction;
 
     this.init();
   }
@@ -63,15 +83,25 @@ export class GridFocusModel {
 
   public setColumns(columns: number) {
     this.columns = columns;
-    if (this.focusedColumn !== null) {
-      this.focusedColumn = this.focusedColumn < columns ? this.focusedColumn : null;
-    }
+
+    // TODO: unmount
   }
 
   public setRows(rows: number) {
     this.rows = rows;
-    if (this.focusedRow !== null) {
-      this.focusedRow = this.focusedRow < rows ? this.focusedRow : null;
+
+    if (this.focusedElement && !document.contains(this.focusedElement) && this.focusedRow) {
+      const focusedRow = Math.min(this.focusedRow, rows - 1);
+      const nextRow = this.container.querySelector(`[data-rowindex="${focusedRow}"]`) as null | HTMLElement;
+      if (nextRow) {
+        this.focusedRow = focusedRow;
+        this.setFocusedElement(nextRow);
+        nextRow.focus();
+      } else {
+        this.focusedElement = null;
+        this.focusedColumn = null;
+        this.focusedRow = null;
+      }
     }
   }
 
@@ -108,11 +138,11 @@ export class GridFocusModel {
     }
     const rowIndex = parseInt(parent.dataset.rowindex ?? '', 10);
     if (!isNaN(rowIndex)) {
-      console.log('FOCUS ROW', rowIndex);
-
       this.focusedRow = rowIndex;
       this.setFocusedElement(parent);
-      parent.focus();
+      setTimeout(() => {
+        parent.focus();
+      }, 0);
     }
   };
 
@@ -122,18 +152,30 @@ export class GridFocusModel {
     this.focusedColumn = null;
   };
 
-  private moveByRow(direction: -1 | 1) {
+  private moveByRow(direction: -1 | 0 | 1) {
     if (this.focusedRow === null) {
       return;
     }
     const nextRow = this.container.querySelector(
       `[data-rowindex="${this.focusedRow + direction}"]`
     ) as null | HTMLElement;
-    if (nextRow) {
-      console.log('MOVE_BY_ROW', direction);
 
+    if (nextRow && this.focusedColumn !== null) {
+      const rowCells = nextRow.querySelectorAll('td');
+      const cellIndex = Math.max(0, Math.min(rowCells.length - 1, this.focusedColumn));
+      const cellEl = rowCells[cellIndex];
+
+      if (cellEl) {
+        this.focusedRow = this.focusedRow + direction;
+        this.focusedColumn = cellIndex;
+        this.setFocusedElement(cellEl);
+        cellEl.focus();
+      }
+    } else if (nextRow) {
       this.focusedRow = this.focusedRow + direction;
-      this.setFocusedElement(nextRow);
+      setTimeout(() => {
+        this.setFocusedElement(nextRow);
+      }, 0);
       nextRow.focus();
     } else {
       // TODO: try avoiding imperative scroll.
@@ -144,8 +186,33 @@ export class GridFocusModel {
     }
   }
 
+  private moveByCol(direction: -1 | 0 | 1) {
+    if (this.focusedRow === null) {
+      return;
+    }
+    const focusedRow = this.container.querySelector(`[data-rowindex="${this.focusedRow}"]`) as null | HTMLElement;
+    if (!focusedRow) {
+      return;
+    }
+    const rowCells = focusedRow.querySelectorAll('td');
+    const cellIndex = Math.max(-1, Math.min(rowCells.length - 1, (this.focusedColumn ?? 0) + direction));
+
+    if (cellIndex === -1) {
+      this.focusedColumn = null;
+      this.moveByRow(0);
+
+      return;
+    }
+
+    const cellEl = rowCells[cellIndex];
+    if (cellEl) {
+      this.focusedColumn = cellIndex;
+      this.setFocusedElement(cellEl);
+      cellEl.focus();
+    }
+  }
+
   private onKeyDown = (event: KeyboardEvent) => {
-    const ENTER = 13;
     const UP = 38;
     const DOWN = 40;
     const LEFT = 37;
@@ -177,25 +244,18 @@ export class GridFocusModel {
         this.moveByRow(-1);
         break;
       case LEFT:
-        // if (isEditableFocused()) {
-        //   return; // Leave key for editable area
-        // }
-        // if (isRowFocused()) {
-        //   changeExpanded(false) || moveByRow(-1, true);
-        // } else {
-        //   moveByCol(-1);
-        // }
+        if (this.focusedColumn === null) {
+          this.moveByCol(0);
+        } else {
+          this.moveByCol(-1);
+        }
         break;
       case RIGHT:
-        // if (isEditableFocused()) {
-        //   return; // Leave key for editable area
-        // }
-
-        // // If row: try to expand
-        // // If col or can't expand, move column to right
-        // if (!isRowFocused() || !changeExpanded(true)) {
-        //   moveByCol(1);
-        // }
+        if (this.focusedColumn === null) {
+          this.moveByCol(0);
+        } else {
+          this.moveByCol(1);
+        }
         break;
       case CTRL_HOME:
         // moveToExtremeRow(-1);
@@ -215,8 +275,13 @@ export class GridFocusModel {
         // }
         // moveToExtreme(1);
         break;
-      case ENTER:
-        // doPrimaryAction();
+      case KeyCode.space:
+      case KeyCode.enter:
+        if (this.focusedRow !== null && this.focusedColumn !== null) {
+          this.onCellAction?.(this.focusedRow, this.focusedColumn);
+        } else if (this.focusedRow !== null) {
+          this.onRowAction?.(this.focusedRow);
+        }
         break;
       default:
         return;
