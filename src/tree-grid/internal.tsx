@@ -35,6 +35,7 @@ import { SomeRequired } from '../internal/types';
 import { TableTdElement } from './body-cell/td-element';
 import { useStickyColumns, selectionColumnId } from './use-sticky-columns';
 import { useVirtualScroll } from './virtual-scroll';
+import { FrameAnnouncer, FrameNavigation } from './screen-reader-frame-navigation';
 
 type InternalTreeGridProps<T> = SomeRequired<TreeGridProps<T>, 'items' | 'selectedItems' | 'variant'> &
   InternalBaseComponentProps;
@@ -227,6 +228,9 @@ const InternalTreeGrid = React.forwardRef(
       size: items.length,
       getContainer: () => wrapperRefObject.current,
     });
+    const frameStart = virtualScroll.frame[0];
+    const prevFrame = Math.max(0, frameStart - 25);
+    const nextFrame = Math.min(items.length - 25, frameStart + 25);
 
     useImperativeHandle(
       ref,
@@ -298,6 +302,21 @@ const InternalTreeGrid = React.forwardRef(
           __stickyOffset={stickyHeaderVerticalOffset}
           {...focusMarkers.root}
         >
+          {virtualScroll.frame.length < items.length && (
+            <FrameAnnouncer frameStart={virtualScroll.frame[0]} frameSize={25} totalSize={items.length} />
+          )}
+
+          {virtualScroll.frame.length < items.length && (
+            <FrameNavigation
+              previousFrameDisabled={virtualScroll.frame[0] === 0}
+              previousFrameLabel="Previous frame"
+              onPreviousFrame={() => virtualScroll.scrollToIndex(prevFrame)}
+              nextFrameDisabled={virtualScroll.frame[virtualScroll.frame.length - 1] === items.length - 1}
+              nextFrameLabel="Next frame"
+              onNextFrame={() => virtualScroll.scrollToIndex(nextFrame)}
+            />
+          )}
+
           <div
             ref={wrapperRef}
             className={clsx(styles.wrapper, styles[`variant-${computedVariant}`], {
@@ -320,6 +339,7 @@ const InternalTreeGrid = React.forwardRef(
                 <span>{renderAriaLive({ totalItemsCount, firstIndex, lastIndex: firstIndex + items.length - 1 })}</span>
               </LiveRegion>
             )}
+
             <table
               ref={tableRef}
               className={clsx(
@@ -496,8 +516,10 @@ const InternalTreeGrid = React.forwardRef(
                 </tr>
               </tbody>
             </table>
+
             {resizableColumns && <ResizeTracker />}
           </div>
+
           <StickyScrollbar
             ref={scrollbarRef}
             wrapperRef={wrapperRefObject}

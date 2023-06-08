@@ -99,6 +99,7 @@ export function useVirtualScroll(
     setItemRef,
     elBeforeRef,
     elAfterRef,
+    scrollToIndex: model.scrollToIndex,
   };
 }
 
@@ -133,6 +134,8 @@ export class VirtualScrollModel {
 
   // Other
   private onScrollListener: null | ((event: Event) => void) = null;
+  private onFocusListener: null | ((event: FocusEvent) => void) = null;
+  private onBlurListener: null | ((event: FocusEvent) => void) = null;
 
   constructor({ size, frameSize, getContainer, onScrollPropsChange, onFrameChange }: VirtualModelProps) {
     this.size = size;
@@ -181,9 +184,20 @@ export class VirtualScrollModel {
     this.applyUpdate();
   }
 
-  public scrollToIndex(index: number) {
-    // ...
-  }
+  public scrollToIndex = (index: number) => {
+    index = Math.min(this.size, Math.max(0, index));
+
+    let scrollTop = 0;
+    for (let i = 0; i < index; i++) {
+      scrollTop += this.evaluatedItemSizes[i] || 40;
+    }
+
+    // TODO: provide API
+    const container = this.getContainer();
+    if (container) {
+      container.scrollTop = scrollTop;
+    }
+  };
 
   // TODO: use default item size
   private applyUpdate() {
@@ -242,6 +256,12 @@ export class VirtualScrollModel {
     if (containerEl && this.onScrollListener) {
       containerEl.removeEventListener('scroll', this.onScrollListener);
     }
+    if (containerEl && this.onFocusListener) {
+      containerEl.removeEventListener('focus', this.onFocusListener);
+    }
+    if (containerEl && this.onBlurListener) {
+      containerEl.removeEventListener('blur', this.onBlurListener);
+    }
   }
 
   private updateAllFrameSizes() {
@@ -256,6 +276,8 @@ export class VirtualScrollModel {
 
   private init() {
     this.registerOnScroll();
+    // this.registerOnFocus();
+    // this.registerOnBlur();
   }
 
   private registerOnScroll() {
@@ -269,4 +291,28 @@ export class VirtualScrollModel {
     this.onScrollListener = this.handleScroll;
     containerEl.addEventListener('scroll', this.onScrollListener);
   }
+
+  // private registerOnFocus() {
+  //   if (this.onFocusListener) {
+  //     return;
+  //   }
+  //   const containerEl = this.getContainer();
+  //   if (!containerEl) {
+  //     return;
+  //   }
+  //   this.onFocusListener = this.handleFocus;
+  //   containerEl.addEventListener('focus', this.onFocusListener);
+  // }
+
+  // private registerOnBlur() {
+  //   if (this.onBlurListener) {
+  //     return;
+  //   }
+  //   const containerEl = this.getContainer();
+  //   if (!containerEl) {
+  //     return;
+  //   }
+  //   this.onBlurListener = this.handleBlur;
+  //   containerEl.addEventListener('blur', this.onBlurListener);
+  // }
 }

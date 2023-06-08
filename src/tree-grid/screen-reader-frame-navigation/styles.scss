@@ -1,0 +1,16 @@
+/*
+  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+  SPDX-License-Identifier: Apache-2.0
+*/
+
+.screen-reader-navigation-hidden {
+  position: absolute !important;
+  clip-path: circle(0);
+}
+.screen-reader-navigation-visible {
+  position: fixed;
+  background: white;
+  padding: 8px;
+  border: 1px solid black;
+  z-index: 10001;
+}
