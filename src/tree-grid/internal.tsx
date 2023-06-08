@@ -36,6 +36,7 @@ import { TableTdElement } from './body-cell/td-element';
 import { useStickyColumns, selectionColumnId } from './use-sticky-columns';
 import { useVirtualScroll } from './virtual-scroll';
 import { FrameAnnouncer, FrameNavigation } from './screen-reader-frame-navigation';
+import { useGridFocus } from './grid-focus';
 
 type InternalTreeGridProps<T> = SomeRequired<TreeGridProps<T>, 'items' | 'selectedItems' | 'variant'> &
   InternalBaseComponentProps;
@@ -232,6 +233,9 @@ const InternalTreeGrid = React.forwardRef(
     const prevFrame = Math.max(0, frameStart - 25);
     const nextFrame = Math.min(items.length - 25, frameStart + 25);
 
+    const tbodyRef = useRef<HTMLTableSectionElement>(null);
+    useGridFocus({ getContainer: () => tbodyRef.current });
+
     useImperativeHandle(
       ref,
       () => ({
@@ -318,6 +322,7 @@ const InternalTreeGrid = React.forwardRef(
           )}
 
           <div
+            data-testid="table-wrapper"
             ref={wrapperRef}
             className={clsx(styles.wrapper, styles[`variant-${computedVariant}`], {
               [styles['has-footer']]: hasFooter,
@@ -357,7 +362,7 @@ const InternalTreeGrid = React.forwardRef(
                 onFocusedComponentChange={component => stickyHeaderRef.current?.setFocus(component)}
                 {...theadProps}
               />
-              <tbody>
+              <tbody ref={tbodyRef} tabIndex={1}>
                 {/* TODO: conditional */}
                 <tr>
                   <td
@@ -402,6 +407,8 @@ const InternalTreeGrid = React.forwardRef(
                     const isNextSelected = !!selectionType && !lastVisible && isItemSelected(items[rowIndex + 1]);
                     return (
                       <tr
+                        tabIndex={-1}
+                        data-rowindex={rowIndex}
                         ref={node => virtualScroll.setItemRef(rowIndex, node)}
                         role="row"
                         key={getItemKey(trackBy, item, rowIndex)}

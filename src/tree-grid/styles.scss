@@ -225,3 +225,12 @@ the default white background of the container component.
 .row-selected {
   /* used in test-utils */
 }
+
+.row {
+  @include focus-visible.when-visible {
+    > td {
+      background-color: lightcyan;
+    }
+    outline: none;
+  }
+}

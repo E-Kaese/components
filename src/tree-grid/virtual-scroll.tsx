@@ -9,7 +9,6 @@ interface VirtualModelProps {
   size: number;
   frameSize?: number;
   getContainer: () => null | HTMLElement;
-  getItemSize: (index: number) => number;
   onScrollPropsChange: (props: ScrollProps) => void;
   onFrameChange: (props: FrameProps) => void;
 }
@@ -25,9 +24,7 @@ interface FrameProps {
   sizeAfter: number;
 }
 
-export function useVirtualScroll(
-  props: Omit<VirtualModelProps, 'onScrollPropsChange' | 'onFrameChange' | 'getItemSize'>
-) {
+export function useVirtualScroll(props: Omit<VirtualModelProps, 'onScrollPropsChange' | 'onFrameChange'>) {
   const [frame, setFrame] = useState(
     createFrame({ frameStart: 0, frameSize: props.frameSize ?? DEFAULT_FRAME_SIZE, size: props.size })
   );
@@ -57,13 +54,6 @@ export function useVirtualScroll(
           if (elAfterRef.current) {
             elAfterRef.current.style.height = scrollProps.sizeAfter + 'px';
           }
-        },
-        getItemSize: (index: number) => {
-          const el = trRefs.current[index];
-          if (!el) {
-            return 40;
-          }
-          return el.getBoundingClientRect().height;
         },
       })
   );
@@ -131,6 +121,7 @@ export class VirtualScrollModel {
   private frameStart = 0;
   private evaluatedItemSizes: number[] = [];
   private pendingItemSizes = new Set<number>();
+  private initialized = false;
 
   // Other
   private onScrollListener: null | ((event: Event) => void) = null;
@@ -200,7 +191,7 @@ export class VirtualScrollModel {
   };
 
   // TODO: use default item size
-  private applyUpdate() {
+  private applyUpdate(prevSize?: number) {
     let sizeBefore = 0;
     let sizeAfter = 0;
 
@@ -213,6 +204,11 @@ export class VirtualScrollModel {
 
     // TODO: update only when necessary e.g. changing from 0 to non-0
     // this.onScrollPropsChange({ sizeBefore, sizeAfter });
+
+    if (!this.initialized) {
+      this.onScrollPropsChange({ sizeBefore, sizeAfter });
+      this.initialized = true;
+    }
   }
 
   private handleScroll = (event: Event) => {
