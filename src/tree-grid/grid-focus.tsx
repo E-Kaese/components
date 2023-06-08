@@ -136,6 +136,12 @@ export class GridFocusModel {
     if (!parent) {
       return;
     }
+
+    // Allow focus inside row/column;
+    if (parent === this.focusedElement) {
+      return;
+    }
+
     const rowIndex = parseInt(parent.dataset.rowindex ?? '', 10);
     if (!isNaN(rowIndex)) {
       this.focusedRow = rowIndex;
