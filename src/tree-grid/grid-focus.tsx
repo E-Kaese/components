@@ -187,7 +187,7 @@ export class GridFocusModel {
       // TODO: try avoiding imperative scroll.
       const wrapper = document.querySelector('[data-testid="table-wrapper"]');
       if (wrapper) {
-        wrapper.scrollTo({ top: wrapper.scrollTop + direction * 25 });
+        wrapper.scrollTo({ top: wrapper.scrollTop + direction * 300 });
       }
     }
   }
@@ -215,6 +215,12 @@ export class GridFocusModel {
       this.focusedColumn = cellIndex;
       this.setFocusedElement(cellEl);
       cellEl.focus();
+    } else {
+      // TODO: try avoiding imperative scroll.
+      const wrapper = document.querySelector('[data-testid="table-wrapper"]');
+      if (wrapper) {
+        wrapper.scrollTo({ left: wrapper.scrollTop + direction * 300 });
+      }
     }
   }
 

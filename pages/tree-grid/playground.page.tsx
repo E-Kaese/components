@@ -340,19 +340,20 @@ export default function Page() {
             id: 'name',
             header: 'Name',
             cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.name),
-            minWidth: 130,
+            minWidth: 200,
             sortingField: 'region',
           },
           {
             id: 'url',
             header: 'URL',
-            minWidth: 100,
+            minWidth: 200,
             cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.url),
           },
           {
             id: 'state',
             header: 'State',
-            maxWidth: 150,
+            minWidth: 125,
+            maxWidth: 200,
             cell: item => {
               if (item.id.includes('control') || item.id.includes('empty')) {
                 return '';
@@ -387,9 +388,54 @@ export default function Page() {
           },
           {
             id: 'availabilityZone',
-            header: 'Availability zone',
+            header: 'AZ',
             cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
           },
+          // {
+          //   id: 'availabilityZone2',
+          //   header: 'AZ 2',
+          //   cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+          // },
+          // {
+          //   id: 'availabilityZone3',
+          //   header: 'AZ 3',
+          //   cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+          // },
+          // {
+          //   id: 'availabilityZone4',
+          //   header: 'AZ 4',
+          //   cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+          // },
+          // {
+          //   id: 'availabilityZone5',
+          //   header: 'AZ 5',
+          //   cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+          // },
+          // {
+          //   id: 'availabilityZone6',
+          //   header: 'AZ 6',
+          //   cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+          // },
+          // {
+          //   id: 'availabilityZone7',
+          //   header: 'AZ 7',
+          //   cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+          // },
+          // {
+          //   id: 'availabilityZone8',
+          //   header: 'AZ 8',
+          //   cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+          // },
+          // {
+          //   id: 'availabilityZone9',
+          //   header: 'AZ 9',
+          //   cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+          // },
+          // {
+          //   id: 'availabilityZone10',
+          //   header: 'AZ 10',
+          //   cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+          // },
         ]}
         stickyHeader={settings.features.stickyHeader}
         resizableColumns={settings.features.resizableColumns}

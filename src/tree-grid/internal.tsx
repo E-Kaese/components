@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import clsx from 'clsx';
-import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { TreeGridForwardRefType, TreeGridProps } from './interfaces';
 import { getVisualContextClassname } from '../internal/components/visual-context';
 import InternalContainer from '../container/internal';
@@ -158,33 +158,6 @@ const InternalTreeGrid = React.forwardRef(
       stickyColumnsLast: stickyColumns?.last || 0,
     });
 
-    const theadProps: TheadProps = {
-      containerWidth,
-      selectionType,
-      getSelectAllProps,
-      columnDefinitions: visibleColumnDefinitions,
-      variant: computedVariant,
-      wrapLines,
-      resizableColumns,
-      sortingColumn,
-      sortingDisabled,
-      sortingDescending,
-      onSortingChange,
-      onFocusMove: moveFocus,
-      onResizeFinish(newWidth) {
-        const widthsDetail = columnDefinitions.map(
-          (column, index) => newWidth[getColumnKey(column, index)] || (column.width as number) || DEFAULT_WIDTH
-        );
-        const widthsChanged = widthsDetail.some((width, index) => columnDefinitions[index].width !== width);
-        if (widthsChanged) {
-          fireNonCancelableEvent(onColumnWidthsChange, { widths: widthsDetail });
-        }
-      },
-      singleSelectionHeaderAriaLabel: ariaLabels?.selectionGroupLabel,
-      stripedRows,
-      stickyState,
-    };
-
     const wrapperRef = useMergeRefs(wrapperMeasureRef, wrapperRefObject, stickyState.refs.wrapper);
     const tableRef = useMergeRefs(tableMeasureRef, tableRefObject, stickyState.refs.table);
 
@@ -218,12 +191,12 @@ const InternalTreeGrid = React.forwardRef(
     const toolsHeaderHeight =
       (toolsHeaderWrapper?.current as HTMLDivElement | null)?.getBoundingClientRect().height ?? 0;
 
-    const [headerHeight, setHeaderHeight] = useState(0);
-    useEffect(() => {
-      if (theadRef.current) {
-        setHeaderHeight(theadRef.current.getBoundingClientRect().height);
-      }
-    }, []);
+    // const [headerHeight, setHeaderHeight] = useState(0);
+    // useEffect(() => {
+    //   if (theadRef.current) {
+    //     setHeaderHeight(theadRef.current.getBoundingClientRect().height);
+    //   }
+    // }, []);
 
     // TODO: auto-set container size?
     const virtualScroll = useVirtualScroll({
@@ -233,6 +206,40 @@ const InternalTreeGrid = React.forwardRef(
     const frameStart = virtualScroll.frame[0];
     const prevFrame = Math.max(0, frameStart - 25);
     const nextFrame = Math.min(items.length - 25, frameStart + 25);
+
+    const virtualScrollHorizontal = useVirtualScroll({
+      size: visibleColumnDefinitions.length,
+      getContainer: () => wrapperRefObject.current,
+      frameSize: 10,
+      horizontal: true,
+    });
+
+    const theadProps: TheadProps = {
+      containerWidth,
+      selectionType,
+      getSelectAllProps,
+      columnDefinitions: visibleColumnDefinitions,
+      variant: computedVariant,
+      wrapLines,
+      resizableColumns,
+      sortingColumn,
+      sortingDisabled,
+      sortingDescending,
+      onSortingChange,
+      onFocusMove: moveFocus,
+      onResizeFinish(newWidth) {
+        const widthsDetail = columnDefinitions.map(
+          (column, index) => newWidth[getColumnKey(column, index)] || (column.width as number) || DEFAULT_WIDTH
+        );
+        const widthsChanged = widthsDetail.some((width, index) => columnDefinitions[index].width !== width);
+        if (widthsChanged) {
+          fireNonCancelableEvent(onColumnWidthsChange, { widths: widthsDetail });
+        }
+      },
+      singleSelectionHeaderAriaLabel: ariaLabels?.selectionGroupLabel,
+      stripedRows,
+      stickyState,
+    };
 
     const tbodyRef = useRef<HTMLTableSectionElement>(null);
     useGridFocus({ rows: items.length, getContainer: () => tbodyRef.current, onRowAction });
@@ -368,7 +375,7 @@ const InternalTreeGrid = React.forwardRef(
                 <tr>
                   <td
                     ref={virtualScroll.elBeforeRef}
-                    colSpan={columnDefinitions.length}
+                    colSpan={selectionType ? visibleColumnDefinitions.length + 1 : visibleColumnDefinitions.length}
                     style={{ padding: 0, margin: 0, height: 0 }}
                   />
                 </tr>
@@ -518,7 +525,7 @@ const InternalTreeGrid = React.forwardRef(
                 <tr>
                   <td
                     ref={virtualScroll.elAfterRef}
-                    colSpan={columnDefinitions.length}
+                    colSpan={selectionType ? visibleColumnDefinitions.length + 1 : visibleColumnDefinitions.length}
                     style={{ padding: 0, margin: 0, height: 0 }}
                   />
                 </tr>

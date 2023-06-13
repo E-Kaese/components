@@ -1,13 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 const DEFAULT_FRAME_SIZE = 25;
 
 interface VirtualModelProps {
   size: number;
   frameSize?: number;
+  horizontal?: boolean;
   getContainer: () => null | HTMLElement;
   onScrollPropsChange: (props: ScrollProps) => void;
   onFrameChange: (props: FrameProps) => void;
@@ -24,39 +25,48 @@ interface FrameProps {
   sizeAfter: number;
 }
 
-export function useVirtualScroll(props: Omit<VirtualModelProps, 'onScrollPropsChange' | 'onFrameChange'>) {
+export interface Virtualizer {
+  frame: number[];
+  setItemRef: (index: number, node: null | HTMLElement) => void;
+  elBeforeRef: React.Ref<any>;
+  elAfterRef: React.Ref<any>;
+  scrollToIndex: (index: number) => void;
+}
+
+export function useVirtualScroll(props: Omit<VirtualModelProps, 'onScrollPropsChange' | 'onFrameChange'>): Virtualizer {
   const [frame, setFrame] = useState(
     createFrame({ frameStart: 0, frameSize: props.frameSize ?? DEFAULT_FRAME_SIZE, size: props.size })
   );
 
   const elBeforeRef = useRef<HTMLTableCellElement>(null);
   const elAfterRef = useRef<HTMLTableCellElement>(null);
-  const trRefs = useRef<{ [index: number]: null | HTMLElement }>({});
+  const itemRefs = useRef<{ [index: number]: null | HTMLElement }>({});
 
-  const [model] = useState(
-    () =>
-      new VirtualScrollModel({
-        ...props,
-        onFrameChange: ({ frame, ...scrollProps }) => {
-          setFrame(frame);
+  const [model] = useState(() => {
+    const property = props.horizontal ? 'width' : 'height';
 
-          if (elBeforeRef.current) {
-            elBeforeRef.current.style.height = scrollProps.sizeBefore + 'px';
-          }
-          if (elAfterRef.current) {
-            elAfterRef.current.style.height = scrollProps.sizeAfter + 'px';
-          }
-        },
-        onScrollPropsChange: scrollProps => {
-          if (elBeforeRef.current) {
-            elBeforeRef.current.style.height = scrollProps.sizeBefore + 'px';
-          }
-          if (elAfterRef.current) {
-            elAfterRef.current.style.height = scrollProps.sizeAfter + 'px';
-          }
-        },
-      })
-  );
+    return new VirtualScrollModel({
+      ...props,
+      onFrameChange: ({ frame, ...scrollProps }) => {
+        setFrame(frame);
+
+        if (elBeforeRef.current) {
+          elBeforeRef.current.style[property] = scrollProps.sizeBefore + 'px';
+        }
+        if (elAfterRef.current) {
+          elAfterRef.current.style[property] = scrollProps.sizeAfter + 'px';
+        }
+      },
+      onScrollPropsChange: scrollProps => {
+        if (elBeforeRef.current) {
+          elBeforeRef.current.style[property] = scrollProps.sizeBefore + 'px';
+        }
+        if (elAfterRef.current) {
+          elAfterRef.current.style[property] = scrollProps.sizeAfter + 'px';
+        }
+      },
+    });
+  });
   useEffect(() => {
     return () => {
       model.destroy();
@@ -65,9 +75,10 @@ export function useVirtualScroll(props: Omit<VirtualModelProps, 'onScrollPropsCh
 
   const setItemRef = useCallback(
     (index: number, node: null | HTMLElement) => {
-      trRefs.current[index] = node;
+      itemRefs.current[index] = node;
       if (node) {
-        model.setItemSize(index, node.getBoundingClientRect().height);
+        const property = model.horizontal ? 'width' : 'height';
+        model.setItemSize(index, node.getBoundingClientRect()[property]);
       }
     },
     [model]
@@ -84,8 +95,6 @@ export function useVirtualScroll(props: Omit<VirtualModelProps, 'onScrollPropsCh
 
   return {
     frame,
-    // sizeBefore: scrollProps.sizeBefore,
-    // sizeAfter: scrollProps.sizeAfter,
     setItemRef,
     elBeforeRef,
     elAfterRef,
@@ -113,6 +122,7 @@ export class VirtualScrollModel {
   // Props
   public size: number;
   public frameSize: number = DEFAULT_FRAME_SIZE;
+  public readonly horizontal: boolean;
   private getContainer: () => null | HTMLElement;
   private onScrollPropsChange: (props: ScrollProps) => void;
   private onFrameChange: (props: FrameProps) => void;
@@ -128,14 +138,19 @@ export class VirtualScrollModel {
   private onFocusListener: null | ((event: FocusEvent) => void) = null;
   private onBlurListener: null | ((event: FocusEvent) => void) = null;
 
-  constructor({ size, frameSize, getContainer, onScrollPropsChange, onFrameChange }: VirtualModelProps) {
+  constructor({ size, frameSize, horizontal, getContainer, onScrollPropsChange, onFrameChange }: VirtualModelProps) {
     this.size = size;
     this.frameSize = frameSize ?? this.frameSize;
+    this.horizontal = horizontal ?? false;
     this.getContainer = getContainer;
     this.onScrollPropsChange = onScrollPropsChange;
     this.onFrameChange = onFrameChange;
 
     this.init();
+  }
+
+  public get defaultSize() {
+    return this.horizontal ? 100 : 40;
   }
 
   public setItemSize(index: number, size: number) {
@@ -178,15 +193,16 @@ export class VirtualScrollModel {
   public scrollToIndex = (index: number) => {
     index = Math.min(this.size, Math.max(0, index));
 
-    let scrollTop = 0;
+    let scrollValue = 0;
     for (let i = 0; i < index; i++) {
-      scrollTop += this.evaluatedItemSizes[i] || 40;
+      scrollValue += this.evaluatedItemSizes[i] || this.defaultSize;
     }
 
     // TODO: provide API
     const container = this.getContainer();
     if (container) {
-      container.scrollTop = scrollTop;
+      const property = this.horizontal ? 'scrollLeft' : 'scrollTop';
+      container[property] = scrollValue;
     }
   };
 
@@ -196,10 +212,10 @@ export class VirtualScrollModel {
     let sizeAfter = 0;
 
     for (let i = 0; i < this.frameStart && i < this.size; i++) {
-      sizeBefore += this.evaluatedItemSizes[i] || 40;
+      sizeBefore += this.evaluatedItemSizes[i] || this.defaultSize;
     }
     for (let i = this.frameStart + this.frameSize; i < this.size; i++) {
-      sizeAfter += this.evaluatedItemSizes[i] || 40;
+      sizeAfter += this.evaluatedItemSizes[i] || this.defaultSize;
     }
 
     // TODO: update only when necessary e.g. changing from 0 to non-0
@@ -216,7 +232,8 @@ export class VirtualScrollModel {
       return;
     }
 
-    const scrollTop = (event.target as HTMLElement).scrollTop;
+    const property = this.horizontal ? 'scrollLeft' : 'scrollTop';
+    const scrollValue = (event.target as HTMLElement)[property];
 
     let totalSize = 0;
     let knownSizes = 0;
@@ -229,16 +246,16 @@ export class VirtualScrollModel {
     }
     const averageItemSize = totalSize / knownSizes;
 
-    let frameStart = Math.round(scrollTop / averageItemSize);
+    let frameStart = Math.round(scrollValue / averageItemSize);
     frameStart = Math.max(0, Math.min(this.size - this.frameSize, frameStart));
 
     let sizeBefore = 0;
     let sizeAfter = 0;
     for (let i = 0; i < frameStart && i < this.size; i++) {
-      sizeBefore += this.evaluatedItemSizes[i] || 40;
+      sizeBefore += this.evaluatedItemSizes[i] || this.defaultSize;
     }
     for (let i = frameStart + this.frameSize; i < this.size; i++) {
-      sizeAfter += this.evaluatedItemSizes[i] || 40;
+      sizeAfter += this.evaluatedItemSizes[i] || this.defaultSize;
     }
 
     const frame = createFrame({ frameStart, frameSize: this.frameSize, size: this.size });
