@@ -25,6 +25,7 @@ export interface TheadProps {
   containerWidth: number | null;
   selectionType: TreeGridProps.SelectionType | undefined;
   columnDefinitions: ReadonlyArray<TreeGridProps.ColumnDefinition<any>>;
+  virtualFrame: number[];
   sortingColumn: TreeGridProps.SortingColumn<any> | undefined;
   sortingDescending: boolean | undefined;
   sortingDisabled: boolean | undefined;
@@ -41,6 +42,7 @@ export interface TheadProps {
   singleSelectionHeaderAriaLabel?: string;
   stripedRows?: boolean;
   stickyState: StickyColumnsModel;
+  setRef: (colIndex: number, node: null | HTMLElement) => void;
 
   focusedComponent?: InteractiveComponent | null;
   onFocusedComponentChange?: (element: InteractiveComponent | null) => void;
@@ -53,6 +55,7 @@ const Thead = React.forwardRef(
       selectionType,
       getSelectAllProps,
       columnDefinitions,
+      virtualFrame,
       sortingColumn,
       sortingDisabled,
       sortingDescending,
@@ -68,6 +71,7 @@ const Thead = React.forwardRef(
       hidden = false,
       stuck = false,
       stickyState,
+      setRef,
 
       focusedComponent,
       onFocusedComponentChange,
@@ -129,7 +133,8 @@ const Thead = React.forwardRef(
             </th>
           ) : null}
 
-          {columnDefinitions.map((column, colIndex) => {
+          {virtualFrame.map(colIndex => {
+            const column = columnDefinitions[colIndex];
             let widthOverride;
             if (resizableColumns) {
               if (columnWidths) {
@@ -143,6 +148,7 @@ const Thead = React.forwardRef(
             }
             return (
               <TableHeaderCell
+                elRef={node => setRef(colIndex, node)}
                 key={getColumnKey(column, colIndex)}
                 className={headerCellClass}
                 style={{

@@ -219,13 +219,21 @@ const InternalTreeGrid = React.forwardRef(
     const nextFrame = Math.min(items.length - 25, frameStart + 25);
 
     const divBefore = useRef<HTMLDivElement>(null);
+    const divBeforeSticky = useRef<HTMLDivElement>(null);
     const divAfter = useRef<HTMLDivElement>(null);
+    const divAfterSticky = useRef<HTMLDivElement>(null);
     const onScrollPropsChangeHorizontal = ({ sizeBefore, sizeAfter }: ScrollProps) => {
       if (divBefore.current) {
         divBefore.current.style.minWidth = sizeBefore + 'px';
       }
+      if (divBeforeSticky.current) {
+        divBeforeSticky.current.style.minWidth = sizeBefore + 'px';
+      }
       if (divAfter.current) {
         divAfter.current.style.minWidth = sizeAfter + 'px';
+      }
+      if (divAfterSticky.current) {
+        divAfterSticky.current.style.minWidth = sizeAfter + 'px';
       }
     };
     const virtualScrollHorizontal = useVirtualScroll({
@@ -236,11 +244,15 @@ const InternalTreeGrid = React.forwardRef(
       horizontal: true,
     });
 
+    const virtualColumnDefinitions = virtualScrollHorizontal.frame.map(index => visibleColumnDefinitions[index]);
+
     const theadProps: TheadProps = {
+      setRef: virtualScrollHorizontal.setItemRef,
       containerWidth,
       selectionType,
       getSelectAllProps,
       columnDefinitions: visibleColumnDefinitions,
+      virtualFrame: virtualScrollHorizontal.frame,
       variant: computedVariant,
       wrapLines,
       resizableColumns,
@@ -279,7 +291,7 @@ const InternalTreeGrid = React.forwardRef(
     return (
       <ColumnWidthsProvider
         tableRef={tableRefObject}
-        visibleColumnDefinitions={visibleColumnDefinitions}
+        visibleColumnDefinitions={virtualColumnDefinitions}
         resizableColumns={resizableColumns}
         hasSelection={hasSelection}
       >
@@ -314,6 +326,8 @@ const InternalTreeGrid = React.forwardRef(
                   onScroll={handleScroll}
                   tableHasHeader={hasHeader}
                   contentDensity={contentDensity}
+                  elBeforeRef={divBeforeSticky}
+                  elAfterRef={divAfterSticky}
                 />
               )}
             </>
@@ -401,7 +415,7 @@ const InternalTreeGrid = React.forwardRef(
                 <tr>
                   <td
                     ref={tdBefore}
-                    colSpan={selectionType ? visibleColumnDefinitions.length + 1 : visibleColumnDefinitions.length}
+                    colSpan={selectionType ? virtualColumnDefinitions.length + 1 : virtualColumnDefinitions.length}
                     style={{ padding: 0, margin: 0, height: 0 }}
                   />
                 </tr>
@@ -410,7 +424,7 @@ const InternalTreeGrid = React.forwardRef(
                   <tr>
                     <td
                       role="gridcell"
-                      colSpan={selectionType ? visibleColumnDefinitions.length + 1 : visibleColumnDefinitions.length}
+                      colSpan={selectionType ? virtualColumnDefinitions.length + 1 : virtualColumnDefinitions.length}
                       className={clsx(styles['cell-merged'], hasFooter && styles['has-footer'])}
                     >
                       <div
@@ -485,7 +499,8 @@ const InternalTreeGrid = React.forwardRef(
                             />
                           </TableTdElement>
                         )}
-                        {visibleColumnDefinitions.map((column, colIndex) => {
+                        {virtualScrollHorizontal.frame.map(colIndex => {
+                          const column = visibleColumnDefinitions[colIndex];
                           const isEditing =
                             !!currentEditCell && currentEditCell[0] === rowIndex && currentEditCell[1] === colIndex;
                           const successfulEdit =
@@ -551,7 +566,7 @@ const InternalTreeGrid = React.forwardRef(
                 <tr>
                   <td
                     ref={tdAfter}
-                    colSpan={selectionType ? visibleColumnDefinitions.length + 1 : visibleColumnDefinitions.length}
+                    colSpan={selectionType ? virtualColumnDefinitions.length + 1 : virtualColumnDefinitions.length}
                     style={{ padding: 0, margin: 0, height: 0 }}
                   />
                 </tr>

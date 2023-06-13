@@ -25,6 +25,8 @@ interface StickyHeaderProps {
   onScroll?: React.UIEventHandler<HTMLDivElement>;
   contentDensity?: 'comfortable' | 'compact';
   tableHasHeader?: boolean;
+  elBeforeRef?: React.Ref<HTMLElement>;
+  elAfterRef?: React.Ref<HTMLElement>;
 }
 
 export default forwardRef(StickyHeader);
@@ -40,6 +42,8 @@ function StickyHeader(
     tableRef,
     tableHasHeader,
     contentDensity,
+    elBeforeRef,
+    elAfterRef,
   }: StickyHeaderProps,
   ref: React.Ref<StickyHeaderRef>
 ) {
@@ -74,8 +78,11 @@ function StickyHeader(
       tabIndex={-1}
       ref={secondaryWrapperRef}
       onScroll={onScroll}
+      style={{ display: 'flex', width: '100%' }}
     >
+      <div ref={elBeforeRef as any} style={{ minWidth: 0 }} />
       <table
+        style={{ flex: 1 }}
         className={clsx(
           styles.table,
           styles['table-layout-fixed'],
@@ -92,6 +99,7 @@ function StickyHeader(
           {...theadProps}
         />
       </table>
+      <div ref={elAfterRef as any} style={{ minWidth: 0 }} />
     </div>
   );
 }

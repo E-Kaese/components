@@ -167,7 +167,7 @@ export default function Page() {
             }, 500);
           }
         }}
-        stickyColumns={{ first: 1 }}
+        // stickyColumns={{ first: 1 }}
         columnDefinitions={[
           {
             id: 'id',
