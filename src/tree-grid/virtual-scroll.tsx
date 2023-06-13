@@ -14,7 +14,7 @@ interface VirtualModelProps {
   onFrameChange: (props: FrameProps) => void;
 }
 
-interface ScrollProps {
+export interface ScrollProps {
   sizeBefore: number;
   sizeAfter: number;
 }
@@ -28,42 +28,26 @@ interface FrameProps {
 export interface Virtualizer {
   frame: number[];
   setItemRef: (index: number, node: null | HTMLElement) => void;
-  elBeforeRef: React.Ref<any>;
-  elAfterRef: React.Ref<any>;
   scrollToIndex: (index: number) => void;
 }
 
-export function useVirtualScroll(props: Omit<VirtualModelProps, 'onScrollPropsChange' | 'onFrameChange'>): Virtualizer {
+export function useVirtualScroll(props: Omit<VirtualModelProps, 'onFrameChange'>): Virtualizer {
   const [frame, setFrame] = useState(
     createFrame({ frameStart: 0, frameSize: props.frameSize ?? DEFAULT_FRAME_SIZE, size: props.size })
   );
 
-  const elBeforeRef = useRef<HTMLTableCellElement>(null);
-  const elAfterRef = useRef<HTMLTableCellElement>(null);
   const itemRefs = useRef<{ [index: number]: null | HTMLElement }>({});
 
   const [model] = useState(() => {
-    const property = props.horizontal ? 'width' : 'height';
-
     return new VirtualScrollModel({
       ...props,
       onFrameChange: ({ frame, ...scrollProps }) => {
         setFrame(frame);
 
-        if (elBeforeRef.current) {
-          elBeforeRef.current.style[property] = scrollProps.sizeBefore + 'px';
-        }
-        if (elAfterRef.current) {
-          elAfterRef.current.style[property] = scrollProps.sizeAfter + 'px';
-        }
+        props.onScrollPropsChange(scrollProps);
       },
       onScrollPropsChange: scrollProps => {
-        if (elBeforeRef.current) {
-          elBeforeRef.current.style[property] = scrollProps.sizeBefore + 'px';
-        }
-        if (elAfterRef.current) {
-          elAfterRef.current.style[property] = scrollProps.sizeAfter + 'px';
-        }
+        props.onScrollPropsChange(scrollProps);
       },
     });
   });
@@ -96,8 +80,6 @@ export function useVirtualScroll(props: Omit<VirtualModelProps, 'onScrollPropsCh
   return {
     frame,
     setItemRef,
-    elBeforeRef,
-    elAfterRef,
     scrollToIndex: model.scrollToIndex,
   };
 }

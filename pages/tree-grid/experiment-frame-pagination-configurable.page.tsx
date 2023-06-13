@@ -46,7 +46,21 @@ export default function App() {
   const frameStep = typeof settings.frameStep === 'number' ? settings.frameStep : defaultPageSettings.frameStep;
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const virtualScroll = useVirtualScroll({ size: items.length, frameSize, getContainer: () => containerRef.current });
+  const elBefore = useRef<HTMLTableCellElement>(null);
+  const elAfter = useRef<HTMLTableCellElement>(null);
+  const virtualScroll = useVirtualScroll({
+    size: items.length,
+    frameSize,
+    getContainer: () => containerRef.current,
+    onScrollPropsChange({ sizeBefore, sizeAfter }) {
+      if (elBefore.current) {
+        elBefore.current.style.height = sizeBefore + 'px';
+      }
+      if (elAfter.current) {
+        elAfter.current.style.height = sizeAfter + 'px';
+      }
+    },
+  });
   const frameStart = virtualScroll.frame[0];
 
   return (
@@ -83,11 +97,7 @@ export default function App() {
 
           <tbody>
             <tr>
-              <td
-                ref={virtualScroll.elBeforeRef}
-                colSpan={columnDefinitions.length}
-                style={{ padding: 0, margin: 0, height: 0 }}
-              />
+              <td ref={elBefore} colSpan={columnDefinitions.length} style={{ padding: 0, margin: 0, height: 0 }} />
             </tr>
 
             {virtualScroll.frame.map(index => {
@@ -104,11 +114,7 @@ export default function App() {
             })}
 
             <tr>
-              <td
-                ref={virtualScroll.elAfterRef}
-                colSpan={columnDefinitions.length}
-                style={{ padding: 0, margin: 0, height: 0 }}
-              />
+              <td ref={elAfter} colSpan={columnDefinitions.length} style={{ padding: 0, margin: 0, height: 0 }} />
             </tr>
           </tbody>
         </table>

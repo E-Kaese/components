@@ -34,7 +34,7 @@ import useTableFocusNavigation from './use-table-focus-navigation';
 import { SomeRequired } from '../internal/types';
 import { TableTdElement } from './body-cell/td-element';
 import { useStickyColumns, selectionColumnId } from './use-sticky-columns';
-import { useVirtualScroll } from './virtual-scroll';
+import { ScrollProps, useVirtualScroll } from './virtual-scroll';
 import { FrameAnnouncer, FrameNavigation } from './screen-reader-frame-navigation';
 import { useGridFocus } from './grid-focus';
 
@@ -199,17 +199,39 @@ const InternalTreeGrid = React.forwardRef(
     // }, []);
 
     // TODO: auto-set container size?
+    const tdBefore = useRef<HTMLTableCellElement>(null);
+    const tdAfter = useRef<HTMLTableCellElement>(null);
+    const onScrollPropsChange = ({ sizeBefore, sizeAfter }: ScrollProps) => {
+      if (tdBefore.current) {
+        tdBefore.current.style.height = sizeBefore + 'px';
+      }
+      if (tdAfter.current) {
+        tdAfter.current.style.height = sizeAfter + 'px';
+      }
+    };
     const virtualScroll = useVirtualScroll({
       size: items.length,
       getContainer: () => wrapperRefObject.current,
+      onScrollPropsChange,
     });
     const frameStart = virtualScroll.frame[0];
     const prevFrame = Math.max(0, frameStart - 25);
     const nextFrame = Math.min(items.length - 25, frameStart + 25);
 
+    const divBefore = useRef<HTMLDivElement>(null);
+    const divAfter = useRef<HTMLDivElement>(null);
+    const onScrollPropsChangeHorizontal = ({ sizeBefore, sizeAfter }: ScrollProps) => {
+      if (divBefore.current) {
+        divBefore.current.style.minWidth = sizeBefore + 'px';
+      }
+      if (divAfter.current) {
+        divAfter.current.style.minWidth = sizeAfter + 'px';
+      }
+    };
     const virtualScrollHorizontal = useVirtualScroll({
       size: visibleColumnDefinitions.length,
       getContainer: () => wrapperRefObject.current,
+      onScrollPropsChange: onScrollPropsChangeHorizontal,
       frameSize: 10,
       horizontal: true,
     });
@@ -345,6 +367,7 @@ const InternalTreeGrid = React.forwardRef(
               // TODO: conditional overflow
               overflowY: 'auto', // virtualScroll.sizeAfter + virtualScroll.sizeBefore > 0 ? 'auto' : 'unset',
               height: '800px',
+              display: 'flex',
             }}
           >
             {!!renderAriaLive && !!firstIndex && (
@@ -353,7 +376,10 @@ const InternalTreeGrid = React.forwardRef(
               </LiveRegion>
             )}
 
+            <div ref={divBefore} style={{ minWidth: 0 }} />
+
             <table
+              style={{ flex: 1 }}
               ref={tableRef}
               className={clsx(
                 styles.table,
@@ -374,7 +400,7 @@ const InternalTreeGrid = React.forwardRef(
                 {/* TODO: conditional */}
                 <tr>
                   <td
-                    ref={virtualScroll.elBeforeRef}
+                    ref={tdBefore}
                     colSpan={selectionType ? visibleColumnDefinitions.length + 1 : visibleColumnDefinitions.length}
                     style={{ padding: 0, margin: 0, height: 0 }}
                   />
@@ -524,13 +550,15 @@ const InternalTreeGrid = React.forwardRef(
                 {/* TODO: conditional */}
                 <tr>
                   <td
-                    ref={virtualScroll.elAfterRef}
+                    ref={tdAfter}
                     colSpan={selectionType ? visibleColumnDefinitions.length + 1 : visibleColumnDefinitions.length}
                     style={{ padding: 0, margin: 0, height: 0 }}
                   />
                 </tr>
               </tbody>
             </table>
+
+            <div ref={divAfter} style={{ minWidth: 0 }} />
 
             {resizableColumns && <ResizeTracker />}
           </div>
