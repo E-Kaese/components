@@ -111,6 +111,7 @@ export default function App() {
           wrapLines={preferences.wrapLines}
           columnDefinitions={columnsConfig}
           items={items}
+          //     footer={<div>This is fun!</div>}
           pagination={<Pagination {...paginationProps} ariaLabels={paginationLabels} />}
           filter={
             <TextFilter
