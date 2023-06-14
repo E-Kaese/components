@@ -3,8 +3,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const DEFAULT_OVERSCAN = 5;
-const DEFAULT_FRAME_SIZE = 25;
+export const DEFAULT_OVERSCAN = 5;
+export const DEFAULT_FRAME_SIZE = 20;
 
 interface VirtualModelProps {
   size: number;

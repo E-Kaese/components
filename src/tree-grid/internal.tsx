@@ -34,7 +34,7 @@ import useTableFocusNavigation from './use-table-focus-navigation';
 import { SomeRequired } from '../internal/types';
 import { TableTdElement } from './body-cell/td-element';
 import { useStickyColumns, selectionColumnId } from './use-sticky-columns';
-import { ScrollProps, useVirtualScroll } from './virtual-scroll';
+import { DEFAULT_FRAME_SIZE, ScrollProps, useVirtualScroll } from './virtual-scroll';
 import { FrameAnnouncer, FrameNavigation } from './screen-reader-frame-navigation';
 import { useGridFocus } from './grid-focus';
 
@@ -216,8 +216,8 @@ const InternalTreeGrid = React.forwardRef(
       onScrollPropsChange,
     });
     const frameStart = virtualScroll.frame[0];
-    const prevFrame = Math.max(0, frameStart - 25);
-    const nextFrame = Math.min(items.length - 25, frameStart + 25);
+    const prevFrame = Math.max(0, frameStart - DEFAULT_FRAME_SIZE);
+    const nextFrame = Math.min(items.length - DEFAULT_FRAME_SIZE, frameStart + DEFAULT_FRAME_SIZE);
 
     const divBefore = useRef<HTMLDivElement>(null);
     const divBeforeSticky = useRef<HTMLDivElement>(null);
@@ -358,7 +358,11 @@ const InternalTreeGrid = React.forwardRef(
           {...focusMarkers.root}
         >
           {virtualScroll.frame.length < items.length && (
-            <FrameAnnouncer frameStart={virtualScroll.frame[0]} frameSize={25} totalSize={items.length} />
+            <FrameAnnouncer
+              frameStart={virtualScroll.frame[0]}
+              frameSize={DEFAULT_FRAME_SIZE}
+              totalSize={items.length}
+            />
           )}
 
           {virtualScroll.frame.length < items.length && (
