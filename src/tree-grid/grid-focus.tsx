@@ -211,9 +211,8 @@ export class GridFocusModel {
     ) as null | HTMLElement;
 
     if (nextRow && this.focusedColumn !== null) {
-      const rowCells = nextRow.querySelectorAll('td');
-      const cellIndex = Math.max(0, Math.min(rowCells.length - 1, this.focusedColumn));
-      const cellEl = rowCells[cellIndex];
+      const cellIndex = this.focusedColumn ?? 0;
+      const cellEl = nextRow.querySelector(`[data-colindex="${cellIndex}"]`) as null | HTMLElement;
 
       if (cellEl) {
         this.focusedRow = this.focusedRow + direction;
