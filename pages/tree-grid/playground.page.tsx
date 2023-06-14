@@ -40,10 +40,15 @@ export default function Page() {
   const [expanded, setExpanded] = useState<{ [id: string]: number }>({});
   const [error, setError] = useState<{ [id: string]: string }>({});
 
+  const pageSize = 100;
+  const [page, setPage] = useState(0);
+  const [isPageLoading, setPageLoading] = useState(false);
+
   const lastExpandedRef = useRef<string | null>(null);
   const visibleInstances = useMemo(() => {
     const visibleInstances: InstanceItem[] = [];
-    for (const instance of instances) {
+    const pagedInstances = instances.slice(0, (page + 1) * pageSize);
+    for (const instance of pagedInstances) {
       visibleInstances.push(instance);
       if (expanded[instance.id] !== undefined && instance.replicas) {
         visibleInstances.push(...instance.replicas.slice(0, expanded[instance.id]));
@@ -71,8 +76,21 @@ export default function Page() {
         }
       }
     }
+
+    if (pagedInstances.length < instances.length) {
+      visibleInstances.push({
+        id: `next-page`,
+        name: '',
+        url: '',
+        state: 'ERROR',
+        cpuCores: 0,
+        memoryGib: 0,
+        availabilityZone: '',
+      });
+    }
+
     return visibleInstances;
-  }, [expanded, loadingItem]);
+  }, [expanded, loadingItem, page, pageSize]);
 
   const getInstanceMeta = useMemo(() => {
     const allInstances: MetaItem<InstanceItem>[] = [];
@@ -95,6 +113,10 @@ export default function Page() {
       new Map<InstanceItem, MetaItem<InstanceItem>>()
     );
     return (item: InstanceItem) => {
+      if (item.id === 'next-page') {
+        return { level: 1, isLast: true };
+      }
+
       const meta = mapping.get(item);
       if (!meta) {
         return { level: 2, isLast: true };
@@ -108,6 +130,15 @@ export default function Page() {
   const onRowAction = (rowIndex: number) => {
     const item = visibleInstances[rowIndex];
     const id = item.id.replace('-control', '');
+
+    if (id === 'next-page') {
+      setPageLoading(true);
+      setTimeout(() => {
+        setPage(prev => prev + 1);
+        setPageLoading(false);
+      }, 1000);
+      return;
+    }
 
     if (!item.replicas && !item.id.includes('-control')) {
       return;
@@ -160,6 +191,8 @@ export default function Page() {
     }
   };
 
+  const isSpecialId = (id: string) => id.includes('control') || id.includes('empty') || id === 'next-page';
+
   return (
     <PageTemplate title="TreeGrid playground">
       <TreeGrid
@@ -180,6 +213,28 @@ export default function Page() {
               const meta = getInstanceMeta(item);
 
               const id = item.id.replace('-control', '');
+
+              if (id === 'next-page') {
+                return (
+                  <div style={{ paddingLeft: '16px' }}>
+                    {isPageLoading ? (
+                      <StatusIndicator type="loading">Loading more items</StatusIndicator>
+                    ) : (
+                      <Link
+                        onFollow={() => {
+                          setPageLoading(true);
+                          setTimeout(() => {
+                            setPage(prev => prev + 1);
+                            setPageLoading(false);
+                          }, 1000);
+                        }}
+                      >
+                        Show 100 more
+                      </Link>
+                    )}
+                  </div>
+                );
+              }
 
               return (
                 <div
@@ -342,7 +397,7 @@ export default function Page() {
           {
             id: 'name',
             header: 'Name',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.name),
+            cell: item => (isSpecialId(item.id) ? '' : item.name),
             minWidth: 200,
             sortingField: 'region',
           },
@@ -350,7 +405,7 @@ export default function Page() {
             id: 'url',
             header: 'URL',
             minWidth: 200,
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.url),
+            cell: item => (isSpecialId(item.id) ? '' : item.url),
           },
           {
             id: 'state',
@@ -358,7 +413,7 @@ export default function Page() {
             minWidth: 125,
             maxWidth: 200,
             cell: item => {
-              if (item.id.includes('control') || item.id.includes('empty')) {
+              if (isSpecialId(item.id)) {
                 return '';
               }
 
@@ -382,72 +437,72 @@ export default function Page() {
           {
             id: 'cpuCores',
             header: 'vCPU',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.cpuCores),
+            cell: item => (isSpecialId(item.id) ? '' : item.cpuCores),
           },
           {
             id: 'memoryGib',
             header: 'Memory (GiB)',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.memoryGib),
+            cell: item => (isSpecialId(item.id) ? '' : item.memoryGib),
           },
           {
             id: 'availabilityZone',
             header: 'AZ',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
           {
             id: 'availabilityZone2',
             header: 'AZ 2',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
           {
             id: 'availabilityZone3',
             header: 'AZ 3',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
           {
             id: 'availabilityZone4',
             header: 'AZ 4',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
           {
             id: 'availabilityZone5',
             header: 'AZ 5',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
           {
             id: 'availabilityZone6',
             header: 'AZ 6',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
           {
             id: 'availabilityZone7',
             header: 'AZ 7',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
           {
             id: 'availabilityZone8',
             header: 'AZ 8',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
           {
             id: 'availabilityZone9',
             header: 'AZ 9',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
           {
             id: 'availabilityZone10',
             header: 'AZ 10',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
           {
             id: 'availabilityZone11',
             header: 'AZ 11',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
           {
             id: 'availabilityZone12',
             header: 'AZ 12',
-            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+            cell: item => (isSpecialId(item.id) ? '' : item.availabilityZone),
           },
         ]}
         stickyHeader={settings.features.stickyHeader}
