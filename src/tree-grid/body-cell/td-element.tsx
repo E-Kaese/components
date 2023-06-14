@@ -7,6 +7,7 @@ import { StickyColumnsModel, useStickyCellStyles } from '../use-sticky-columns';
 import { getStickyClassNames } from '../utils.js';
 
 export interface TableTdElementProps {
+  colIndex?: number;
   className?: string;
   style?: React.CSSProperties;
   wrapLines: boolean | undefined;
@@ -59,6 +60,7 @@ export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElem
       columnId,
       stickyState,
       isShaded,
+      colIndex,
     },
     ref
   ) => {
@@ -78,6 +80,7 @@ export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElem
     });
     return (
       <Element
+        data-colindex={colIndex}
         tabIndex={-1}
         style={{ ...style, ...stickyStyles.style }}
         className={clsx(

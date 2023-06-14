@@ -147,7 +147,30 @@ export class GridFocusModel {
   private onFocus = (event: FocusEvent) => {
     const target = event.target as HTMLElement;
 
-    if (target.tagName === 'TD' || target.tagName === 'TR') {
+    if (target.tagName === 'TR') {
+      const rowIndex = parseInt(target.dataset.rowindex ?? '', 10);
+      if (!isNaN(rowIndex) && rowIndex !== this.focusedRow) {
+        this.focusedRow = rowIndex;
+        this.setFocusedElement(target);
+      }
+      return;
+    }
+    if (target.tagName === 'TD') {
+      let updated = false;
+      const trParent = findUpUntil(target, node => node.tagName === 'TR');
+      const rowIndex = trParent && parseInt(trParent.dataset.rowindex ?? '', 10);
+      if (rowIndex !== null && !isNaN(rowIndex) && rowIndex !== this.focusedRow) {
+        this.focusedRow = rowIndex;
+        updated = true;
+      }
+      const colIndex = parseInt(target.dataset.colindex ?? '', 10);
+      if (!isNaN(colIndex) && colIndex !== this.focusedColumn) {
+        this.focusedColumn = colIndex;
+        updated = true;
+      }
+      if (updated) {
+        this.setFocusedElement(target);
+      }
       return;
     }
 

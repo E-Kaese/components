@@ -524,6 +524,7 @@ const InternalTreeGrid = React.forwardRef(
                           const isEditable = !!column.editConfig && !currentEditLoading;
                           return (
                             <TableBodyCell
+                              colIndex={colIndex}
                               isShaded={!!getIsShaded?.(item)}
                               key={getColumnKey(column, colIndex)}
                               style={
