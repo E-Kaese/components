@@ -192,7 +192,7 @@ export class VirtualScrollModel {
   };
 
   // TODO: use default item size
-  private applyUpdate(prevSize?: number) {
+  private applyUpdate() {
     let sizeBefore = 0;
     let sizeAfter = 0;
 
@@ -212,7 +212,7 @@ export class VirtualScrollModel {
     }
   }
 
-  private handleScroll = (event: UIEvent) => {
+  private handleScroll = (event: Event) => {
     if (this.pendingItemSizes.size > 0) {
       return;
     }

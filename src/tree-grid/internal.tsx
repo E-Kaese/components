@@ -280,6 +280,7 @@ const InternalTreeGrid = React.forwardRef(
     const gridFocus = useGridFocus({
       rows: items.length,
       getContainer: () => tbodyRef.current,
+      getWrapper: () => wrapperRefObject.current,
       onRowAction,
       onCellAction,
     });

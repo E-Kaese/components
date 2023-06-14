@@ -8,18 +8,20 @@ import { useStableEventHandler } from '../internal/hooks/use-stable-event-handle
 
 interface GridFocusProps {
   rows: number;
+  getWrapper: () => null | HTMLElement;
   getContainer: () => null | HTMLElement;
   onRowAction?: (rowIndex: number) => void;
   onCellAction?: (rowIndex: number, colIndex: number) => void;
 }
 
-export function useGridFocus({ rows, getContainer, onRowAction, onCellAction }: GridFocusProps) {
+export function useGridFocus({ rows, getWrapper, getContainer, onRowAction, onCellAction }: GridFocusProps) {
   const [model, setModel] = useState(() => {
+    const wrapper = getWrapper();
     const container = getContainer();
-    if (!container) {
+    if (!wrapper || !container) {
       return null;
     }
-    return new GridFocusModel(container, onRowAction, onCellAction);
+    return new GridFocusModel(container, wrapper, onRowAction, onCellAction);
   });
 
   useEffect(() => {
@@ -36,12 +38,14 @@ export function useGridFocus({ rows, getContainer, onRowAction, onCellAction }: 
     if (model) {
       return;
     }
+    const wrapper = getWrapper();
     const container = getContainer();
-    if (!container) {
+    if (!wrapper || !container) {
       return;
     }
-    setModel(new GridFocusModel(container, stableOnRowAction, stableOnCellAction));
-  }, [model, getContainer, stableOnRowAction, stableOnCellAction]);
+    setModel(new GridFocusModel(container, wrapper, stableOnRowAction, stableOnCellAction));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model, stableOnRowAction, stableOnCellAction]);
 
   return { focusFirstRow: () => model?.focusFirstRow() };
 }
@@ -56,6 +60,7 @@ export function useGridFocus({ rows, getContainer, onRowAction, onCellAction }: 
 export class GridFocusModel {
   // Props
   private container: HTMLElement;
+  private wrapper: HTMLElement;
   private onRowAction?: (rowIndex: number) => void;
   private onCellAction?: (rowIndex: number, columnIndex: number) => void;
   private columns = 0;
@@ -68,10 +73,12 @@ export class GridFocusModel {
 
   constructor(
     container: HTMLElement,
+    wrapper: HTMLElement,
     onRowAction?: (rowIndex: number) => void,
     onCellAction?: (rowIndex: number, columnIndex: number) => void
   ) {
     this.container = container;
+    this.wrapper = wrapper;
     this.onRowAction = onRowAction;
     this.onCellAction = onCellAction;
 
@@ -167,7 +174,7 @@ export class GridFocusModel {
   };
 
   // TODO: keep focus position??
-  private onBlur = (event: FocusEvent) => {
+  private onBlur = () => {
     this.focusedRow = null;
     this.focusedColumn = null;
   };
@@ -229,12 +236,14 @@ export class GridFocusModel {
       this.focusedColumn = cellIndex;
       this.setFocusedElement(cellEl);
       cellEl.focus();
-    } else {
-      // TODO: try avoiding imperative scroll.
-      const wrapper = document.querySelector('[data-testid="table-wrapper"]');
-      if (wrapper) {
-        wrapper.scrollTo({ left: wrapper.scrollTop + direction * 300 });
-      }
+    }
+
+    const isFirst = cellEl === rowCells[0];
+    const isLast = cellEl === rowCells[rowCells.length - 1];
+    if (isFirst) {
+      this.wrapper.scrollTo({ left: this.wrapper.scrollLeft - 300 });
+    } else if (isLast) {
+      this.wrapper.scrollTo({ left: this.wrapper.scrollLeft + 300 });
     }
   }
 
