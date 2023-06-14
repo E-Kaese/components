@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+const DEFAULT_OVERSCAN = 2;
 const DEFAULT_FRAME_SIZE = 25;
 
 interface VirtualModelProps {
@@ -94,7 +95,7 @@ function createFrame({
   size: number;
 }): number[] {
   const frame: number[] = [];
-  for (let i = Math.max(0, frameStart - 1); i < frameStart + frameSize && i < size; i++) {
+  for (let i = Math.max(0, frameStart - DEFAULT_OVERSCAN); i < frameStart + frameSize && i < size; i++) {
     frame.push(i);
   }
   return frame;
@@ -243,6 +244,7 @@ export class VirtualScrollModel {
     }
 
     this.pendingItemSizes = new Set([...frame]);
+
     this.onFrameChange({ frame, sizeBefore, sizeAfter });
   };
 
