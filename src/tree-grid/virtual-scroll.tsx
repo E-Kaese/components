@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const DEFAULT_FRAME_SIZE = 25;
 
@@ -94,7 +94,7 @@ function createFrame({
   size: number;
 }): number[] {
   const frame: number[] = [];
-  for (let i = frameStart; i < frameStart + frameSize && i < size; i++) {
+  for (let i = Math.max(0, frameStart - 1); i < frameStart + frameSize && i < size; i++) {
     frame.push(i);
   }
   return frame;
@@ -231,16 +231,16 @@ export class VirtualScrollModel {
     let frameStart = Math.round(scrollValue / averageItemSize);
     frameStart = Math.max(0, Math.min(this.size - this.frameSize, frameStart));
 
+    const frame = createFrame({ frameStart, frameSize: this.frameSize, size: this.size });
+
     let sizeBefore = 0;
     let sizeAfter = 0;
-    for (let i = 0; i < frameStart && i < this.size; i++) {
+    for (let i = 0; i < frame[0] && i < this.size; i++) {
       sizeBefore += this.evaluatedItemSizes[i] || this.defaultSize;
     }
-    for (let i = frameStart + this.frameSize; i < this.size; i++) {
+    for (let i = frame[frame.length - 1] + this.frameSize; i < this.size; i++) {
       sizeAfter += this.evaluatedItemSizes[i] || this.defaultSize;
     }
-
-    const frame = createFrame({ frameStart, frameSize: this.frameSize, size: this.size });
 
     this.pendingItemSizes = new Set([...frame]);
     this.onFrameChange({ frame, sizeBefore, sizeAfter });
