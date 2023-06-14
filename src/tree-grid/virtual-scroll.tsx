@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const DEFAULT_OVERSCAN = 2;
+const DEFAULT_OVERSCAN = 5;
 const DEFAULT_FRAME_SIZE = 25;
 
 interface VirtualModelProps {
@@ -115,6 +115,8 @@ export class VirtualScrollModel {
   private evaluatedItemSizes: number[] = [];
   private pendingItemSizes = new Set<number>();
   private initialized = false;
+  private scrollTop = 0;
+  private scrollLeft = 0;
 
   // Other
   private onScrollListener: null | ((event: Event) => void) = null;
@@ -210,13 +212,18 @@ export class VirtualScrollModel {
     }
   }
 
-  private handleScroll = (event: Event) => {
+  private handleScroll = (event: UIEvent) => {
     if (this.pendingItemSizes.size > 0) {
       return;
     }
 
     const property = this.horizontal ? 'scrollLeft' : 'scrollTop';
     const scrollValue = (event.target as HTMLElement)[property];
+
+    if (this[property] === scrollValue) {
+      return;
+    }
+    this[property] = scrollValue;
 
     let totalSize = 0;
     let knownSizes = 0;
@@ -239,7 +246,7 @@ export class VirtualScrollModel {
     for (let i = 0; i < frame[0] && i < this.size; i++) {
       sizeBefore += this.evaluatedItemSizes[i] || this.defaultSize;
     }
-    for (let i = frame[frame.length - 1] + this.frameSize; i < this.size; i++) {
+    for (let i = frame[frame.length - 1] + 1; i < this.size; i++) {
       sizeAfter += this.evaluatedItemSizes[i] || this.defaultSize;
     }
 
