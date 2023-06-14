@@ -318,6 +318,7 @@ export interface TreeGridProps<T = any> extends BaseComponentProps {
   getIsShaded?: (item: T) => void;
 
   onRowAction?: (rowIndex: number) => void;
+  onCellAction?: (rowIndex: number, columnIndex: number) => void;
 }
 
 export namespace TreeGridProps {

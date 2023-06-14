@@ -42,6 +42,8 @@ export function useGridFocus({ rows, getContainer, onRowAction, onCellAction }: 
     }
     setModel(new GridFocusModel(container, stableOnRowAction, stableOnCellAction));
   }, [model, getContainer, stableOnRowAction, stableOnCellAction]);
+
+  return { focusFirstRow: () => model?.focusFirstRow() };
 }
 
 /**
@@ -87,6 +89,15 @@ export class GridFocusModel {
     // TODO: unmount
   }
 
+  public focusFirstRow() {
+    const nextRow = this.container.querySelector(`[data-rowindex="0"]`) as null | HTMLElement;
+    if (nextRow) {
+      this.focusedRow = 0;
+      this.setFocusedElement(nextRow);
+      nextRow.focus();
+    }
+  }
+
   public setRows(rows: number) {
     this.rows = rows;
 
@@ -128,26 +139,29 @@ export class GridFocusModel {
 
   private onFocus = (event: FocusEvent) => {
     const target = event.target as HTMLElement;
+
     if (target.tagName === 'TD' || target.tagName === 'TR') {
       return;
     }
 
-    const parent = findUpUntil(target, node => node.tagName === 'TR');
-    if (!parent) {
+    const tdParent = findUpUntil(target, node => node.tagName === 'TD');
+    const trParent = findUpUntil(target, node => node.tagName === 'TR');
+
+    if (!trParent) {
       return;
     }
 
     // Allow focus inside row/column;
-    if (parent === this.focusedElement) {
+    if (tdParent === this.focusedElement || trParent === this.focusedElement) {
       return;
     }
 
-    const rowIndex = parseInt(parent.dataset.rowindex ?? '', 10);
+    const rowIndex = parseInt(trParent.dataset.rowindex ?? '', 10);
     if (!isNaN(rowIndex)) {
       this.focusedRow = rowIndex;
-      this.setFocusedElement(parent);
+      this.setFocusedElement(trParent);
       setTimeout(() => {
-        parent.focus();
+        trParent.focus();
       }, 0);
     }
   };

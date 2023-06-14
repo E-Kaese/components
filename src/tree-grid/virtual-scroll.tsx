@@ -135,7 +135,7 @@ export class VirtualScrollModel {
   }
 
   public get defaultSize() {
-    return this.horizontal ? 100 : 40;
+    return this.horizontal ? 150 : 40;
   }
 
   public setItemSize(index: number, size: number) {

@@ -85,6 +85,7 @@ const InternalTreeGrid = React.forwardRef(
       columnDisplay,
       getIsShaded,
       onRowAction,
+      onCellAction,
       ...rest
     }: InternalTreeGridProps<T>,
     ref: React.Ref<TreeGridProps.Ref>
@@ -276,7 +277,12 @@ const InternalTreeGrid = React.forwardRef(
     };
 
     const tbodyRef = useRef<HTMLTableSectionElement>(null);
-    useGridFocus({ rows: items.length, getContainer: () => tbodyRef.current, onRowAction });
+    const gridFocus = useGridFocus({
+      rows: items.length,
+      getContainer: () => tbodyRef.current,
+      onRowAction,
+      onCellAction,
+    });
 
     useImperativeHandle(
       ref,
@@ -410,6 +416,9 @@ const InternalTreeGrid = React.forwardRef(
                 onFocusedComponentChange={component => stickyHeaderRef.current?.setFocus(component)}
                 {...theadProps}
               />
+
+              <thead tabIndex={0} onFocus={() => gridFocus.focusFirstRow()} />
+
               <tbody ref={tbodyRef} tabIndex={1}>
                 {/* TODO: conditional */}
                 <tr>

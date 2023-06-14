@@ -10,7 +10,7 @@ import { InstanceItem, generateInstances } from './server';
 import { colorBorderControlDefault } from '~design-tokens';
 import pseudoRandom from '../utils/pseudo-random';
 
-const instances = generateInstances({ instances: 250 });
+const instances = generateInstances({ instances: 1000 });
 
 interface MetaItem<Item> extends MetaData {
   item: Item;
@@ -105,6 +105,61 @@ export default function Page() {
 
   const gridRef = useRef<TreeGridProps.Ref>(null);
 
+  const onRowAction = (rowIndex: number) => {
+    const item = visibleInstances[rowIndex];
+    const id = item.id.replace('-control', '');
+
+    if (!item.replicas && !item.id.includes('-control')) {
+      return;
+    }
+
+    if (!item.id.includes('-control') && expanded[id] !== undefined) {
+      setExpanded(prev => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+    } else if (expanded[id] !== undefined) {
+      if (loadingItem !== id) {
+        setLoadingItem(id);
+
+        setTimeout(() => {
+          if (pseudoRandom() > 0.3) {
+            setExpanded(prev => ({ ...prev, [id]: prev[id] + 5 }));
+            setError(prev => {
+              const copy = { ...prev };
+              delete copy[id];
+              return copy;
+            });
+          } else {
+            setError(prev => ({ ...prev, [id]: 'Server error' }));
+          }
+
+          setLoadingItem(null);
+        }, 500);
+      }
+    } else {
+      setLoadingItem(id);
+      setExpanded(prev => ({ ...prev, [id]: 0 }));
+
+      setTimeout(() => {
+        if (pseudoRandom() > 0.3) {
+          setExpanded(prev => ({ ...prev, [id]: 5 }));
+          setError(prev => {
+            const copy = { ...prev };
+            delete copy[id];
+            return copy;
+          });
+        } else {
+          setError(prev => ({ ...prev, [id]: 'Server error' }));
+        }
+
+        setLoadingItem(null);
+        lastExpandedRef.current = id;
+      }, 500);
+    }
+  };
+
   return (
     <PageTemplate title="TreeGrid playground">
       <TreeGrid
@@ -113,60 +168,8 @@ export default function Page() {
         items={visibleInstances}
         trackBy={item => item.id}
         getIsShaded={item => getInstanceMeta(item).level === 2}
-        onRowAction={rowIndex => {
-          const item = visibleInstances[rowIndex];
-          const id = item.id.replace('-control', '');
-
-          if (!item.replicas && !item.id.includes('-control')) {
-            return;
-          }
-
-          if (!item.id.includes('-control') && expanded[id] !== undefined) {
-            setExpanded(prev => {
-              const copy = { ...prev };
-              delete copy[id];
-              return copy;
-            });
-          } else if (expanded[id] !== undefined) {
-            if (loadingItem !== id) {
-              setLoadingItem(id);
-
-              setTimeout(() => {
-                if (pseudoRandom() > 0.3) {
-                  setExpanded(prev => ({ ...prev, [id]: prev[id] + 5 }));
-                  setError(prev => {
-                    const copy = { ...prev };
-                    delete copy[id];
-                    return copy;
-                  });
-                } else {
-                  setError(prev => ({ ...prev, [id]: 'Server error' }));
-                }
-
-                setLoadingItem(null);
-              }, 500);
-            }
-          } else {
-            setLoadingItem(id);
-            setExpanded(prev => ({ ...prev, [id]: 0 }));
-
-            setTimeout(() => {
-              if (pseudoRandom() > 0.3) {
-                setExpanded(prev => ({ ...prev, [id]: 5 }));
-                setError(prev => {
-                  const copy = { ...prev };
-                  delete copy[id];
-                  return copy;
-                });
-              } else {
-                setError(prev => ({ ...prev, [id]: 'Server error' }));
-              }
-
-              setLoadingItem(null);
-              lastExpandedRef.current = id;
-            }, 500);
-          }
-        }}
+        onRowAction={onRowAction}
+        onCellAction={(rowIndex, colIndex) => colIndex === 0 && onRowAction(rowIndex)}
         // stickyColumns={{ first: 1 }}
         columnDefinitions={[
           {
@@ -250,7 +253,7 @@ export default function Page() {
                   ) : null}
 
                   {item.replicas ? (
-                    <div style={{ marginLeft: '-2px' }}>
+                    <div style={{ margin: '-8px 0 -8px -2px' }}>
                       <Button
                         variant="icon"
                         iconName={expanded[item.id] ? 'treeview-collapse' : 'treeview-expand'}
@@ -434,6 +437,16 @@ export default function Page() {
           {
             id: 'availabilityZone10',
             header: 'AZ 10',
+            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+          },
+          {
+            id: 'availabilityZone11',
+            header: 'AZ 11',
+            cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
+          },
+          {
+            id: 'availabilityZone12',
+            header: 'AZ 12',
             cell: item => (item.id.includes('control') || item.id.includes('empty') ? '' : item.availabilityZone),
           },
         ]}
