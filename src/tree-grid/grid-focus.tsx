@@ -159,11 +159,11 @@ export class GridFocusModel {
       let updated = false;
       const trParent = findUpUntil(target, node => node.tagName === 'TR');
       const rowIndex = trParent && parseInt(trParent.dataset.rowindex ?? '', 10);
+      const colIndex = parseInt(target.dataset.colindex ?? '', 10);
       if (rowIndex !== null && !isNaN(rowIndex) && rowIndex !== this.focusedRow) {
         this.focusedRow = rowIndex;
         updated = true;
       }
-      const colIndex = parseInt(target.dataset.colindex ?? '', 10);
       if (!isNaN(colIndex) && colIndex !== this.focusedColumn) {
         this.focusedColumn = colIndex;
         updated = true;
@@ -244,6 +244,7 @@ export class GridFocusModel {
     if (!focusedRow) {
       return;
     }
+
     const rowCells = focusedRow.querySelectorAll('td');
     const cellIndex = Math.max(-1, Math.min(rowCells.length - 1, (this.focusedColumn ?? 0) + direction));
 
@@ -254,15 +255,16 @@ export class GridFocusModel {
       return;
     }
 
-    const cellEl = rowCells[cellIndex];
-    if (cellEl) {
+    const nextFocused = (this.focusedColumn ?? 0) + direction;
+    const nextCell = focusedRow.querySelector(`[data-colindex="${nextFocused}"]`) as null | HTMLElement;
+    if (nextCell) {
       this.focusedColumn = cellIndex;
-      this.setFocusedElement(cellEl);
-      cellEl.focus();
+      this.setFocusedElement(nextCell);
+      nextCell.focus();
     }
 
-    const isFirst = cellEl === rowCells[0];
-    const isLast = cellEl === rowCells[rowCells.length - 1];
+    const isFirst = nextCell === rowCells[0];
+    const isLast = nextCell === rowCells[rowCells.length - 1];
     if (isFirst) {
       this.wrapper.scrollTo({ left: this.wrapper.scrollLeft - 300 });
     } else if (isLast) {
