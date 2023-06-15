@@ -381,7 +381,15 @@ export default function Page() {
                     <Box color="text-body-secondary">No replicas</Box>
                   ) : (
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <Link href={`#${item.id}`}>{item.id}</Link>
+                      <Link
+                        href={`#${item.id}`}
+                        onFollow={event => {
+                          event.preventDefault();
+                          alert(`Follow ${item.id}`);
+                        }}
+                      >
+                        {item.id}
+                      </Link>
 
                       {item.replicas ? (
                         <Box color="text-body-secondary" fontSize="body-s">
@@ -405,7 +413,20 @@ export default function Page() {
             id: 'url',
             header: 'URL',
             minWidth: 200,
-            cell: item => (isSpecialId(item.id) ? '' : item.url),
+            cell: item =>
+              isSpecialId(item.id) ? (
+                ''
+              ) : (
+                <Link
+                  href={item.url}
+                  onFollow={event => {
+                    event.preventDefault();
+                    alert(`Follow ${item.url}`);
+                  }}
+                >
+                  {item.url}
+                </Link>
+              ),
           },
           {
             id: 'state',
