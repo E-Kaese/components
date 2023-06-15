@@ -271,6 +271,52 @@ export class GridFocusModel {
     }
   }
 
+  private moveToExtreme(direction: -1 | 1) {
+    if (this.focusedRow === null) {
+      return;
+    }
+
+    // Move to start/end of the row.
+    if (this.focusedColumn !== null) {
+      this.wrapper.scrollTo({ left: direction === -1 ? 0 : this.wrapper.scrollWidth });
+
+      setTimeout(() => {
+        const focusedRow = this.container.querySelector(`[data-rowindex="${this.focusedRow}"]`) as null | HTMLElement;
+        if (!focusedRow) {
+          return;
+        }
+        const cellElements = focusedRow.querySelectorAll('td');
+        const nextCellElement = cellElements[direction === -1 ? 0 : cellElements.length - 1];
+        if (nextCellElement) {
+          const columnIndex = parseInt(nextCellElement.dataset.colindex ?? '', 10);
+          if (!isNaN(columnIndex)) {
+            this.focusedColumn = columnIndex;
+            this.setFocusedElement(nextCellElement);
+            nextCellElement.focus();
+          }
+        }
+      }, 100);
+    }
+
+    // Move to start/end of the table.
+    else {
+      this.wrapper.scrollTo({ top: direction === -1 ? 0 : this.wrapper.scrollHeight });
+
+      setTimeout(() => {
+        const rowElements = this.container.querySelectorAll('tr[data-rowindex]') as NodeListOf<HTMLElement>;
+        const nextRowElement = rowElements[direction === -1 ? 0 : rowElements.length - 1];
+        if (nextRowElement) {
+          const rowIndex = parseInt(nextRowElement.dataset.rowindex ?? '', 10);
+          if (!isNaN(rowIndex)) {
+            this.focusedRow = rowIndex;
+            this.setFocusedElement(nextRowElement);
+            nextRowElement.focus();
+          }
+        }
+      }, 100);
+    }
+  }
+
   private onKeyDown = (event: KeyboardEvent) => {
     const UP = 38;
     const DOWN = 40;
@@ -278,8 +324,6 @@ export class GridFocusModel {
     const RIGHT = 39;
     const HOME = 36;
     const END = 35;
-    const CTRL_HOME = -HOME;
-    const CTRL_END = -END;
 
     const ctrlKey = event.ctrlKey ? 1 : 0;
     const altKey = event.altKey ? 1 : 0;
@@ -316,23 +360,11 @@ export class GridFocusModel {
           this.moveByCol(1);
         }
         break;
-      case CTRL_HOME:
-        // moveToExtremeRow(-1);
-        break;
       case HOME:
-        // if (isEditableFocused()) {
-        //   return; // Leave key for editable area
-        // }
-        // moveToExtreme(-1);
-        break;
-      case CTRL_END:
-        // moveToExtremeRow(1);
+        this.moveToExtreme(-1);
         break;
       case END:
-        // if (isEditableFocused()) {
-        //   return; // Leave key for editable area
-        // }
-        // moveToExtreme(1);
+        this.moveToExtreme(1);
         break;
       case KeyCode.space:
       case KeyCode.enter:
