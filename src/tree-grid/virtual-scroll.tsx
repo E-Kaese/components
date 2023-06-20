@@ -259,10 +259,6 @@ export class VirtualScrollModel {
 
     this.overscan = Math.max(this.overscan, Math.ceil(maxItemSize / minItemSize));
 
-    if (currentFrameSize !== this.frameSize || currentOverscan !== this.overscan) {
-      console.log(this.horizontal ? 'columns' : 'rows', this.frameSize, this.overscan);
-    }
-
     return currentFrameSize !== this.frameSize || currentOverscan !== this.overscan;
   }
 
@@ -322,10 +318,7 @@ export class VirtualScrollModel {
   }
 
   private onSizeChange() {
-    const updated = this.updateFrameSizeAndOverscan();
-    if (updated) {
-      this.applyUpdate();
-    }
+    this.applyUpdate();
   }
 
   private onWrapperSizeChange: ResizeObserverCallback = entries => {
