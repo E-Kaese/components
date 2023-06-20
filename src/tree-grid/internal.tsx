@@ -192,13 +192,6 @@ const InternalTreeGrid = React.forwardRef(
     const toolsHeaderHeight =
       (toolsHeaderWrapper?.current as HTMLDivElement | null)?.getBoundingClientRect().height ?? 0;
 
-    // const [headerHeight, setHeaderHeight] = useState(0);
-    // useEffect(() => {
-    //   if (theadRef.current) {
-    //     setHeaderHeight(theadRef.current.getBoundingClientRect().height);
-    //   }
-    // }, []);
-
     // TODO: auto-set container size?
     const tdBefore = useRef<HTMLTableCellElement>(null);
     const tdAfter = useRef<HTMLTableCellElement>(null);
@@ -210,6 +203,17 @@ const InternalTreeGrid = React.forwardRef(
         tdAfter.current.style.height = sizeAfter + 'px';
       }
     };
+
+    // TODO: take defaultRowHeight, defaultColumnWidth as args as determine frameSize and overscan automatically.
+    // Frame size:
+    // 1. (initial) frameSize = Math.floor(wrapperSize / defaultItemSize) + 1
+    // 2. (every render) frameSize = Math.max(frameSize, Math.floor(wrapperSize / averageMinItemSize) + 1), where
+    // averageMinItemSize = findMinItemSizes(length = frameSize) / frameSize
+    //
+    // Overscan:
+    // 1. (initial) Overscan = 3
+    // 2. (every render) (overscan + frameSize) * minItemSizes < wrapperSize ? overscan++, repeat : overscan
+
     const virtualScroll = useVirtualScroll({
       size: items.length,
       getContainer: () => wrapperRefObject.current,
