@@ -213,9 +213,12 @@ const InternalTreeGrid = React.forwardRef(
     // Overscan:
     // 1. (initial) Overscan = 3
     // 2. (every render) (overscan + frameSize) * minItemSizes < wrapperSize ? overscan++, repeat : overscan
+    //
+    // Trigger frameSize,overscan when container size changes (observe).
 
     const virtualScroll = useVirtualScroll({
       size: items.length,
+      defaultItemSize: 40,
       getContainer: () => wrapperRefObject.current,
       onScrollPropsChange,
     });
@@ -243,6 +246,7 @@ const InternalTreeGrid = React.forwardRef(
     };
     const virtualScrollHorizontal = useVirtualScroll({
       size: visibleColumnDefinitions.length,
+      defaultItemSize: 150,
       getContainer: () => wrapperRefObject.current,
       onScrollPropsChange: onScrollPropsChangeHorizontal,
       frameSize: 10,

@@ -10,6 +10,7 @@ interface VirtualModelProps {
   size: number;
   frameSize?: number;
   horizontal?: boolean;
+  defaultItemSize: number;
   getContainer: () => null | HTMLElement;
   onScrollPropsChange: (props: ScrollProps) => void;
   onFrameChange: (props: FrameProps) => void;
@@ -105,6 +106,7 @@ export class VirtualScrollModel {
   // Props
   public size: number;
   public frameSize: number = DEFAULT_FRAME_SIZE;
+  public defaultItemSize: number;
   public readonly horizontal: boolean;
   private getContainer: () => null | HTMLElement;
   private onScrollPropsChange: (props: ScrollProps) => void;
@@ -120,22 +122,25 @@ export class VirtualScrollModel {
 
   // Other
   private onScrollListener: null | ((event: Event) => void) = null;
-  private onFocusListener: null | ((event: FocusEvent) => void) = null;
-  private onBlurListener: null | ((event: FocusEvent) => void) = null;
 
-  constructor({ size, frameSize, horizontal, getContainer, onScrollPropsChange, onFrameChange }: VirtualModelProps) {
+  constructor({
+    size,
+    frameSize,
+    horizontal,
+    defaultItemSize,
+    getContainer,
+    onScrollPropsChange,
+    onFrameChange,
+  }: VirtualModelProps) {
     this.size = size;
     this.frameSize = frameSize ?? this.frameSize;
+    this.defaultItemSize = defaultItemSize;
     this.horizontal = horizontal ?? false;
     this.getContainer = getContainer;
     this.onScrollPropsChange = onScrollPropsChange;
     this.onFrameChange = onFrameChange;
 
     this.init();
-  }
-
-  public get defaultSize() {
-    return this.horizontal ? 150 : 40;
   }
 
   public setItemSize(index: number, size: number) {
@@ -180,7 +185,7 @@ export class VirtualScrollModel {
 
     let scrollValue = 0;
     for (let i = 0; i < index; i++) {
-      scrollValue += this.evaluatedItemSizes[i] || this.defaultSize;
+      scrollValue += this.evaluatedItemSizes[i] || this.defaultItemSize;
     }
 
     // TODO: provide API
@@ -197,10 +202,10 @@ export class VirtualScrollModel {
     let sizeAfter = 0;
 
     for (let i = 0; i < this.frameStart && i < this.size; i++) {
-      sizeBefore += this.evaluatedItemSizes[i] || this.defaultSize;
+      sizeBefore += this.evaluatedItemSizes[i] || this.defaultItemSize;
     }
     for (let i = this.frameStart + this.frameSize; i < this.size; i++) {
-      sizeAfter += this.evaluatedItemSizes[i] || this.defaultSize;
+      sizeAfter += this.evaluatedItemSizes[i] || this.defaultItemSize;
     }
 
     // TODO: update only when necessary e.g. changing from 0 to non-0
@@ -244,10 +249,10 @@ export class VirtualScrollModel {
     let sizeBefore = 0;
     let sizeAfter = 0;
     for (let i = 0; i < frame[0] && i < this.size; i++) {
-      sizeBefore += this.evaluatedItemSizes[i] || this.defaultSize;
+      sizeBefore += this.evaluatedItemSizes[i] || this.defaultItemSize;
     }
     for (let i = frame[frame.length - 1] + 1; i < this.size; i++) {
-      sizeAfter += this.evaluatedItemSizes[i] || this.defaultSize;
+      sizeAfter += this.evaluatedItemSizes[i] || this.defaultItemSize;
     }
 
     this.pendingItemSizes = new Set([...frame]);
@@ -259,12 +264,6 @@ export class VirtualScrollModel {
     const containerEl = this.getContainer();
     if (containerEl && this.onScrollListener) {
       containerEl.removeEventListener('scroll', this.onScrollListener);
-    }
-    if (containerEl && this.onFocusListener) {
-      containerEl.removeEventListener('focus', this.onFocusListener);
-    }
-    if (containerEl && this.onBlurListener) {
-      containerEl.removeEventListener('blur', this.onBlurListener);
     }
   }
 
@@ -280,8 +279,6 @@ export class VirtualScrollModel {
 
   private init() {
     this.registerOnScroll();
-    // this.registerOnFocus();
-    // this.registerOnBlur();
   }
 
   private registerOnScroll() {
@@ -295,28 +292,4 @@ export class VirtualScrollModel {
     this.onScrollListener = this.handleScroll;
     containerEl.addEventListener('scroll', this.onScrollListener);
   }
-
-  // private registerOnFocus() {
-  //   if (this.onFocusListener) {
-  //     return;
-  //   }
-  //   const containerEl = this.getContainer();
-  //   if (!containerEl) {
-  //     return;
-  //   }
-  //   this.onFocusListener = this.handleFocus;
-  //   containerEl.addEventListener('focus', this.onFocusListener);
-  // }
-
-  // private registerOnBlur() {
-  //   if (this.onBlurListener) {
-  //     return;
-  //   }
-  //   const containerEl = this.getContainer();
-  //   if (!containerEl) {
-  //     return;
-  //   }
-  //   this.onBlurListener = this.handleBlur;
-  //   containerEl.addEventListener('blur', this.onBlurListener);
-  // }
 }
