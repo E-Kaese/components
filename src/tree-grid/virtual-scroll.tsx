@@ -239,9 +239,8 @@ export class VirtualScrollModel {
     const currentFrameSize = this.frameSize;
     const currentOverscan = this.overscan;
 
-    const itemSizesMinToMax = [...this.evaluatedItemSizes].sort();
-    const minItemSize = itemSizesMinToMax[0];
-    const maxItemSize = itemSizesMinToMax[itemSizesMinToMax.length - 1] ?? 0;
+    const itemSizesMinToMax = [...this.evaluatedItemSizes];
+    itemSizesMinToMax.sort((a, b) => a - b);
 
     const rect = this.getContainer()!.getBoundingClientRect();
     const containerWidth = Math.min(rect.width, window.innerWidth - rect.left);
@@ -257,9 +256,22 @@ export class VirtualScrollModel {
       }
     }
 
-    this.overscan = Math.max(this.overscan, Math.ceil(maxItemSize / minItemSize));
+    let minItemSize = this.evaluatedItemSizes[this.frameStart];
+    let maxItemSize = this.evaluatedItemSizes[this.frameStart];
+    for (let i = this.frameStart; i < Math.max(this.size, this.frameStart + this.frameSize); i++) {
+      if (this.evaluatedItemSizes[i] !== undefined) {
+        minItemSize = Math.min(minItemSize, this.evaluatedItemSizes[i]);
+        maxItemSize = Math.max(maxItemSize, this.evaluatedItemSizes[i]);
+      }
+    }
 
-    return currentFrameSize !== this.frameSize || currentOverscan !== this.overscan;
+    // TODO: use precise overscan calculation to minimize max frame size.
+    this.overscan = 1 + Math.ceil(maxItemSize / minItemSize);
+    // this.overscan = Math.max(this.overscan, Math.ceil(maxItemSize / minItemSize));
+
+    const updated = currentFrameSize !== this.frameSize || currentOverscan !== this.overscan;
+
+    return updated;
   }
 
   private handleScroll = (event: Event) => {
@@ -290,6 +302,7 @@ export class VirtualScrollModel {
 
     let frameStart = Math.round(scrollValue / averageItemSize);
     frameStart = Math.max(0, Math.min(this.size - this.frameSize, frameStart));
+    this.frameStart = frameStart;
 
     const frame = createFrame({ frameStart, frameSize: this.frameSize, overscan: this.overscan, size: this.size });
 
