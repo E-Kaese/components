@@ -24,14 +24,12 @@ const columnDefinitions = [
 ];
 
 interface PageSettings {
-  frameSize: number;
   frameStep: number;
   hidePagination: boolean;
   containerHeight?: number;
 }
 
 const defaultPageSettings: PageSettings = {
-  frameSize: 20,
   frameStep: 5,
   hidePagination: false,
   containerHeight: 0,
@@ -42,7 +40,6 @@ export default function App() {
 
   const hidePagination =
     typeof settings.hidePagination === 'boolean' ? settings.hidePagination : defaultPageSettings.hidePagination;
-  const frameSize = typeof settings.frameSize === 'number' ? settings.frameSize : defaultPageSettings.frameSize;
   const frameStep = typeof settings.frameStep === 'number' ? settings.frameStep : defaultPageSettings.frameStep;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -50,7 +47,7 @@ export default function App() {
   const elAfter = useRef<HTMLTableCellElement>(null);
   const virtualScroll = useVirtualScroll({
     size: items.length,
-    frameSize,
+    defaultItemSize: 40,
     getContainer: () => containerRef.current,
     onScrollPropsChange({ sizeBefore, sizeAfter }) {
       if (elBefore.current) {
@@ -67,7 +64,7 @@ export default function App() {
     <PageTemplate title="Experiment: Virtual scroll with frame pagination">
       {!hidePagination && (
         <FramePagination
-          frameSize={frameSize}
+          frameSize={virtualScroll.frame.length}
           frameStart={frameStart}
           totalItems={items.length}
           onChange={({ detail }) => virtualScroll.scrollToIndex(detail.frameStart)}

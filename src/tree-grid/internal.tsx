@@ -34,7 +34,7 @@ import useTableFocusNavigation from './use-table-focus-navigation';
 import { SomeRequired } from '../internal/types';
 import { TableTdElement } from './body-cell/td-element';
 import { useStickyColumns, selectionColumnId } from './use-sticky-columns';
-import { DEFAULT_FRAME_SIZE, ScrollProps, useVirtualScroll } from './virtual-scroll';
+import { ScrollProps, useVirtualScroll } from './virtual-scroll';
 import { FrameAnnouncer, FrameNavigation } from './screen-reader-frame-navigation';
 import { useGridFocus } from './grid-focus';
 
@@ -204,18 +204,6 @@ const InternalTreeGrid = React.forwardRef(
       }
     };
 
-    // TODO: take defaultRowHeight, defaultColumnWidth as args as determine frameSize and overscan automatically.
-    // Frame size:
-    // 1. (initial) frameSize = Math.floor(wrapperSize / defaultItemSize) + 1
-    // 2. (every render) frameSize = Math.max(frameSize, Math.floor(wrapperSize / averageMinItemSize) + 1), where
-    // averageMinItemSize = findMinItemSizes(length = frameSize) / frameSize
-    //
-    // Overscan:
-    // 1. (initial) Overscan = 3
-    // 2. (every render) (overscan + frameSize) * minItemSizes < wrapperSize ? overscan++, repeat : overscan
-    //
-    // Trigger frameSize,overscan when container size changes (observe).
-
     const virtualScroll = useVirtualScroll({
       size: items.length,
       defaultItemSize: 40,
@@ -223,8 +211,8 @@ const InternalTreeGrid = React.forwardRef(
       onScrollPropsChange,
     });
     const frameStart = virtualScroll.frame[0];
-    const prevFrame = Math.max(0, frameStart - DEFAULT_FRAME_SIZE);
-    const nextFrame = Math.min(items.length - DEFAULT_FRAME_SIZE, frameStart + DEFAULT_FRAME_SIZE);
+    const prevFrame = Math.max(0, frameStart - virtualScroll.frame.length);
+    const nextFrame = Math.min(items.length - virtualScroll.frame.length, frameStart + virtualScroll.frame.length);
 
     const divBefore = useRef<HTMLDivElement>(null);
     const divBeforeSticky = useRef<HTMLDivElement>(null);
@@ -249,7 +237,6 @@ const InternalTreeGrid = React.forwardRef(
       defaultItemSize: 150,
       getContainer: () => wrapperRefObject.current,
       onScrollPropsChange: onScrollPropsChangeHorizontal,
-      frameSize: 10,
       horizontal: true,
     });
 
@@ -311,6 +298,7 @@ const InternalTreeGrid = React.forwardRef(
         hasSelection={hasSelection}
       >
         <InternalContainer
+          fitHeight={true}
           {...baseProps}
           __internalRootRef={__internalRootRef}
           className={clsx(baseProps.className, styles.root)}
@@ -368,7 +356,7 @@ const InternalTreeGrid = React.forwardRef(
           {virtualScroll.frame.length < items.length && (
             <FrameAnnouncer
               frameStart={virtualScroll.frame[0]}
-              frameSize={DEFAULT_FRAME_SIZE}
+              frameSize={virtualScroll.frame.length}
               totalSize={items.length}
             />
           )}
