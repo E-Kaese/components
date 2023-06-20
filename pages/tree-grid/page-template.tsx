@@ -6,12 +6,14 @@ import { Box } from '~components';
 
 export function PageTemplate({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Box padding="l">
-      <Box margin={{ bottom: 'm' }}>
-        <Header variant="h1">{title}</Header>
-      </Box>
+    <div style={{ height: '90vh' }}>
+      <div style={{ height: '100%', padding: '16px' }}>
+        <Box margin={{ bottom: 'm' }}>
+          <Header variant="h1">{title}</Header>
+        </Box>
 
-      {children}
-    </Box>
+        {children}
+      </div>
+    </div>
   );
 }

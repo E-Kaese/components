@@ -31,8 +31,7 @@ export interface Virtualizer {
 
 export function useVirtualScroll(props: Omit<VirtualModelProps, 'onFrameChange'>): Virtualizer {
   // TODO: use better defaults
-  // fix default columns sizing issue
-  const [frame, setFrame] = useState(createFrame({ frameStart: 0, frameSize: 10, overscan: 0, size: props.size }));
+  const [frame, setFrame] = useState(createFrame({ frameStart: 0, frameSize: 0, overscan: 0, size: props.size }));
 
   const itemRefs = useRef<{ [index: number]: null | HTMLElement }>({});
 

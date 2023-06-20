@@ -25,7 +25,7 @@ export default function Page() {
   const [settings] = useAppSettings({
     features: {
       stickyHeader: true,
-      resizableColumns: true,
+      resizableColumns: false,
     },
     asyncProps: {
       pageSize: 20,
