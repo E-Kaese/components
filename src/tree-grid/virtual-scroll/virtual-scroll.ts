@@ -1,20 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-
-interface VirtualModelProps {
-  size: number;
-  horizontal?: boolean;
-  defaultItemSize: number;
-  containerRef: React.RefObject<HTMLElement>;
-  onScrollPropsChange: (props: ScrollProps) => void;
-}
-
-export interface ScrollProps {
-  sizeBefore: number;
-  sizeAfter: number;
-}
+import { DimensionResizeObserver } from './dimension-resize-observer';
+import { createFrame } from './utils';
 
 interface FrameProps {
   frame: number[];
@@ -22,88 +10,7 @@ interface FrameProps {
   sizeAfter: number;
 }
 
-export interface Virtualizer {
-  frame: number[];
-  setItemRef: (index: number, node: null | HTMLElement) => void;
-  scrollToIndex: (index: number) => void;
-}
-
-export function useVirtualScroll(props: VirtualModelProps): Virtualizer {
-  // TODO: use better defaults
-  const [frame, setFrame] = useState(createFrame({ frameStart: 0, frameSize: 0, overscan: 0, size: props.size }));
-
-  const itemRefs = useRef<{ [index: number]: null | HTMLElement }>({});
-
-  const [model, setModel] = useState<null | VirtualScrollModel>(null);
-  useEffect(() => {
-    if (props.containerRef.current) {
-      setModel(
-        new VirtualScrollModel({
-          ...props,
-          horizontal: props.horizontal ?? false,
-          scrollContainer: props.containerRef.current,
-          onFrameChange: ({ frame, ...scrollProps }) => {
-            setFrame(frame);
-            props.onScrollPropsChange(scrollProps);
-          },
-        })
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.containerRef]);
-
-  useEffect(() => {
-    return () => {
-      model && model.cleanup();
-    };
-  }, [model]);
-
-  const setItemRef = useCallback(
-    (index: number, node: null | HTMLElement) => {
-      itemRefs.current[index] = node;
-      if (node && model) {
-        const property = model.horizontal ? 'width' : 'height';
-        model.setItemSize(index, node.getBoundingClientRect()[property]);
-      }
-    },
-    [model]
-  );
-
-  // TODO: consider collection change instead of its size change
-  useEffect(() => {
-    model && model.setSize(props.size);
-  }, [model, props.size]);
-
-  useEffect(() => {
-    model && model.setDefaultItemSize(props.defaultItemSize);
-  }, [model, props.defaultItemSize]);
-
-  return {
-    frame,
-    setItemRef,
-    scrollToIndex: (index: number) => model?.scrollToIndex(index),
-  };
-}
-
-function createFrame({
-  frameStart,
-  frameSize,
-  overscan,
-  size,
-}: {
-  frameStart: number;
-  frameSize: number;
-  overscan: number;
-  size: number;
-}): number[] {
-  const frame: number[] = [];
-  for (let i = Math.max(0, frameStart - overscan); i < frameStart + frameSize && i < size; i++) {
-    frame.push(i);
-  }
-  return frame;
-}
-
-interface VirtualScrollInitProps {
+export interface VirtualScrollInitProps {
   size: number;
   horizontal: boolean;
   defaultItemSize: number;
@@ -141,7 +48,6 @@ export class VirtualScrollModel {
   private pendingItemSizes = new Set<number>();
   private scrollTop = 0;
   private scrollLeft = 0;
-  private lastObservedContainerSize = -1;
   private cleanupCallbacks: (() => void)[] = [];
 
   constructor({ size, horizontal, defaultItemSize, scrollContainer, onFrameChange }: VirtualScrollInitProps) {
@@ -154,9 +60,9 @@ export class VirtualScrollModel {
     scrollContainer.addEventListener('scroll', this.handleScroll);
     this.cleanupCallbacks.push(() => scrollContainer.removeEventListener('scroll', this.handleScroll));
 
-    const resizeObserver = new ResizeObserver(this.onWrapperSizeChange);
-    resizeObserver.observe(scrollContainer);
-    this.cleanupCallbacks.push(() => resizeObserver.disconnect());
+    const dimensionObserver = new DimensionResizeObserver({ horizontal, onSizeChange: this.applyUpdate.bind(this) });
+    dimensionObserver.observe(scrollContainer);
+    this.cleanupCallbacks.push(() => dimensionObserver.disconnect());
   }
 
   public cleanup = () => {
@@ -309,22 +215,6 @@ export class VirtualScrollModel {
     this.pendingItemSizes = new Set([...frame]);
 
     this.onFrameChange({ frame, sizeBefore, sizeAfter });
-  };
-
-  private onSizeChange() {
-    this.applyUpdate();
-  }
-
-  private onWrapperSizeChange: ResizeObserverCallback = entries => {
-    const entry = entries[0];
-    const contentBoxWidth = entry.contentBoxSize[0].inlineSize;
-    const contentBoxHeight = entry.contentBoxSize[0].blockSize;
-    const observedContainerSize = this.horizontal ? contentBoxWidth : contentBoxHeight;
-
-    if (this.lastObservedContainerSize !== -1 && this.lastObservedContainerSize !== observedContainerSize) {
-      this.onSizeChange();
-    }
-    this.lastObservedContainerSize = observedContainerSize;
   };
 
   private updateAllFrameSizes() {
