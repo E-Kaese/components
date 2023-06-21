@@ -1,15 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 interface VirtualModelProps {
   size: number;
   horizontal?: boolean;
   defaultItemSize: number;
-  getContainer: () => null | HTMLElement;
+  containerRef: React.RefObject<HTMLElement>;
   onScrollPropsChange: (props: ScrollProps) => void;
-  onFrameChange: (props: FrameProps) => void;
 }
 
 export interface ScrollProps {
@@ -29,36 +28,40 @@ export interface Virtualizer {
   scrollToIndex: (index: number) => void;
 }
 
-export function useVirtualScroll(props: Omit<VirtualModelProps, 'onFrameChange'>): Virtualizer {
+export function useVirtualScroll(props: VirtualModelProps): Virtualizer {
   // TODO: use better defaults
   const [frame, setFrame] = useState(createFrame({ frameStart: 0, frameSize: 0, overscan: 0, size: props.size }));
 
   const itemRefs = useRef<{ [index: number]: null | HTMLElement }>({});
 
-  // TODO: init in useEffect to avoid calling state from useState callback?
-  const [model] = useState(() => {
-    return new VirtualScrollModel({
-      ...props,
-      onFrameChange: ({ frame, ...scrollProps }) => {
-        setFrame(frame);
+  const [model, setModel] = useState<null | VirtualScrollModel>(null);
+  useEffect(() => {
+    if (props.containerRef.current) {
+      setModel(
+        new VirtualScrollModel({
+          ...props,
+          horizontal: props.horizontal ?? false,
+          scrollContainer: props.containerRef.current,
+          onFrameChange: ({ frame, ...scrollProps }) => {
+            setFrame(frame);
+            props.onScrollPropsChange(scrollProps);
+          },
+        })
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.containerRef]);
 
-        props.onScrollPropsChange(scrollProps);
-      },
-      onScrollPropsChange: scrollProps => {
-        props.onScrollPropsChange(scrollProps);
-      },
-    });
-  });
   useEffect(() => {
     return () => {
-      model.destroy();
+      model && model.cleanup();
     };
   }, [model]);
 
   const setItemRef = useCallback(
     (index: number, node: null | HTMLElement) => {
       itemRefs.current[index] = node;
-      if (node) {
+      if (node && model) {
         const property = model.horizontal ? 'width' : 'height';
         model.setItemSize(index, node.getBoundingClientRect()[property]);
       }
@@ -68,13 +71,17 @@ export function useVirtualScroll(props: Omit<VirtualModelProps, 'onFrameChange'>
 
   // TODO: consider collection change instead of its size change
   useEffect(() => {
-    model.setSize(props.size);
+    model && model.setSize(props.size);
   }, [model, props.size]);
+
+  useEffect(() => {
+    model && model.setDefaultItemSize(props.defaultItemSize);
+  }, [model, props.defaultItemSize]);
 
   return {
     frame,
     setItemRef,
-    scrollToIndex: model.scrollToIndex,
+    scrollToIndex: (index: number) => model?.scrollToIndex(index),
   };
 }
 
@@ -96,14 +103,35 @@ function createFrame({
   return frame;
 }
 
+interface VirtualScrollInitProps {
+  size: number;
+  horizontal: boolean;
+  defaultItemSize: number;
+  scrollContainer: HTMLElement;
+  onFrameChange: (props: FrameProps) => void;
+}
+
 export class VirtualScrollModel {
   // Props
-  public size: number;
-  public defaultItemSize: number;
-  public readonly horizontal: boolean;
-  private getContainer: () => null | HTMLElement;
-  private onScrollPropsChange: (props: ScrollProps) => void;
+  private _size: number;
+  private _defaultItemSize: number;
+  private _horizontal: boolean;
+  private _scrollContainer: HTMLElement;
   private onFrameChange: (props: FrameProps) => void;
+
+  // Props getters
+  public get size() {
+    return this._size;
+  }
+  public get defaultItemSize() {
+    return this._defaultItemSize;
+  }
+  public get horizontal() {
+    return this._horizontal;
+  }
+  public get scrollContainer() {
+    return this._scrollContainer;
+  }
 
   // State
   private frameSize = 0;
@@ -111,69 +139,54 @@ export class VirtualScrollModel {
   private frameStart = 0;
   private evaluatedItemSizes: number[] = [];
   private pendingItemSizes = new Set<number>();
-  private initialized = false;
   private scrollTop = 0;
   private scrollLeft = 0;
-
-  // Other
-  private onScrollListener: null | ((event: Event) => void) = null;
-  private resizeObserver: null | ResizeObserver = null;
   private lastObservedContainerSize = -1;
+  private cleanupCallbacks: (() => void)[] = [];
 
-  constructor({
-    size,
-    horizontal,
-    defaultItemSize,
-    getContainer,
-    onScrollPropsChange,
-    onFrameChange,
-  }: VirtualModelProps) {
-    this.size = size;
-    this.defaultItemSize = defaultItemSize;
-    this.horizontal = horizontal ?? false;
-    this.getContainer = getContainer;
-    this.onScrollPropsChange = onScrollPropsChange;
+  constructor({ size, horizontal, defaultItemSize, scrollContainer, onFrameChange }: VirtualScrollInitProps) {
+    this._size = size;
+    this._defaultItemSize = defaultItemSize;
+    this._horizontal = horizontal;
+    this._scrollContainer = scrollContainer;
     this.onFrameChange = onFrameChange;
 
-    this.init();
+    scrollContainer.addEventListener('scroll', this.handleScroll);
+    this.cleanupCallbacks.push(() => scrollContainer.removeEventListener('scroll', this.handleScroll));
+
+    const resizeObserver = new ResizeObserver(this.onWrapperSizeChange);
+    resizeObserver.observe(scrollContainer);
+    this.cleanupCallbacks.push(() => resizeObserver.disconnect());
+  }
+
+  public cleanup = () => {
+    for (const cb of this.cleanupCallbacks) {
+      try {
+        cb();
+      } catch (error: unknown) {
+        console.warn(error instanceof Error ? error.message : error);
+      }
+    }
+  };
+
+  public setSize(size: number) {
+    this._size = size;
+
+    this.updateAllFrameSizes();
+    this.applyUpdate();
+  }
+
+  public setDefaultItemSize(defaultItemSize: number) {
+    this._defaultItemSize = defaultItemSize;
+
+    this.updateAllFrameSizes();
+    this.applyUpdate();
   }
 
   public setItemSize(index: number, size: number) {
     this.pendingItemSizes.delete(index);
     this.evaluatedItemSizes[index] = size;
   }
-
-  public setSize(size: number) {
-    this.init();
-
-    this.size = size;
-
-    this.updateAllFrameSizes();
-
-    // const frame = createFrame({ frameStart: this.frameStart, frameSize: this.frameSize, size });
-    // this.pendingItemSizes = new Set();
-    // for (const f of frame) {
-    //   this.pendingItemSizes.add(f);
-    // }
-
-    this.applyUpdate();
-  }
-
-  // public setFrameSize(frameSize: number) {
-  //   this.init();
-
-  //   this.frameSize = frameSize;
-
-  //   this.updateAllFrameSizes();
-
-  //   // const frame = createFrame({ frameStart: this.frameStart, frameSize, size: this.size });
-  //   // this.pendingItemSizes = new Set();
-  //   // for (const f of frame) {
-  //   //   this.pendingItemSizes.add(f);
-  //   // }
-
-  //   this.applyUpdate();
-  // }
 
   public scrollToIndex = (index: number) => {
     index = Math.min(this.size, Math.max(0, index));
@@ -183,12 +196,8 @@ export class VirtualScrollModel {
       scrollValue += this.evaluatedItemSizes[i] || this.defaultItemSize;
     }
 
-    // TODO: provide API instead of updating the container explicitly?
-    const container = this.getContainer();
-    if (container) {
-      const property = this.horizontal ? 'scrollLeft' : 'scrollTop';
-      container[property] = scrollValue;
-    }
+    const property = this.horizontal ? 'scrollLeft' : 'scrollTop';
+    this.scrollContainer[property] = scrollValue;
   };
 
   private applyUpdate() {
@@ -214,24 +223,6 @@ export class VirtualScrollModel {
       this.pendingItemSizes = new Set([...frame]);
 
       this.onFrameChange({ frame, sizeBefore, sizeAfter });
-    } else {
-      let sizeBefore = 0;
-      let sizeAfter = 0;
-
-      for (let i = 0; i < this.frameStart && i < this.size; i++) {
-        sizeBefore += this.evaluatedItemSizes[i] || this.defaultItemSize;
-      }
-      for (let i = this.frameStart + this.frameSize; i < this.size; i++) {
-        sizeAfter += this.evaluatedItemSizes[i] || this.defaultItemSize;
-      }
-
-      // TODO: update only when necessary e.g. changing from 0 to non-0
-      // this.onScrollPropsChange({ sizeBefore, sizeAfter });
-
-      if (!this.initialized) {
-        this.onScrollPropsChange({ sizeBefore, sizeAfter });
-        this.initialized = true;
-      }
     }
   }
 
@@ -242,7 +233,7 @@ export class VirtualScrollModel {
     const itemSizesMinToMax = [...this.evaluatedItemSizes];
     itemSizesMinToMax.sort((a, b) => a - b);
 
-    const rect = this.getContainer()!.getBoundingClientRect();
+    const rect = this.scrollContainer.getBoundingClientRect();
     const containerWidth = Math.min(rect.width, window.innerWidth - rect.left);
     const containerHeight = Math.min(rect.height, window.innerHeight - rect.top);
     const containerSize = this.horizontal ? containerWidth : containerHeight;
@@ -320,16 +311,6 @@ export class VirtualScrollModel {
     this.onFrameChange({ frame, sizeBefore, sizeAfter });
   };
 
-  public destroy() {
-    const containerEl = this.getContainer();
-    if (containerEl && this.onScrollListener) {
-      containerEl.removeEventListener('scroll', this.onScrollListener);
-    }
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
-  }
-
   private onSizeChange() {
     this.applyUpdate();
   }
@@ -354,39 +335,5 @@ export class VirtualScrollModel {
       newSizes[i] = this.evaluatedItemSizes[i] ?? this.defaultItemSize;
     }
     this.evaluatedItemSizes = newSizes;
-
-    // this.evaluatedItemSizes = [];
-    // for (let i = 0; i < this.size; i++) {
-    //   this.evaluatedItemSizes.push(0);
-    // }
-  }
-
-  private init() {
-    this.registerOnScroll();
-    this.registerResizeObserver();
-  }
-
-  private registerOnScroll() {
-    if (this.onScrollListener) {
-      return;
-    }
-    const containerEl = this.getContainer();
-    if (!containerEl) {
-      return;
-    }
-    this.onScrollListener = this.handleScroll;
-    containerEl.addEventListener('scroll', this.onScrollListener);
-  }
-
-  private registerResizeObserver() {
-    if (this.resizeObserver) {
-      return;
-    }
-    const containerEl = this.getContainer();
-    if (!containerEl) {
-      return;
-    }
-    this.resizeObserver = new ResizeObserver(this.onWrapperSizeChange);
-    this.resizeObserver.observe(containerEl);
   }
 }

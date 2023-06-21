@@ -126,6 +126,10 @@ export default function InternalFramePagination({
       return;
     }
     const closestEl = paginationRef.current.querySelector(`button[aria-label="${indexClosest + 1}"]`)!;
+    if (!closestEl) {
+      return;
+    }
+
     const closestElOffset = closestEl.getBoundingClientRect().x - paginationRef.current.getBoundingClientRect().x;
     const closestElWidth = closestEl.getBoundingClientRect().width;
     const diff = closestElWidth * ((frameStart - indexClosest * frameSize) / frameSize);

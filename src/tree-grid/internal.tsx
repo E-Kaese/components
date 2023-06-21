@@ -207,7 +207,7 @@ const InternalTreeGrid = React.forwardRef(
     const virtualScroll = useVirtualScroll({
       size: items.length,
       defaultItemSize: 40,
-      getContainer: () => wrapperRefObject.current,
+      containerRef: wrapperRefObject,
       onScrollPropsChange,
     });
     const frameStart = virtualScroll.frame[0];
@@ -235,7 +235,7 @@ const InternalTreeGrid = React.forwardRef(
     const virtualScrollHorizontal = useVirtualScroll({
       size: visibleColumnDefinitions.length,
       defaultItemSize: 150,
-      getContainer: () => wrapperRefObject.current,
+      containerRef: wrapperRefObject,
       onScrollPropsChange: onScrollPropsChangeHorizontal,
       horizontal: true,
     });

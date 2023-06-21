@@ -48,7 +48,7 @@ export default function App() {
   const virtualScroll = useVirtualScroll({
     size: items.length,
     defaultItemSize: 40,
-    getContainer: () => containerRef.current,
+    containerRef,
     onScrollPropsChange({ sizeBefore, sizeAfter }) {
       if (elBefore.current) {
         elBefore.current.style.height = sizeBefore + 'px';
