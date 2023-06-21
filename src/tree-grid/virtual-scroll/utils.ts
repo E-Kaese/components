@@ -1,19 +1,19 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-export function createFrame({
+export function createVirtualIndices({
   frameStart,
   frameSize,
   overscan,
-  size,
+  totalSize,
 }: {
   frameStart: number;
   frameSize: number;
   overscan: number;
-  size: number;
+  totalSize: number;
 }): number[] {
   const frame: number[] = [];
-  for (let i = Math.max(0, frameStart - overscan); i < frameStart + frameSize && i < size; i++) {
+  for (let i = Math.max(0, frameStart - overscan); i < frameStart + frameSize && i < totalSize; i++) {
     frame.push(i);
   }
   return frame;

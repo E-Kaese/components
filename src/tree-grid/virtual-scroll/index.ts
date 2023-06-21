@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { VirtualScrollModel } from './virtual-scroll';
 import { useEffectOnUpdate } from '../../internal/hooks/use-effect-on-update';
 
@@ -26,13 +26,12 @@ export interface Virtualizer {
 }
 
 export function useVirtualScroll<Item extends object>(props: VirtualModelProps<Item>): Virtualizer {
-  // TODO: use better defaults
   const [frame, setFrame] = useState<readonly number[]>([]);
 
   const itemRefs = useRef<{ [index: number]: null | HTMLElement }>({});
 
   const [model, setModel] = useState<null | VirtualScrollModel<Item>>(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (props.containerRef.current) {
       setModel(
         new VirtualScrollModel({

@@ -35,7 +35,7 @@ import { SomeRequired } from '../internal/types';
 import { TableTdElement } from './body-cell/td-element';
 import { useStickyColumns, selectionColumnId } from './use-sticky-columns';
 import { ScrollProps, useVirtualScroll } from './virtual-scroll';
-import { FrameAnnouncer, FrameNavigation } from './screen-reader-frame-navigation';
+// import { FrameAnnouncer, FrameNavigation } from './screen-reader-frame-navigation';
 import { useGridFocus } from './grid-focus';
 
 type InternalTreeGridProps<T> = SomeRequired<TreeGridProps<T>, 'items' | 'selectedItems' | 'variant'> &
@@ -212,9 +212,9 @@ const InternalTreeGrid = React.forwardRef(
       containerRef: wrapperRefObject,
       onScrollPropsChange,
     });
-    const frameStart = virtualScroll.frame[0];
-    const prevFrame = Math.max(0, frameStart - virtualScroll.frame.length);
-    const nextFrame = Math.min(items.length - virtualScroll.frame.length, frameStart + virtualScroll.frame.length);
+    // const frameStart = virtualScroll.frame[0];
+    // const prevFrame = Math.max(0, frameStart - virtualScroll.frame.length);
+    // const nextFrame = Math.min(items.length - virtualScroll.frame.length, frameStart + virtualScroll.frame.length);
 
     const divBefore = useRef<HTMLDivElement>(null);
     const divBeforeSticky = useRef<HTMLDivElement>(null);
@@ -357,7 +357,7 @@ const InternalTreeGrid = React.forwardRef(
           __stickyOffset={stickyHeaderVerticalOffset}
           {...focusMarkers.root}
         >
-          {virtualScroll.frame.length < items.length && (
+          {/* {virtualScroll.frame.length < items.length && (
             <FrameAnnouncer
               frameStart={virtualScroll.frame[0]}
               frameSize={virtualScroll.frame.length}
@@ -374,7 +374,7 @@ const InternalTreeGrid = React.forwardRef(
               nextFrameLabel="Next frame"
               onNextFrame={() => virtualScroll.scrollToIndex(nextFrame)}
             />
-          )}
+          )} */}
 
           <div style={{ position: 'relative', height: '100%' }}>
             <div
@@ -384,14 +384,10 @@ const InternalTreeGrid = React.forwardRef(
                 [styles['has-footer']]: hasFooter,
                 [styles['has-header']]: hasHeader,
               })}
-              onScroll={event => {
-                handleScroll?.(event);
-                // virtualScroll.handlers.onScroll((event.target as HTMLElement).scrollTop);
-              }}
+              onScroll={handleScroll}
               {...wrapperProps}
               style={{
-                // TODO: conditional overflow
-                overflowY: 'auto', // virtualScroll.sizeAfter + virtualScroll.sizeBefore > 0 ? 'auto' : 'unset',
+                overflowY: 'auto',
                 display: 'flex',
                 position: 'absolute',
                 inset: 0,
