@@ -5,6 +5,38 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { VirtualScrollModel } from './virtual-scroll';
 import { useEffectOnUpdate } from '../../internal/hooks/use-effect-on-update';
 
+/**
+ * Scenarios:
+ *
+ * First render:
+ * 1. The table renders with no elements;
+ * 2. Wrapper size is set -> the initial frame based on wrapper size and default item size is set;
+ * 3. The first frame approximation is measured and real sizes are received (does it require an extra trigger?);
+ * 4. Frame window is updated using real sizes and:
+ *    4.1. Space before/after is updated (imperatively);
+ *    4.2. Space before/after and frame are updated (extra render, only if real sizes are below the defaults).
+ *
+ * User scroll:
+ * 1. Frame start is updated;
+ * 2. New frame is rendered and new sizes are received (does it require an extra trigger?);
+ * 3. Possible extra updates:
+ *    3.1. Nothing extra is updated as all sizes are already cached;
+ *    3.2. Space before/after is updated (imperatively);
+ *    3.3. Space before/after and frame are updated (extra render, only if new sizes are smaller).
+ *
+ * Default item size updated:
+ * 1. Space before/after are updated (imperatively).
+ *
+ * Items updated:
+ * 1. New item sizes are received (happens before useEffect);
+ * 2. Possible extra updates:
+ *    2.1. Space before/after is updated (imperatively);
+ *    2.2. Space before/after and frame are updated (extra render, only if new sizes are smaller).
+ *
+ * Column widths updated (by user):
+ * 1. Nothing - the corresponding values can be updated during the next scroll event.
+ */
+
 interface VirtualModelProps<Item extends object> {
   items: readonly Item[];
   horizontal?: boolean;
