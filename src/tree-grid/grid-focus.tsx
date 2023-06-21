@@ -6,22 +6,32 @@ import { findUpUntil } from '../internal/utils/dom';
 import { KeyCode } from '../internal/keycode';
 import { useStableEventHandler } from '../internal/hooks/use-stable-event-handler';
 
+const KEYBOARD_PAGE_SIZE = 50;
+
 interface GridFocusProps {
   rows: number;
   getWrapper: () => null | HTMLElement;
   getContainer: () => null | HTMLElement;
   onRowAction?: (rowIndex: number) => void;
   onCellAction?: (rowIndex: number, colIndex: number) => void;
+  onScrollToIndex: (rowIndex: number, colIndex: number) => void;
 }
 
-export function useGridFocus({ rows, getWrapper, getContainer, onRowAction, onCellAction }: GridFocusProps) {
+export function useGridFocus({
+  rows,
+  getWrapper,
+  getContainer,
+  onRowAction,
+  onCellAction,
+  onScrollToIndex,
+}: GridFocusProps) {
   const [model, setModel] = useState(() => {
     const wrapper = getWrapper();
     const container = getContainer();
     if (!wrapper || !container) {
       return null;
     }
-    return new GridFocusModel(container, wrapper, onRowAction, onCellAction);
+    return new GridFocusModel(container, wrapper, onScrollToIndex, onRowAction, onCellAction);
   });
 
   useEffect(() => {
@@ -43,7 +53,7 @@ export function useGridFocus({ rows, getWrapper, getContainer, onRowAction, onCe
     if (!wrapper || !container) {
       return;
     }
-    setModel(new GridFocusModel(container, wrapper, stableOnRowAction, stableOnCellAction));
+    setModel(new GridFocusModel(container, wrapper, onScrollToIndex, stableOnRowAction, stableOnCellAction));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, stableOnRowAction, stableOnCellAction]);
 
@@ -61,6 +71,7 @@ export class GridFocusModel {
   // Props
   private container: HTMLElement;
   private wrapper: HTMLElement;
+  private onScrollToIndex: (rowIndex: number, colIndex: number) => void;
   private onRowAction?: (rowIndex: number) => void;
   private onCellAction?: (rowIndex: number, columnIndex: number) => void;
   private columns = 0;
@@ -74,11 +85,13 @@ export class GridFocusModel {
   constructor(
     container: HTMLElement,
     wrapper: HTMLElement,
+    onScrollToIndex: (rowIndex: number, colIndex: number) => void,
     onRowAction?: (rowIndex: number) => void,
     onCellAction?: (rowIndex: number, columnIndex: number) => void
   ) {
     this.container = container;
     this.wrapper = wrapper;
+    this.onScrollToIndex = onScrollToIndex;
     this.onRowAction = onRowAction;
     this.onCellAction = onCellAction;
 
@@ -317,6 +330,22 @@ export class GridFocusModel {
     }
   }
 
+  private moveToPage(direction: -1 | 1) {
+    if (this.focusedRow === null || this.focusedColumn !== null) {
+      return;
+    }
+
+    // Move one page up/down the table.
+    else {
+      this.onScrollToIndex(
+        direction === -1 ? this.focusedRow - KEYBOARD_PAGE_SIZE : this.focusedRow + KEYBOARD_PAGE_SIZE,
+        0
+      );
+
+      // set timeout - set next page row as focused
+    }
+  }
+
   private onKeyDown = (event: KeyboardEvent) => {
     const UP = 38;
     const DOWN = 40;
@@ -324,6 +353,8 @@ export class GridFocusModel {
     const RIGHT = 39;
     const HOME = 36;
     const END = 35;
+    const PAGE_UP = 33;
+    const PAGE_DOWN = 34;
 
     const ctrlKey = event.ctrlKey ? 1 : 0;
     const altKey = event.altKey ? 1 : 0;
@@ -365,6 +396,12 @@ export class GridFocusModel {
         break;
       case END:
         this.moveToExtreme(1);
+        break;
+      case PAGE_UP:
+        this.moveToPage(-1);
+        break;
+      case PAGE_DOWN:
+        this.moveToPage(+1);
         break;
       case KeyCode.space:
       case KeyCode.enter:

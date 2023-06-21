@@ -280,6 +280,11 @@ const InternalTreeGrid = React.forwardRef(
       rows: items.length,
       getContainer: () => tbodyRef.current,
       getWrapper: () => wrapperRefObject.current,
+      onScrollToIndex: (rowIndex: number, columnIndex: number) => {
+        virtualScroll.scrollToIndex(rowIndex);
+        console.log('SCROLL TO', rowIndex, columnIndex);
+        // TODO: implement for column insdex as well
+      },
       onRowAction,
       onCellAction,
     });

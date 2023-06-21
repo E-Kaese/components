@@ -113,9 +113,14 @@ export function useVirtualScroll<Item extends object>(props: VirtualModelProps<I
   const safeFrame =
     frame[frame.length - 1] >= props.items.length ? frame.filter(index => index < props.items.length) : frame;
 
+  const modelRef = useRef<null | VirtualScrollModel<Item>>(null);
+  modelRef.current = model;
+
   return {
     frame: safeFrame,
     setItemRef,
-    scrollToIndex: (index: number) => model?.scrollToIndex(index),
+    scrollToIndex: (index: number) => {
+      modelRef.current?.scrollToIndex(index);
+    },
   };
 }
