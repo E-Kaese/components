@@ -75,8 +75,13 @@ export function useVirtualScroll<Item extends object>(props: VirtualModelProps<I
     model && model.setDefaultItemSize(props.defaultItemSize);
   }, [model, props.defaultItemSize]);
 
+  // TODO: is there a better way to achieve the same?
+  // Can't rely on setFrame because the items and frame can become out of sync in case items shrink.
+  const safeFrame =
+    frame[frame.length - 1] >= props.items.length ? frame.filter(index => index < props.items.length) : frame;
+
   return {
-    frame,
+    frame: safeFrame,
     setItemRef,
     scrollToIndex: (index: number) => model?.scrollToIndex(index),
   };

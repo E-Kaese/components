@@ -7,29 +7,30 @@ import { createVirtualIndices } from './utils';
 const PENDING_ITEM_SIZES_WARNING_DELAY_MS = 1000;
 
 interface VirtualFrameProps<Item extends object> {
-  trackBy?: keyof Item | ((item: Item) => string);
+  containerSize: number;
   defaultItemSize: number;
+  trackBy?: keyof Item | ((item: Item) => string);
 }
 
 /**
  * A data structure to maintain items / virtual frame relation.
  */
 export class VirtualFrame<Item extends object> {
+  private _containerSize: number;
+  private _defaultItemSize: number;
   private _frameStart = 0;
   private _frameSize = 0;
   private _overscan = 0;
   private _indices: readonly number[] = [];
   private _items: readonly Item[] = [];
-  private _defaultItemSize: number;
   private _cachedItemSizesByIndex: (number | null)[] = [];
   private _cachedItemSizesByTrackedProperty = new Map<any, number>();
   private _pendingItemSizes = new Set<number>();
   private _pendingItemsSizesWarningTimeout: null | number = null;
-  private _sizeBefore = 0;
-  private _sizeAfter = 0;
   private trackBy: (item: Item) => any;
 
-  constructor({ defaultItemSize, trackBy }: VirtualFrameProps<Item>) {
+  constructor({ containerSize, defaultItemSize, trackBy }: VirtualFrameProps<Item>) {
+    this._containerSize = containerSize;
     this._defaultItemSize = defaultItemSize;
 
     // When no explicit trackBy provided default to identity function - the items will be matched by reference.
@@ -44,6 +45,12 @@ export class VirtualFrame<Item extends object> {
     }
   }
 
+  public get containerSize() {
+    return this._containerSize;
+  }
+  public get defaultItemSize() {
+    return this._defaultItemSize;
+  }
   public get frameStart() {
     return this._frameStart;
   }
@@ -53,17 +60,8 @@ export class VirtualFrame<Item extends object> {
   public get overscan() {
     return this._overscan;
   }
-  public get indices(): readonly number[] {
-    return this._indices;
-  }
-  public get defaultItemSize() {
-    return this._defaultItemSize;
-  }
   public get totalSize() {
     return this._items.length;
-  }
-  public get frameWindow(): FrameWindow {
-    return { frame: this.indices, sizeBefore: this._sizeBefore, sizeAfter: this._sizeAfter };
   }
 
   public getSizeUntil(index: number) {
@@ -94,15 +92,24 @@ export class VirtualFrame<Item extends object> {
     return this._pendingItemSizes.size === 0;
   }
 
-  // TODO: automatically update frame and request item sizes if new items are added within current virtual frame.
-  public setItems(items: readonly Item[]) {
+  public setItems(items: readonly Item[]): null | FrameWindow {
     this._items = items;
     this.updateCachedSizes();
+    return this.updateFrameIfNeeded();
   }
 
-  public setDefaultItemSize(defaultItemSize: number) {
+  public setContainerSize(containerSize: number): null | FrameWindow {
+    this._containerSize = containerSize;
+    return this.updateFrameIfNeeded();
+  }
+
+  public setDefaultItemSize(defaultItemSize: number): null | FrameWindow {
     this._defaultItemSize = defaultItemSize;
-    this.updateCachedSizes();
+    return this.updateFrameIfNeeded();
+  }
+
+  public setFrameStart(frameStart: number): null | FrameWindow {
+    return this.updateFrame({ frameStart });
   }
 
   public setItemSize(index: number, size: number) {
@@ -120,69 +127,23 @@ export class VirtualFrame<Item extends object> {
     }
   }
 
-  public updateFrame({
-    frameStart = this.frameStart,
-    frameSize = this.frameSize,
-    overscan = this.overscan,
-  }: {
-    frameStart?: number;
-    frameSize?: number;
-    overscan?: number;
-  }): boolean {
-    const lastFrameIndex = this._indices[this._indices.length - 1] ?? -1;
-    if (
-      this._frameStart === frameStart &&
-      this._frameSize === frameSize &&
-      this._overscan === overscan &&
-      lastFrameIndex < this.totalSize
-    ) {
-      return false;
-    }
-
-    this._frameStart = frameStart;
-    this._frameSize = frameSize;
-    this._overscan = overscan;
-    this._indices = createVirtualIndices({ frameStart, frameSize, overscan, totalSize: this.totalSize });
-
-    this._sizeBefore = 0;
-    for (let i = 0; i < this.indices[0] && i < this.totalSize; i++) {
-      this._sizeBefore += this.getSizeForIndex(i);
-    }
-    this._sizeAfter = 0;
-    for (let i = this.indices[this.indices.length - 1] + 1; i < this.totalSize; i++) {
-      this._sizeAfter += this.getSizeForIndex(i);
-    }
-
-    if (this._pendingItemsSizesWarningTimeout) {
-      clearTimeout(this._pendingItemsSizesWarningTimeout);
-    }
-    this._pendingItemSizes = new Set([...this._indices]);
-    this._pendingItemsSizesWarningTimeout = setTimeout(() => {
-      console.warn('[AwsUi] [Virtual scroll] Reached pending item sizes warning timeout.');
-    }, PENDING_ITEM_SIZES_WARNING_DELAY_MS);
-
-    return true;
-  }
-
-  public getFramePropsForContainerSize(containerSize: number): { frameSize: number; overscan: number } {
+  private updateFrameIfNeeded(): null | FrameWindow {
     if (this.totalSize === 0) {
-      return { frameSize: 0, overscan: 0 };
+      return this.updateFrame({ frameSize: 0, overscan: 0 });
     }
 
+    // TODO: allow frameSize to shrink when the diff is at least 50%.
     const itemSizesMinToMax: number[] = [];
     for (const size of this._cachedItemSizesByIndex) {
       itemSizesMinToMax.push(size ?? this.defaultItemSize);
     }
     itemSizesMinToMax.sort((a, b) => a - b);
-
     let frameSize = 0;
     let overscan = 0;
-
-    // TODO: allow frameSize to shrink when the diff is at least 50%.
     let contentSize = 0;
     for (let i = 0; i < itemSizesMinToMax.length; i++) {
       contentSize += itemSizesMinToMax[i];
-      if (contentSize > containerSize) {
+      if (contentSize > this.containerSize) {
         frameSize = Math.max(this.frameSize, i + 1);
         break;
       }
@@ -197,7 +158,54 @@ export class VirtualFrame<Item extends object> {
     }
     overscan = 1 + Math.ceil(maxItemSize / minItemSize);
 
-    return { frameSize, overscan };
+    return this.updateFrame({ frameSize, overscan });
+  }
+
+  private updateFrame({
+    frameStart = this.frameStart,
+    frameSize = this.frameSize,
+    overscan = this.overscan,
+  }: {
+    frameStart?: number;
+    frameSize?: number;
+    overscan?: number;
+  }): null | FrameWindow {
+    // The frame does not need to be updated when input parameters are the same.
+    const lastFrameIndex = this._indices[this._indices.length - 1] ?? -1;
+    if (
+      this._frameStart === frameStart &&
+      this._frameSize === frameSize &&
+      this._overscan === overscan &&
+      lastFrameIndex < this.totalSize
+    ) {
+      return null;
+    }
+
+    // Update frame props and frame window.
+    this._frameStart = frameStart;
+    this._frameSize = frameSize;
+    this._overscan = overscan;
+    this._indices = createVirtualIndices({ frameStart, frameSize, overscan, totalSize: this.totalSize });
+
+    let sizeBefore = 0;
+    for (let i = 0; i < this._indices[0] && i < this.totalSize; i++) {
+      sizeBefore += this.getSizeForIndex(i);
+    }
+    let sizeAfter = 0;
+    for (let i = this._indices[this._indices.length - 1] + 1; i < this.totalSize; i++) {
+      sizeAfter += this.getSizeForIndex(i);
+    }
+
+    // Set up pending item sizes to ensure all actual item sizes from the frame are obtained.
+    if (this._pendingItemsSizesWarningTimeout) {
+      clearTimeout(this._pendingItemsSizesWarningTimeout);
+    }
+    this._pendingItemSizes = new Set([...this._indices]);
+    this._pendingItemsSizesWarningTimeout = setTimeout(() => {
+      console.warn('[AwsUi] [Virtual scroll] Reached pending item sizes warning timeout.');
+    }, PENDING_ITEM_SIZES_WARNING_DELAY_MS);
+
+    return { frame: this._indices, sizeBefore, sizeAfter };
   }
 
   private getSizeForIndex(index: number) {
