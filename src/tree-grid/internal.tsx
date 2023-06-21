@@ -401,7 +401,7 @@ const InternalTreeGrid = React.forwardRef(
                 </LiveRegion>
               )}
 
-              <div ref={divBefore} style={{ minWidth: 0 }} />
+              <div id="table-before" ref={divBefore} style={{ minWidth: 0 }} />
 
               <table
                 style={{ flex: 1 }}
@@ -588,7 +588,7 @@ const InternalTreeGrid = React.forwardRef(
                 </tbody>
               </table>
 
-              <div ref={divAfter} style={{ minWidth: 0 }} />
+              <div id="table-after" ref={divAfter} style={{ minWidth: 0 }} />
 
               {resizableColumns && <ResizeTracker />}
             </div>

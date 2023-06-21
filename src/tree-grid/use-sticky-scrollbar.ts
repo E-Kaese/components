@@ -27,7 +27,12 @@ const updatePosition = (
   // table bottom is visible when
   // 1. table bottom reached end of the window
   // 2. table bottom is not overlapped by footer
-  const { top: tableTop, bottom: tableBottom, width: tableWidth } = tableEl.getBoundingClientRect();
+  const { top: tableTop, bottom: tableBottom, width: tableElWidth } = tableEl.getBoundingClientRect();
+  const tableBeforeEl = document.querySelector('#table-before');
+  const tableBeforeWidth = tableBeforeEl ? tableBeforeEl.getBoundingClientRect().width : 0;
+  const tableAfterEl = document.querySelector('#table-after');
+  const tableAfterWidth = tableAfterEl ? tableAfterEl.getBoundingClientRect().width : 0;
+  const tableWidth = tableElWidth + tableBeforeWidth + tableAfterWidth;
   const { width: wrapperWidth } = wrapperEl.getBoundingClientRect();
 
   //scrollbar correction is needed for
@@ -65,9 +70,9 @@ const updatePosition = (
     const parent = getOverflowParentDimensions(wrapperEl)[0];
 
     const wrapperElRect = wrapperEl.getBoundingClientRect();
-    const tableElRect = tableEl.getBoundingClientRect();
+    // const tableElRect = tableEl.getBoundingClientRect();
     scrollbarEl.style.width = `${wrapperElRect.width}px`;
-    scrollbarContentEl.style.width = `${tableElRect.width}px`;
+    scrollbarContentEl.style.width = `${tableWidth}px`;
 
     // when using sticky scrollbars in containers
     // we agreed to ignore dynamic bottom calculations for footer overlap

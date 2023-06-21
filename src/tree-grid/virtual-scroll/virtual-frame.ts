@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { FrameWindow } from './interfaces';
+import { FrameUpdate } from './interfaces';
 import { createVirtualIndices } from './utils';
 
 const PENDING_ITEM_SIZES_WARNING_DELAY_MS = 1000;
@@ -9,6 +9,7 @@ const PENDING_ITEM_SIZES_WARNING_DELAY_MS = 1000;
 interface VirtualFrameProps<Item extends object> {
   containerSize: number;
   defaultItemSize: number;
+  onSizesUpdated: () => void;
   trackBy?: keyof Item | ((item: Item) => string);
 }
 
@@ -27,11 +28,13 @@ export class VirtualFrame<Item extends object> {
   private _cachedItemSizesByTrackedProperty = new Map<any, number>();
   private _pendingItemSizes = new Set<number>();
   private _pendingItemsSizesWarningTimeout: null | number = null;
+  private onSizesUpdated: () => void;
   private trackBy: (item: Item) => any;
 
-  constructor({ containerSize, defaultItemSize, trackBy }: VirtualFrameProps<Item>) {
+  constructor({ containerSize, defaultItemSize, onSizesUpdated, trackBy }: VirtualFrameProps<Item>) {
     this._containerSize = containerSize;
     this._defaultItemSize = defaultItemSize;
+    this.onSizesUpdated = onSizesUpdated;
 
     // When no explicit trackBy provided default to identity function - the items will be matched by reference.
     // When the item identity is not maintained it is not possible to keep the cached sizes which may result
@@ -92,23 +95,23 @@ export class VirtualFrame<Item extends object> {
     return this._pendingItemSizes.size === 0;
   }
 
-  public setItems(items: readonly Item[]): null | FrameWindow {
+  public setItems(items: readonly Item[]): FrameUpdate {
     this._items = items;
     this.updateCachedSizes();
     return this.updateFrameIfNeeded();
   }
 
-  public setContainerSize(containerSize: number): null | FrameWindow {
+  public setContainerSize(containerSize: number): FrameUpdate {
     this._containerSize = containerSize;
     return this.updateFrameIfNeeded();
   }
 
-  public setDefaultItemSize(defaultItemSize: number): null | FrameWindow {
+  public setDefaultItemSize(defaultItemSize: number): FrameUpdate {
     this._defaultItemSize = defaultItemSize;
     return this.updateFrameIfNeeded();
   }
 
-  public setFrameStart(frameStart: number): null | FrameWindow {
+  public setFrameStart(frameStart: number): FrameUpdate {
     return this.updateFrame({ frameStart });
   }
 
@@ -117,17 +120,23 @@ export class VirtualFrame<Item extends object> {
     if (!item) {
       throw new Error('Invariant violation: item index is out of bounds.');
     }
+
+    if (this.isReady()) {
+      this.setupPendingItems();
+    }
+
     this._pendingItemSizes.delete(index);
     this._cachedItemSizesByIndex[index] = size;
     this._cachedItemSizesByTrackedProperty.set(this.trackBy(item), size);
 
     if (this.isReady() && this._pendingItemsSizesWarningTimeout) {
+      this.onSizesUpdated();
       clearTimeout(this._pendingItemsSizesWarningTimeout);
       this._pendingItemsSizesWarningTimeout = null;
     }
   }
 
-  private updateFrameIfNeeded(): null | FrameWindow {
+  public updateFrameIfNeeded(): FrameUpdate {
     if (this.totalSize === 0) {
       return this.updateFrame({ frameSize: 0, overscan: 0 });
     }
@@ -169,17 +178,15 @@ export class VirtualFrame<Item extends object> {
     frameStart?: number;
     frameSize?: number;
     overscan?: number;
-  }): null | FrameWindow {
+  }): FrameUpdate {
     // The frame does not need to be updated when input parameters are the same.
     const lastFrameIndex = this._indices[this._indices.length - 1] ?? -1;
-    if (
+    const shouldUpdateIndices = !(
       this._frameStart === frameStart &&
       this._frameSize === frameSize &&
       this._overscan === overscan &&
       lastFrameIndex < this.totalSize
-    ) {
-      return null;
-    }
+    );
 
     // Update frame props and frame window.
     this._frameStart = frameStart;
@@ -196,7 +203,13 @@ export class VirtualFrame<Item extends object> {
       sizeAfter += this.getSizeForIndex(i);
     }
 
-    // Set up pending item sizes to ensure all actual item sizes from the frame are obtained.
+    // TODO: is this needed here?
+    // this.setupPendingItems();
+
+    return { frame: shouldUpdateIndices ? this._indices : null, sizeBefore, sizeAfter };
+  }
+
+  private setupPendingItems() {
     if (this._pendingItemsSizesWarningTimeout) {
       clearTimeout(this._pendingItemsSizesWarningTimeout);
     }
@@ -204,8 +217,6 @@ export class VirtualFrame<Item extends object> {
     this._pendingItemsSizesWarningTimeout = setTimeout(() => {
       console.warn('[AwsUi] [Virtual scroll] Reached pending item sizes warning timeout.');
     }, PENDING_ITEM_SIZES_WARNING_DELAY_MS);
-
-    return { frame: this._indices, sizeBefore, sizeAfter };
   }
 
   private getSizeForIndex(index: number) {

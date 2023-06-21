@@ -11,14 +11,14 @@ import { useEffectOnUpdate } from '../../internal/hooks/use-effect-on-update';
  * First render:
  * 1. The table renders with no elements;
  * 2. Wrapper size is set -> the initial frame based on wrapper size and default item size is set;
- * 3. The first frame approximation is measured and real sizes are received (does it require an extra trigger?);
+ * 3. The first frame approximation is measured and real sizes are received;
  * 4. Frame window is updated using real sizes and:
  *    4.1. Space before/after is updated (imperatively);
  *    4.2. Space before/after and frame are updated (extra render, only if real sizes are below the defaults).
  *
  * User scroll:
  * 1. Frame start is updated;
- * 2. New frame is rendered and new sizes are received (does it require an extra trigger?);
+ * 2. New frame is rendered and new sizes are received;
  * 3. Possible extra updates:
  *    3.1. Nothing extra is updated as all sizes are already cached;
  *    3.2. Space before/after is updated (imperatively);
@@ -71,7 +71,7 @@ export function useVirtualScroll<Item extends object>(props: VirtualModelProps<I
           horizontal: props.horizontal ?? false,
           scrollContainer: props.containerRef.current,
           onFrameChange: ({ frame, ...scrollProps }) => {
-            setFrame(frame);
+            frame && setFrame(frame);
             props.onScrollPropsChange(scrollProps);
           },
         })
@@ -91,9 +91,10 @@ export function useVirtualScroll<Item extends object>(props: VirtualModelProps<I
       itemRefs.current[index] = node;
       if (node && model) {
         const property = model.horizontal ? 'width' : 'height';
-        model.setItemSize(index, node.getBoundingClientRect()[property]);
+        model.setItemSize(index, node.getBoundingClientRect()[property] || props.defaultItemSize);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [model]
   );
 

@@ -3,17 +3,18 @@
 
 import { throttle } from '../../internal/utils/throttle';
 import { DimensionResizeObserver } from './dimension-resize-observer';
-import { FrameWindow } from './interfaces';
+import { FrameUpdate } from './interfaces';
 import { VirtualFrame } from './virtual-frame';
 
 const SCROLL_THROTTLE_MS = 10;
+const ON_SIZES_UPDATED_THROTTLE_MS = 25;
 
 interface VirtualScrollProps<Item> {
   items: readonly Item[];
   horizontal: boolean;
   defaultItemSize: number;
   scrollContainer: HTMLElement;
-  onFrameChange: (props: FrameWindow) => void;
+  onFrameChange: (props: FrameUpdate) => void;
   trackBy?: keyof Item | ((item: Item) => string);
 }
 
@@ -21,7 +22,7 @@ export class VirtualScrollModel<Item extends object> {
   // Props
   public readonly horizontal: boolean;
   public readonly scrollContainer: HTMLElement;
-  private onFrameChange: (props: FrameWindow) => void;
+  private onFrameChange: (props: FrameUpdate) => void;
 
   // State
   private frame: VirtualFrame<Item>;
@@ -35,7 +36,11 @@ export class VirtualScrollModel<Item extends object> {
     this.onFrameChange = onFrameChange;
 
     const containerSize = this.getContainerSize();
-    this.frame = new VirtualFrame<Item>({ containerSize, defaultItemSize, trackBy });
+    const onSizesUpdated = throttle(() => {
+      const nextFrame = this.frame.updateFrameIfNeeded();
+      onFrameChange(nextFrame);
+    }, ON_SIZES_UPDATED_THROTTLE_MS);
+    this.frame = new VirtualFrame<Item>({ containerSize, defaultItemSize, onSizesUpdated, trackBy });
 
     scrollContainer.addEventListener('scroll', this.handleScroll);
     this.cleanupCallbacks.push(() => scrollContainer.removeEventListener('scroll', this.handleScroll));
@@ -57,12 +62,12 @@ export class VirtualScrollModel<Item extends object> {
 
   public setItems(items: readonly Item[]) {
     const nextFrame = this.frame.setItems(items);
-    nextFrame && this.onFrameChange(nextFrame);
+    this.onFrameChange(nextFrame);
   }
 
   public setDefaultItemSize(defaultItemSize: number) {
     const nextFrame = this.frame.setDefaultItemSize(defaultItemSize);
-    nextFrame && this.onFrameChange(nextFrame);
+    this.onFrameChange(nextFrame);
   }
 
   public setItemSize(index: number, size: number) {
@@ -83,7 +88,7 @@ export class VirtualScrollModel<Item extends object> {
   private onSizeChange() {
     const containerSize = this.getContainerSize();
     const nextFrame = this.frame.setContainerSize(containerSize);
-    nextFrame && this.onFrameChange(nextFrame);
+    this.onFrameChange(nextFrame);
   }
 
   private getContainerSize() {
@@ -112,6 +117,6 @@ export class VirtualScrollModel<Item extends object> {
     frameStart = Math.max(0, Math.min(this.frame.totalSize - this.frame.frameSize, frameStart));
 
     const nextFrame = this.frame.setFrameStart(frameStart);
-    nextFrame && this.onFrameChange(nextFrame);
+    this.onFrameChange(nextFrame);
   }, SCROLL_THROTTLE_MS);
 }
