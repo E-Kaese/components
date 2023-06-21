@@ -2,60 +2,41 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { DimensionResizeObserver } from './dimension-resize-observer';
-import { createFrame } from './utils';
+import { VirtualFrame } from './virtual-frame';
 
-interface FrameProps {
-  frame: number[];
-  sizeBefore: number;
-  sizeAfter: number;
-}
-
-export interface VirtualScrollInitProps {
-  size: number;
+interface VirtualScrollProps<Item> {
+  items: readonly Item[];
   horizontal: boolean;
   defaultItemSize: number;
   scrollContainer: HTMLElement;
   onFrameChange: (props: FrameProps) => void;
+  trackBy?: keyof Item | ((item: Item) => string);
 }
 
-export class VirtualScrollModel {
+interface FrameProps {
+  frame: readonly number[];
+  sizeBefore: number;
+  sizeAfter: number;
+}
+
+export class VirtualScrollModel<Item extends object> {
   // Props
-  private _size: number;
-  private _defaultItemSize: number;
-  private _horizontal: boolean;
-  private _scrollContainer: HTMLElement;
+  public readonly horizontal: boolean;
+  public readonly scrollContainer: HTMLElement;
   private onFrameChange: (props: FrameProps) => void;
 
-  // Props getters
-  public get size() {
-    return this._size;
-  }
-  public get defaultItemSize() {
-    return this._defaultItemSize;
-  }
-  public get horizontal() {
-    return this._horizontal;
-  }
-  public get scrollContainer() {
-    return this._scrollContainer;
-  }
-
   // State
-  private frameSize = 0;
-  private overscan = 0;
-  private frameStart = 0;
-  private evaluatedItemSizes: number[] = [];
-  private pendingItemSizes = new Set<number>();
+  private frame: VirtualFrame<Item>;
   private scrollTop = 0;
   private scrollLeft = 0;
   private cleanupCallbacks: (() => void)[] = [];
 
-  constructor({ size, horizontal, defaultItemSize, scrollContainer, onFrameChange }: VirtualScrollInitProps) {
-    this._size = size;
-    this._defaultItemSize = defaultItemSize;
-    this._horizontal = horizontal;
-    this._scrollContainer = scrollContainer;
+  constructor({ horizontal, defaultItemSize, scrollContainer, onFrameChange, trackBy }: VirtualScrollProps<Item>) {
+    this.horizontal = horizontal;
+    this.scrollContainer = scrollContainer;
     this.onFrameChange = onFrameChange;
+
+    this.frame = new VirtualFrame<Item>({ defaultItemSize, trackBy });
 
     scrollContainer.addEventListener('scroll', this.handleScroll);
     this.cleanupCallbacks.push(() => scrollContainer.removeEventListener('scroll', this.handleScroll));
@@ -75,31 +56,27 @@ export class VirtualScrollModel {
     }
   };
 
-  public setSize(size: number) {
-    this._size = size;
-
-    this.updateAllFrameSizes();
+  public setItems(items: readonly Item[]) {
+    this.frame.setItems(items);
     this.applyUpdate();
   }
 
   public setDefaultItemSize(defaultItemSize: number) {
-    this._defaultItemSize = defaultItemSize;
-
-    this.updateAllFrameSizes();
+    this.frame.setDefaultItemSize(defaultItemSize);
     this.applyUpdate();
   }
 
   public setItemSize(index: number, size: number) {
-    this.pendingItemSizes.delete(index);
-    this.evaluatedItemSizes[index] = size;
+    this.frame.setItemSize(index, size);
   }
 
   public scrollToIndex = (index: number) => {
-    index = Math.min(this.size, Math.max(0, index));
+    const size = this.frame.items.length;
+    index = Math.min(size, Math.max(0, index));
 
     let scrollValue = 0;
     for (let i = 0; i < index; i++) {
-      scrollValue += this.evaluatedItemSizes[i] || this.defaultItemSize;
+      scrollValue += this.frame.getItemSize(i);
     }
 
     const property = this.horizontal ? 'scrollLeft' : 'scrollTop';
@@ -110,33 +87,32 @@ export class VirtualScrollModel {
     const framePropsChanged = this.updateFrameSizeAndOverscan();
 
     if (framePropsChanged) {
-      const frame = createFrame({
-        frameStart: this.frameStart,
-        frameSize: this.frameSize,
-        overscan: this.overscan,
-        size: this.size,
+      const size = this.frame.items.length;
+      this.frame.setFrame({
+        frameStart: this.frame.frameStart,
+        frameSize: this.frame.frameSize,
+        overscan: this.frame.overscan,
       });
+      const frame = this.frame.frame;
 
       let sizeBefore = 0;
       let sizeAfter = 0;
-      for (let i = 0; i < frame[0] && i < this.size; i++) {
-        sizeBefore += this.evaluatedItemSizes[i] || this.defaultItemSize;
+      for (let i = 0; i < frame[0] && i < size; i++) {
+        sizeBefore += this.frame.getItemSize(i);
       }
-      for (let i = frame[frame.length - 1] + 1; i < this.size; i++) {
-        sizeAfter += this.evaluatedItemSizes[i] || this.defaultItemSize;
+      for (let i = frame[frame.length - 1] + 1; i < size; i++) {
+        sizeAfter += this.frame.getItemSize(i);
       }
-
-      this.pendingItemSizes = new Set([...frame]);
 
       this.onFrameChange({ frame, sizeBefore, sizeAfter });
     }
   }
 
   private updateFrameSizeAndOverscan(): boolean {
-    const currentFrameSize = this.frameSize;
-    const currentOverscan = this.overscan;
+    const currentFrameSize = this.frame.frameSize;
+    const currentOverscan = this.frame.overscan;
 
-    const itemSizesMinToMax = [...this.evaluatedItemSizes];
+    const itemSizesMinToMax = [...this.frame.getAllItemSizes()];
     itemSizesMinToMax.sort((a, b) => a - b);
 
     const rect = this.scrollContainer.getBoundingClientRect();
@@ -144,35 +120,47 @@ export class VirtualScrollModel {
     const containerHeight = Math.min(rect.height, window.innerHeight - rect.top);
     const containerSize = this.horizontal ? containerWidth : containerHeight;
 
+    let frameSize = 0;
+    let overscan = 0;
+
     let contentSize = 0;
     for (let i = 0; i < itemSizesMinToMax.length; i++) {
       contentSize += itemSizesMinToMax[i];
       if (contentSize > containerSize) {
-        this.frameSize = Math.max(this.frameSize, i + 1);
+        frameSize = Math.max(this.frame.frameSize, i + 1);
         break;
       }
     }
 
-    let minItemSize = this.evaluatedItemSizes[this.frameStart];
-    let maxItemSize = this.evaluatedItemSizes[this.frameStart];
-    for (let i = this.frameStart; i < Math.max(this.size, this.frameStart + this.frameSize); i++) {
-      if (this.evaluatedItemSizes[i] !== undefined) {
-        minItemSize = Math.min(minItemSize, this.evaluatedItemSizes[i]);
-        maxItemSize = Math.max(maxItemSize, this.evaluatedItemSizes[i]);
+    let minItemSize = this.frame.getItemSize(this.frame.frameStart);
+    let maxItemSize = this.frame.getItemSize(this.frame.frameStart);
+    for (
+      let i = this.frame.frameStart;
+      i < Math.max(this.frame.items.length, this.frame.frameStart + this.frame.frameSize);
+      i++
+    ) {
+      // TODO: ensure size always defined and remove IF
+      const itemSize = this.frame.getItemSize(i);
+      if (itemSize !== undefined) {
+        minItemSize = Math.min(minItemSize, itemSize);
+        maxItemSize = Math.max(maxItemSize, itemSize);
       }
     }
 
     // TODO: use precise overscan calculation to minimize max frame size.
-    this.overscan = 1 + Math.ceil(maxItemSize / minItemSize);
+    overscan = 1 + Math.ceil(maxItemSize / minItemSize);
     // this.overscan = Math.max(this.overscan, Math.ceil(maxItemSize / minItemSize));
 
-    const updated = currentFrameSize !== this.frameSize || currentOverscan !== this.overscan;
+    const updated = currentFrameSize !== frameSize || currentOverscan !== overscan;
+    if (updated) {
+      this.frame.setFrame({ frameStart: this.frame.frameStart, frameSize, overscan });
+    }
 
     return updated;
   }
 
   private handleScroll = (event: Event) => {
-    if (this.pendingItemSizes.size > 0) {
+    if (!this.frame.isReady()) {
       return;
     }
 
@@ -187,9 +175,13 @@ export class VirtualScrollModel {
     let totalSize = 0;
     let knownSizes = 0;
 
-    for (let i = 0; i < this.size; i++) {
-      if (this.evaluatedItemSizes[i]) {
-        totalSize += this.evaluatedItemSizes[i];
+    const size = this.frame.items.length;
+
+    for (let i = 0; i < size; i++) {
+      // TODO: ensure itemSize is always defined and remove IF
+      const itemSize = this.frame.getItemSize(i);
+      if (itemSize) {
+        totalSize += itemSize;
         knownSizes++;
       }
     }
@@ -198,32 +190,20 @@ export class VirtualScrollModel {
     this.updateFrameSizeAndOverscan();
 
     let frameStart = Math.round(scrollValue / averageItemSize);
-    frameStart = Math.max(0, Math.min(this.size - this.frameSize, frameStart));
-    this.frameStart = frameStart;
+    frameStart = Math.max(0, Math.min(size - this.frame.frameSize, frameStart));
 
-    const frame = createFrame({ frameStart, frameSize: this.frameSize, overscan: this.overscan, size: this.size });
+    this.frame.setFrame({ frameStart, frameSize: this.frame.frameSize, overscan: this.frame.overscan });
+    const frame = this.frame.frame;
 
     let sizeBefore = 0;
     let sizeAfter = 0;
-    for (let i = 0; i < frame[0] && i < this.size; i++) {
-      sizeBefore += this.evaluatedItemSizes[i] || this.defaultItemSize;
+    for (let i = 0; i < frame[0] && i < size; i++) {
+      sizeBefore += this.frame.getItemSize(i);
     }
-    for (let i = frame[frame.length - 1] + 1; i < this.size; i++) {
-      sizeAfter += this.evaluatedItemSizes[i] || this.defaultItemSize;
+    for (let i = frame[frame.length - 1] + 1; i < size; i++) {
+      sizeAfter += this.frame.getItemSize(i);
     }
-
-    this.pendingItemSizes = new Set([...frame]);
 
     this.onFrameChange({ frame, sizeBefore, sizeAfter });
   };
-
-  private updateAllFrameSizes() {
-    // TODO: compare items instead
-
-    const newSizes: number[] = [];
-    for (let i = 0; i < this.size; i++) {
-      newSizes[i] = this.evaluatedItemSizes[i] ?? this.defaultItemSize;
-    }
-    this.evaluatedItemSizes = newSizes;
-  }
 }

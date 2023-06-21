@@ -25,7 +25,7 @@ export interface TheadProps {
   containerWidth: number | null;
   selectionType: TreeGridProps.SelectionType | undefined;
   columnDefinitions: ReadonlyArray<TreeGridProps.ColumnDefinition<any>>;
-  virtualFrame: number[];
+  virtualFrame: readonly number[];
   sortingColumn: TreeGridProps.SortingColumn<any> | undefined;
   sortingDescending: boolean | undefined;
   sortingDisabled: boolean | undefined;

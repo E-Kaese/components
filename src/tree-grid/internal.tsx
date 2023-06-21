@@ -204,8 +204,10 @@ const InternalTreeGrid = React.forwardRef(
       }
     };
 
+    // TODO: resolve any
     const virtualScroll = useVirtualScroll({
-      size: items.length,
+      items: items as any,
+      trackBy: trackBy as any,
       defaultItemSize: 40,
       containerRef: wrapperRefObject,
       onScrollPropsChange,
@@ -233,7 +235,9 @@ const InternalTreeGrid = React.forwardRef(
       }
     };
     const virtualScrollHorizontal = useVirtualScroll({
-      size: visibleColumnDefinitions.length,
+      items: visibleColumnDefinitions,
+      // TODO: resolve for missing IDs
+      trackBy: def => def.id ?? '',
       defaultItemSize: 150,
       containerRef: wrapperRefObject,
       onScrollPropsChange: onScrollPropsChangeHorizontal,

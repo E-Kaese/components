@@ -46,7 +46,7 @@ export default function App() {
   const elBefore = useRef<HTMLTableCellElement>(null);
   const elAfter = useRef<HTMLTableCellElement>(null);
   const virtualScroll = useVirtualScroll({
-    size: items.length,
+    items,
     defaultItemSize: 40,
     containerRef,
     onScrollPropsChange({ sizeBefore, sizeAfter }) {

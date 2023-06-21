@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { createFrame } from './utils';
 import { VirtualScrollModel } from './virtual-scroll';
+import { useEffectOnUpdate } from '../../internal/hooks/use-effect-on-update';
 
-interface VirtualModelProps {
-  size: number;
+interface VirtualModelProps<Item extends object> {
+  items: readonly Item[];
   horizontal?: boolean;
   defaultItemSize: number;
   containerRef: React.RefObject<HTMLElement>;
   onScrollPropsChange: (props: ScrollProps) => void;
+  trackBy?: keyof Item | ((item: Item) => string);
 }
 
 export interface ScrollProps {
@@ -19,18 +20,18 @@ export interface ScrollProps {
 }
 
 export interface Virtualizer {
-  frame: number[];
+  frame: readonly number[];
   setItemRef: (index: number, node: null | HTMLElement) => void;
   scrollToIndex: (index: number) => void;
 }
 
-export function useVirtualScroll(props: VirtualModelProps): Virtualizer {
+export function useVirtualScroll<Item extends object>(props: VirtualModelProps<Item>): Virtualizer {
   // TODO: use better defaults
-  const [frame, setFrame] = useState(createFrame({ frameStart: 0, frameSize: 0, overscan: 0, size: props.size }));
+  const [frame, setFrame] = useState<readonly number[]>([]);
 
   const itemRefs = useRef<{ [index: number]: null | HTMLElement }>({});
 
-  const [model, setModel] = useState<null | VirtualScrollModel>(null);
+  const [model, setModel] = useState<null | VirtualScrollModel<Item>>(null);
   useEffect(() => {
     if (props.containerRef.current) {
       setModel(
@@ -65,12 +66,13 @@ export function useVirtualScroll(props: VirtualModelProps): Virtualizer {
     [model]
   );
 
-  // TODO: consider collection change instead of its size change
+  // TODO: use model in ref
   useEffect(() => {
-    model && model.setSize(props.size);
-  }, [model, props.size]);
+    model && model.setItems(props.items);
+  }, [model, props.items]);
 
-  useEffect(() => {
+  // TODO: use model in ref
+  useEffectOnUpdate(() => {
     model && model.setDefaultItemSize(props.defaultItemSize);
   }, [model, props.defaultItemSize]);
 
