@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Attaches resize observer to keep track of either width or height changes of the given element.
+ * Resize observer wrapper to keep track of either width or height changes of the given element.
  */
 export class DimensionResizeObserver {
   private horizontal: boolean;
