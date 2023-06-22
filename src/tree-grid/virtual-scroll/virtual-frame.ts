@@ -69,6 +69,7 @@ export class VirtualFrame<Item extends object> {
 
   // TODO: make scroll offset direction aware. Depending on the direction align focused index
   // to the start or end of the corresponding element edge.
+  // TODO: maintain offset between currently focused cell and cell edge when scrolling to index.
   public getScrollOffset(index: number) {
     let scrollOffset = 0;
     for (let i = 0; i < index; i++) {
