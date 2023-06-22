@@ -193,6 +193,9 @@ export default function Page() {
 
   const isSpecialId = (id: string) => id.includes('control') || id.includes('empty') || id === 'next-page';
 
+  const pagedInstances = instances.slice(0, (page + 1) * pageSize);
+  const someExpanded = pagedInstances.some(i => expanded[i.id] > 0);
+
   return (
     <PageTemplate title="TreeGrid playground">
       <TreeGrid
@@ -207,7 +210,32 @@ export default function Page() {
         columnDefinitions={[
           {
             id: 'id',
-            header: 'ID',
+            header: (
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ marginLeft: '-2px' }}>
+                  <Button
+                    variant="icon"
+                    iconName={someExpanded ? 'treeview-collapse' : 'treeview-expand'}
+                    onClick={() => {
+                      if (someExpanded) {
+                        setExpanded({});
+                      } else {
+                        setExpanded(prev => {
+                          const next: { [id: string]: number } = {};
+                          pagedInstances.forEach(i => {
+                            next[i.id] = !prev[i.id] ? 5 : prev[i.id];
+                          });
+                          return next;
+                        });
+                      }
+                    }}
+                  />
+                </div>
+                <Box fontWeight="bold" margin={{ left: 'xs' }}>
+                  ID
+                </Box>
+              </div>
+            ),
             minWidth: 300,
             cell: item => {
               const meta = getInstanceMeta(item);
