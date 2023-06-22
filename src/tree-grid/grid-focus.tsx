@@ -6,7 +6,8 @@ import { findUpUntil } from '../internal/utils/dom';
 import { KeyCode } from '../internal/keycode';
 import { useStableEventHandler } from '../internal/hooks/use-stable-event-handler';
 
-const KEYBOARD_PAGE_SIZE = 50;
+const KEYBOARD_ROW_PAGE_SIZE = 25;
+const KEYBOARD_COLUMN_PAGE_SIZE = 10;
 
 interface GridFocusProps {
   rows: number;
@@ -15,7 +16,7 @@ interface GridFocusProps {
   getContainer: () => null | HTMLElement;
   onRowAction?: (rowIndex: number) => void;
   onCellAction?: (rowIndex: number, colIndex: number) => void;
-  onScrollToIndex: (rowIndex: number, colIndex: number) => void;
+  onScrollToIndex: (rowIndex?: number, colIndex?: number) => void;
 }
 
 export function useGridFocus({
@@ -79,7 +80,7 @@ export class GridFocusModel {
   // Props
   private container: HTMLElement;
   private wrapper: HTMLElement;
-  private onScrollToIndex: (rowIndex: number, colIndex: number) => void;
+  private onScrollToIndex: (rowIndex?: number, colIndex?: number) => void;
   private onRowAction?: (rowIndex: number) => void;
   private onCellAction?: (rowIndex: number, columnIndex: number) => void;
   private columns = 0;
@@ -93,7 +94,7 @@ export class GridFocusModel {
   constructor(
     container: HTMLElement,
     wrapper: HTMLElement,
-    onScrollToIndex: (rowIndex: number, colIndex: number) => void,
+    onScrollToIndex: (rowIndex?: number, colIndex?: number) => void,
     onRowAction?: (rowIndex: number) => void,
     onCellAction?: (rowIndex: number, columnIndex: number) => void
   ) {
@@ -302,7 +303,7 @@ export class GridFocusModel {
 
     // Move to start/end of the row.
     if (this.focusedColumn !== null) {
-      this.wrapper.scrollTo({ left: direction === -1 ? 0 : this.wrapper.scrollWidth });
+      this.onScrollToIndex(undefined, direction === -1 ? 0 : this.columns - 1);
 
       setTimeout(() => {
         const focusedRow = this.container.querySelector(`[data-rowindex="${this.focusedRow}"]`) as null | HTMLElement;
@@ -324,7 +325,7 @@ export class GridFocusModel {
 
     // Move to start/end of the table.
     else {
-      this.wrapper.scrollTo({ top: direction === -1 ? 0 : this.wrapper.scrollHeight });
+      this.onScrollToIndex(direction === -1 ? 0 : this.rows - 1);
 
       setTimeout(() => {
         const rowElements = this.container.querySelectorAll('tr[data-rowindex]') as NodeListOf<HTMLElement>;
@@ -342,20 +343,50 @@ export class GridFocusModel {
   }
 
   private moveToPage(direction: -1 | 1) {
-    if (this.focusedRow === null || this.focusedColumn !== null) {
+    if (this.focusedRow === null) {
       return;
     }
 
-    // TODO: support column pages
+    // Move one page to the left/right
+    if (this.focusedColumn !== null) {
+      const nextFocusedColumn = Math.min(
+        this.rows - 1,
+        Math.max(
+          0,
+          direction === -1
+            ? this.focusedColumn - KEYBOARD_COLUMN_PAGE_SIZE
+            : this.focusedColumn + KEYBOARD_COLUMN_PAGE_SIZE
+        )
+      );
+
+      this.onScrollToIndex(undefined, nextFocusedColumn);
+
+      setTimeout(() => {
+        const currentRow = this.container.querySelector(`[data-rowindex="${this.focusedRow}"]`) as null | HTMLElement;
+        if (!currentRow) {
+          return;
+        }
+        const nextCell = currentRow.querySelector(`[data-colindex="${nextFocusedColumn}"]`) as null | HTMLElement;
+
+        if (nextCell) {
+          this.focusedColumn = nextFocusedColumn;
+          this.setFocusedElement(nextCell);
+          nextCell.focus();
+        }
+      }, 100);
+    }
 
     // Move one page up/down the table.
     else {
       const nextFocusedRow = Math.min(
         this.rows - 1,
-        Math.max(0, direction === -1 ? this.focusedRow - KEYBOARD_PAGE_SIZE : this.focusedRow + KEYBOARD_PAGE_SIZE)
+        Math.max(
+          0,
+          direction === -1 ? this.focusedRow - KEYBOARD_ROW_PAGE_SIZE : this.focusedRow + KEYBOARD_ROW_PAGE_SIZE
+        )
       );
 
-      this.onScrollToIndex(nextFocusedRow, 0);
+      this.onScrollToIndex(nextFocusedRow);
 
       setTimeout(() => {
         const nextRow = this.container.querySelector(`[data-rowindex="${nextFocusedRow}"]`) as null | HTMLElement;

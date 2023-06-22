@@ -67,12 +67,17 @@ export class VirtualFrame<Item extends object> {
     return this._items.length;
   }
 
-  public getSizeUntil(index: number) {
-    let sizeUntilIndex = 0;
+  public getScrollOffset(index: number) {
+    let scrollOffset = 0;
     for (let i = 0; i < index; i++) {
-      sizeUntilIndex += this.getSizeForIndex(i);
+      scrollOffset += this.getSizeForIndex(i);
     }
-    return sizeUntilIndex;
+    if (index > this._frameStart) {
+      for (let i = index; i < this.totalSize; i++) {
+        scrollOffset += this.getSizeForIndex(i);
+      }
+    }
+    return scrollOffset;
   }
 
   public getAverageItemSize() {
@@ -179,6 +184,8 @@ export class VirtualFrame<Item extends object> {
     frameSize?: number;
     overscan?: number;
   }): FrameUpdate {
+    frameStart = Math.max(0, Math.min(this.totalSize - this.frameSize, frameStart));
+
     // The frame does not need to be updated when input parameters are the same.
     const lastFrameIndex = this._indices[this._indices.length - 1] ?? -1;
     const shouldUpdateIndices = !(

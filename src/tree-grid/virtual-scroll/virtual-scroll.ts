@@ -74,15 +74,17 @@ export class VirtualScrollModel<Item extends object> {
     this.frame.setItemSize(index, size);
   }
 
-  // TODO: test this with variable item sizes: the scrollValue and frameStart are expected to be in sync
-  // so that the scroll target is always the first element unless there are not many elements at the beginning.
   public scrollToIndex = (index: number) => {
     index = Math.min(this.frame.totalSize, Math.max(0, index));
 
-    const property = this.horizontal ? 'scrollLeft' : 'scrollTop';
-    this.scrollContainer[property] = this.frame.getSizeUntil(index);
+    const nextFrame = this.frame.setFrameStart(index);
+    this.onFrameChange(nextFrame);
 
-    this.frame.setFrameStart(index);
+    // TODO: replace timeout with signal (next onSizesUpdated)
+    setTimeout(() => {
+      const property = this.horizontal ? 'scrollLeft' : 'scrollTop';
+      this.scrollContainer[property] = this.frame.getScrollOffset(index);
+    }, 25);
   };
 
   private onSizeChange() {
