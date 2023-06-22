@@ -278,6 +278,7 @@ const InternalTreeGrid = React.forwardRef(
     const tbodyRef = useRef<HTMLTableSectionElement>(null);
     const gridFocus = useGridFocus({
       rows: items.length,
+      columns: visibleColumnDefinitions.length,
       getContainer: () => tbodyRef.current,
       getWrapper: () => wrapperRefObject.current,
       onScrollToIndex: (rowIndex: number, columnIndex: number) => {

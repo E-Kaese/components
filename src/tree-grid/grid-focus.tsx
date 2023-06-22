@@ -10,6 +10,7 @@ const KEYBOARD_PAGE_SIZE = 50;
 
 interface GridFocusProps {
   rows: number;
+  columns: number;
   getWrapper: () => null | HTMLElement;
   getContainer: () => null | HTMLElement;
   onRowAction?: (rowIndex: number) => void;
@@ -19,6 +20,7 @@ interface GridFocusProps {
 
 export function useGridFocus({
   rows,
+  columns,
   getWrapper,
   getContainer,
   onRowAction,
@@ -39,6 +41,12 @@ export function useGridFocus({
       model.setRows(rows);
     }
   }, [model, rows]);
+
+  useEffect(() => {
+    if (model) {
+      model.setColumns(columns);
+    }
+  }, [model, columns]);
 
   const stableOnRowAction = useStableEventHandler(onRowAction ?? (() => {}));
   const stableOnCellAction = useStableEventHandler(onCellAction ?? (() => {}));
@@ -118,6 +126,9 @@ export class GridFocusModel {
     }
   }
 
+  // TODO: unmount rows and columns when focused element unmounts
+  // Re-mount when focused element is back visible
+  // When focused element is not visible focus a hidden element to make the keyboard operations work
   public setRows(rows: number) {
     this.rows = rows;
 
@@ -335,14 +346,26 @@ export class GridFocusModel {
       return;
     }
 
+    // TODO: support column pages
+
     // Move one page up/down the table.
     else {
-      this.onScrollToIndex(
-        direction === -1 ? this.focusedRow - KEYBOARD_PAGE_SIZE : this.focusedRow + KEYBOARD_PAGE_SIZE,
-        0
+      const nextFocusedRow = Math.min(
+        this.rows - 1,
+        Math.max(0, direction === -1 ? this.focusedRow - KEYBOARD_PAGE_SIZE : this.focusedRow + KEYBOARD_PAGE_SIZE)
       );
 
-      // set timeout - set next page row as focused
+      this.onScrollToIndex(nextFocusedRow, 0);
+
+      setTimeout(() => {
+        const nextRow = this.container.querySelector(`[data-rowindex="${nextFocusedRow}"]`) as null | HTMLElement;
+
+        if (nextRow) {
+          this.focusedRow = nextFocusedRow;
+          this.setFocusedElement(nextRow);
+          nextRow.focus();
+        }
+      }, 100);
     }
   }
 
