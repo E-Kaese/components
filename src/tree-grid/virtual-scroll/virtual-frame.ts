@@ -67,6 +67,8 @@ export class VirtualFrame<Item extends object> {
     return this._items.length;
   }
 
+  // TODO: make scroll offset direction aware. Depending on the direction align focused index
+  // to the start or end of the corresponding element edge.
   public getScrollOffset(index: number) {
     let scrollOffset = 0;
     for (let i = 0; i < index; i++) {

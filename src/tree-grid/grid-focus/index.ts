@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useEffect, useState } from 'react';
-import { findUpUntil } from '../internal/utils/dom';
-import { KeyCode } from '../internal/keycode';
-import { useStableEventHandler } from '../internal/hooks/use-stable-event-handler';
+import { findUpUntil } from '../../internal/utils/dom';
+import { KeyCode } from '../../internal/keycode';
+import { useStableEventHandler } from '../../internal/hooks/use-stable-event-handler';
 
 const KEYBOARD_ROW_PAGE_SIZE = 25;
 const KEYBOARD_COLUMN_PAGE_SIZE = 10;
