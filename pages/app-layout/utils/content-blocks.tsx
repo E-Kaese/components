@@ -86,7 +86,7 @@ export function Footer({ legacyConsoleNav }: { legacyConsoleNav: boolean }) {
   return (
     <>
       <footer id="f" className={clsx(styles.footer, legacyConsoleNav && styles.legacyNav)}>
-        © 2008 - 2020, Amazon Web Services, Inc. or its affiliates. All rights reserved
+        © 2008 - {new Date().getFullYear()}, Amazon Web Services, Inc. or its affiliates. All rights reserved
       </footer>
     </>
   );
