@@ -21,7 +21,7 @@ export interface UseDynamicOverlapProps {
 export function useDynamicOverlap(props?: UseDynamicOverlapProps) {
   const disabled = props?.disabled ?? false;
   const setDynamicOverlapHeight = useContext(DynamicOverlapContext);
-  const [overlapHeight, overlapElementRef] = useContainerQuery(rect => rect.height);
+  const [overlapHeight, overlapElementRef] = useContainerQuery(rect => rect.height, [], true);
 
   useLayoutEffect(
     function handleDynamicOverlapHeight() {

@@ -20,11 +20,13 @@ import { useResizeObserver } from './use-resize-observer';
  *
  * @param mapFn Function to convert ContainerQueryEntry to a custom type S
  * @param deps Dependency list to indicate when the mapFn changes
+ * @param sync Whether to prevent concurrent rendering
  * @returns A tuple of observation value and a reference to be attached to the target element.
  */
 export function useContainerQuery<S>(
   mapFn: (entry: ContainerQueryEntry, prev: null | S) => S,
-  deps: React.DependencyList = []
+  deps: React.DependencyList = [],
+  sync = false
 ): [null | S, React.Ref<any>] {
   const elementRef = useRef<HTMLElement>(null);
   const [state, setState] = useState<S | null>(null);
@@ -33,7 +35,7 @@ export function useContainerQuery<S>(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const getElement = useCallback(() => elementRef.current, deps);
 
-  useResizeObserver(getElement, entry => setState(prevState => mapFn(entry, prevState)));
+  useResizeObserver(getElement, entry => setState(prevState => mapFn(entry, prevState)), sync);
 
   return [state, elementRef];
 }
