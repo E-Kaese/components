@@ -177,7 +177,7 @@ export function useStickyCellStyles({
 
   // refCallback updates the cell ref and sets up the store subscription
   const refCallback = useCallback(
-    node => {
+    (node: HTMLElement) => {
       if (unsubscribeRef.current) {
         // Unsubscribe before we do any updates to avoid leaving any subscriptions hanging
         unsubscribeRef.current();
