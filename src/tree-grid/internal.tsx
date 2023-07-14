@@ -37,6 +37,7 @@ import { useStickyColumns, selectionColumnId } from './use-sticky-columns';
 import { ScrollProps, useVirtualScroll } from './virtual-scroll';
 // import { FrameAnnouncer, FrameNavigation } from './screen-reader-frame-navigation';
 import { useGridFocus } from './grid-focus';
+import { useStableCallback } from '@cloudscape-design/component-toolkit/internal';
 
 type InternalTreeGridProps<T> = SomeRequired<TreeGridProps<T>, 'items' | 'selectedItems' | 'variant'> &
   InternalBaseComponentProps;
@@ -278,6 +279,22 @@ const InternalTreeGrid = React.forwardRef(
 
     const [focusedColumnAnnouncement, setFocusedColumnAnnouncement] = useState<React.ReactNode>(null);
 
+    const onCellFocus = useStableCallback((rowIndex: number, colIndex: number) => {
+      const columnDef = visibleColumnDefinitions[colIndex];
+      const header = columnDef.header;
+      const row = `Row ${rowIndex + 1}`;
+      const cell = columnDef.cell(items[rowIndex]);
+      const level = getLevel?.(items[rowIndex]);
+      setFocusedColumnAnnouncement(
+        <div>
+          <div>{row}</div>
+          <div>{header}</div>
+          <div>{cell}</div>
+          <div>Level {level}</div>
+        </div>
+      );
+    });
+
     const tbodyRef = useRef<HTMLTableSectionElement>(null);
     const gridFocus = useGridFocus({
       rows: items.length,
@@ -294,21 +311,7 @@ const InternalTreeGrid = React.forwardRef(
       },
       onRowAction,
       onCellAction,
-      onCellFocus(rowIndex: number, colIndex: number) {
-        const columnDef = visibleColumnDefinitions[colIndex];
-        const header = columnDef.header;
-        const row = `Row ${rowIndex + 1}`;
-        const cell = columnDef.cell(items[rowIndex]);
-        const level = getLevel?.(items[rowIndex]);
-        setFocusedColumnAnnouncement(
-          <div>
-            <div>{row}</div>
-            <div>{header}</div>
-            <div>{cell}</div>
-            <div>Level {level}</div>
-          </div>
-        );
-      },
+      onCellFocus,
     });
 
     useImperativeHandle(
