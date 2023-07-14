@@ -275,6 +275,8 @@ const InternalTreeGrid = React.forwardRef(
       stickyState,
     };
 
+    const [focusedColumnAnnouncement, setFocusedColumnAnnouncement] = useState<React.ReactNode>(null);
+
     const tbodyRef = useRef<HTMLTableSectionElement>(null);
     const gridFocus = useGridFocus({
       rows: items.length,
@@ -291,6 +293,19 @@ const InternalTreeGrid = React.forwardRef(
       },
       onRowAction,
       onCellAction,
+      onCellFocus(rowIndex: number, colIndex: number) {
+        const columnDef = visibleColumnDefinitions[colIndex];
+        const header = columnDef.header;
+        const row = `Row ${rowIndex + 1}`;
+        const cell = columnDef.cell(items[rowIndex]);
+        setFocusedColumnAnnouncement(
+          <div>
+            <div>{row}</div>
+            <div>{header}</div>
+            <div>{cell}</div>
+          </div>
+        );
+      },
     });
 
     useImperativeHandle(
@@ -310,6 +325,8 @@ const InternalTreeGrid = React.forwardRef(
         resizableColumns={resizableColumns && virtualScrollHorizontal.frame.length > 0}
         hasSelection={hasSelection}
       >
+        <LiveRegion>{focusedColumnAnnouncement}</LiveRegion>
+
         <InternalContainer
           fitHeight={true}
           {...baseProps}

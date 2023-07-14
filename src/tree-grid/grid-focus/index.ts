@@ -16,6 +16,8 @@ interface GridFocusProps {
   getContainer: () => null | HTMLElement;
   onRowAction?: (rowIndex: number) => void;
   onCellAction?: (rowIndex: number, colIndex: number) => void;
+  onRowFocus?: (rowIndex: number) => void;
+  onCellFocus?: (rowIndex: number, columnIndex: number) => void;
   onScrollToIndex: (rowIndex?: number, colIndex?: number) => void;
 }
 
@@ -26,6 +28,8 @@ export function useGridFocus({
   getContainer,
   onRowAction,
   onCellAction,
+  onRowFocus,
+  onCellFocus,
   onScrollToIndex,
 }: GridFocusProps) {
   const [model, setModel] = useState(() => {
@@ -34,7 +38,7 @@ export function useGridFocus({
     if (!wrapper || !container) {
       return null;
     }
-    return new GridFocusModel(container, wrapper, onScrollToIndex, onRowAction, onCellAction);
+    return new GridFocusModel(container, wrapper, onScrollToIndex, onRowAction, onCellAction, onRowFocus, onCellFocus);
   });
 
   useEffect(() => {
@@ -62,7 +66,17 @@ export function useGridFocus({
     if (!wrapper || !container) {
       return;
     }
-    setModel(new GridFocusModel(container, wrapper, onScrollToIndex, stableOnRowAction, stableOnCellAction));
+    setModel(
+      new GridFocusModel(
+        container,
+        wrapper,
+        onScrollToIndex,
+        stableOnRowAction,
+        stableOnCellAction,
+        onRowFocus,
+        onCellFocus
+      )
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, stableOnRowAction, stableOnCellAction]);
 
@@ -83,26 +97,47 @@ export class GridFocusModel {
   private onScrollToIndex: (rowIndex?: number, colIndex?: number) => void;
   private onRowAction?: (rowIndex: number) => void;
   private onCellAction?: (rowIndex: number, columnIndex: number) => void;
+  private onRowFocus?: (rowIndex: number) => void;
+  private onCellFocus?: (rowIndex: number, columnIndex: number) => void;
   private columns = 0;
   private rows = 0;
 
   // State
-  private focusedRow: null | number = null;
-  private focusedColumn: null | number = null;
+  private _focusedRow: null | number = null;
+  private _focusedColumn: null | number = null;
   private focusedElement: null | HTMLElement = null;
+
+  private get focusedRow() {
+    return this._focusedRow;
+  }
+  private set focusedRow(row: null | number) {
+    this._focusedRow = row;
+  }
+
+  private get focusedColumn() {
+    return this._focusedColumn;
+  }
+  private set focusedColumn(column: null | number) {
+    this._focusedColumn = column;
+    this.onCellFocus?.(this.focusedRow ?? 0, this.focusedColumn ?? 0);
+  }
 
   constructor(
     container: HTMLElement,
     wrapper: HTMLElement,
     onScrollToIndex: (rowIndex?: number, colIndex?: number) => void,
     onRowAction?: (rowIndex: number) => void,
-    onCellAction?: (rowIndex: number, columnIndex: number) => void
+    onCellAction?: (rowIndex: number, columnIndex: number) => void,
+    onRowFocus?: (rowIndex: number) => void,
+    onCellFocus?: (rowIndex: number, columnIndex: number) => void
   ) {
     this.container = container;
     this.wrapper = wrapper;
     this.onScrollToIndex = onScrollToIndex;
     this.onRowAction = onRowAction;
     this.onCellAction = onCellAction;
+    this.onRowFocus = onRowFocus;
+    this.onCellFocus = onCellFocus;
 
     this.init();
   }

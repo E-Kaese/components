@@ -9,6 +9,7 @@ import ScreenreaderOnly, { ScreenreaderOnlyProps } from '../screenreader-only';
 import styles from './styles.css.js';
 
 export interface LiveRegionProps extends ScreenreaderOnlyProps {
+  atomic?: boolean;
   assertive?: boolean;
   delay?: number;
   visible?: boolean;
@@ -53,6 +54,7 @@ export interface LiveRegionProps extends ScreenreaderOnlyProps {
 export default memo(LiveRegion);
 
 function LiveRegion({
+  atomic = true,
   assertive = false,
   delay = 10,
   visible = false,
@@ -118,7 +120,7 @@ function LiveRegion({
           </TagName>
         )}
 
-        <span ref={targetRef} aria-atomic="true" aria-live={assertive ? 'assertive' : 'polite'}></span>
+        <span ref={targetRef} aria-atomic={atomic} aria-live={assertive ? 'assertive' : 'polite'}></span>
       </ScreenreaderOnly>
     </>
   );

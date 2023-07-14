@@ -33,6 +33,7 @@ export interface TableTdElementProps {
   stickyState: StickyColumnsModel;
   isVisualRefresh?: boolean;
   isShaded?: boolean;
+  onFocus?: () => void;
 }
 
 export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElementProps>(
@@ -78,6 +79,7 @@ export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElem
       columnId,
       getClassName: props => getStickyClassNames(styles, props),
     });
+
     return (
       <Element
         data-colindex={colIndex}
