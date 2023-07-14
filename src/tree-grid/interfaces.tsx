@@ -319,6 +319,8 @@ export interface TreeGridProps<T = any> extends BaseComponentProps {
 
   onRowAction?: (rowIndex: number) => void;
   onCellAction?: (rowIndex: number, columnIndex: number) => void;
+
+  getLevel?: (item: T) => number;
 }
 
 export namespace TreeGridProps {

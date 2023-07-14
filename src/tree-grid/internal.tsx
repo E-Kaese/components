@@ -86,6 +86,7 @@ const InternalTreeGrid = React.forwardRef(
       getIsShaded,
       onRowAction,
       onCellAction,
+      getLevel,
       ...rest
     }: InternalTreeGridProps<T>,
     ref: React.Ref<TreeGridProps.Ref>
@@ -298,11 +299,13 @@ const InternalTreeGrid = React.forwardRef(
         const header = columnDef.header;
         const row = `Row ${rowIndex + 1}`;
         const cell = columnDef.cell(items[rowIndex]);
+        const level = getLevel?.(items[rowIndex]);
         setFocusedColumnAnnouncement(
           <div>
             <div>{row}</div>
             <div>{header}</div>
             <div>{cell}</div>
+            <div>Level {level}</div>
           </div>
         );
       },
@@ -496,6 +499,7 @@ const InternalTreeGrid = React.forwardRef(
                       return (
                         <tr
                           tabIndex={-1}
+                          aria-level={getLevel?.(item)}
                           data-rowindex={rowIndex}
                           ref={node => virtualScroll.setItemRef(rowIndex, node)}
                           role="row"

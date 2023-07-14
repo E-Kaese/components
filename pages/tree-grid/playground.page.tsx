@@ -202,6 +202,7 @@ export default function Page() {
         ref={gridRef}
         header={<Header>Instances</Header>}
         items={visibleInstances}
+        getLevel={(instance: any) => getInstanceMeta(instance).level}
         trackBy={item => item.id}
         getIsShaded={item => getInstanceMeta(item).level === 2}
         onRowAction={onRowAction}
