@@ -229,6 +229,8 @@ export default function Page() {
                         });
                       }
                     }}
+                    ariaLabel={someExpanded ? 'Collapse all' : 'Expand all'}
+                    ariaExpanded={someExpanded}
                   />
                 </div>
                 <Box fontWeight="bold" margin={{ left: 'xs' }}>
@@ -340,6 +342,8 @@ export default function Page() {
                       <Button
                         variant="icon"
                         iconName={expanded[item.id] ? 'treeview-collapse' : 'treeview-expand'}
+                        ariaLabel={expanded[item.id] ? 'Collapse group' : 'Expand group'}
+                        ariaExpanded={!!expanded[item.id]}
                         onClick={() => {
                           if (expanded[item.id] !== undefined) {
                             setExpanded(prev => {
