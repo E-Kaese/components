@@ -20,7 +20,7 @@
         csp['style-src'] = "'unsafe-inline' 'self'";
       }
       if (location.hash.includes('code-editor')) {
-        csp['worker-src'] = 'blob:'; // ace uses web workers for syntax validation
+        csp['worker-src'] = "blob: 'self'"; // ace uses web workers for syntax validation
         csp['img-src'] = 'data:'; // this component contains icons loaded this way
       }
       // Custom CSP required for thumbnails in FileUpload component

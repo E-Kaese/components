@@ -14,6 +14,11 @@ export interface CodeEditorProps extends BaseComponentProps, FormFieldControlPro
   ace: any;
 
   /**
+   * Callback to modify `Ace.Editor` instance.
+   */
+  editorCustomizer?: (editor: Ace.Editor) => void;
+
+  /**
    * Specifies the content that's displayed in the code editor.
    */
   value: string;

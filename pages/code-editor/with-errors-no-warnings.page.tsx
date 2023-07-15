@@ -6,7 +6,7 @@ import CodeEditor, { CodeEditorProps } from '~components/code-editor';
 import SpaceBetween from '~components/space-between';
 import ScreenshotArea from '../utils/screenshot-area';
 import { i18nStrings, themes } from './base-props';
-
+import { loadAce, setupLanguageProvider } from './ace-loader';
 import { buildSample, awsTemplateSample } from './code-samples';
 
 interface IState {
@@ -43,15 +43,9 @@ sdsdasd
 
   componentDidMount() {
     this.setState({ loading: true });
-
-    import('ace-builds').then(ace => {
-      ace.config.set('basePath', './ace/');
-      ace.config.set('themePath', './ace/');
-      ace.config.set('modePath', './ace/');
-      ace.config.set('workerPath', './ace/');
-      ace.config.set('useStrictCSP', true);
-      this.setState({ ace, loading: false });
-    });
+    loadAce()
+      .then(ace => this.setState({ ace }))
+      .finally(() => this.setState({ loading: false }));
   }
 
   onPreferencesChange(preferences: CodeEditorProps.Preferences) {
@@ -65,6 +59,7 @@ sdsdasd
         <ScreenshotArea style={{ maxWidth: 960 }}>
           <CodeEditor
             ace={this.state.ace}
+            editorCustomizer={setupLanguageProvider}
             value={this.state.value}
             language={this.state.language}
             onChange={e => this.setState({ value: e.detail.value })}

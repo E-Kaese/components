@@ -49,6 +49,7 @@ const CodeEditor = forwardRef((props: CodeEditorProps, ref: React.Ref<CodeEditor
   const { controlId, ariaLabelledby, ariaDescribedby } = useFormFieldContext(props);
   const {
     ace,
+    editorCustomizer,
     value,
     language,
     i18nStrings,
@@ -103,9 +104,11 @@ const CodeEditor = forwardRef((props: CodeEditorProps, ref: React.Ref<CodeEditor
     setEditor(
       ace.edit(elem, {
         ...config,
+        mode: `ace/mode/${language}`,
         theme: getAceTheme(getDefaultTheme(elem)),
       })
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ace, props.loading]);
   const [codeEditorWidth, codeEditorMeasureRef] = useContainerQuery(rect => rect.contentBoxWidth);
   const mergedRef = useMergeRefs(codeEditorMeasureRef, __internalRootRef);
@@ -124,10 +127,12 @@ const CodeEditor = forwardRef((props: CodeEditorProps, ref: React.Ref<CodeEditor
     }
 
     setupEditor(ace, editor, setAnnotations, setCursorPosition, setHighlightedAnnotation, setPaneStatus);
+    editorCustomizer?.(editor);
 
     return () => {
       editor?.destroy();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ace, editor, __internalRootRef]);
 
   useEffect(() => {

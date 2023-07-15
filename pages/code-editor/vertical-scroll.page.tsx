@@ -1,8 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useEffect, useState } from 'react';
-import CodeEditor, { CodeEditorProps } from '~components/code-editor';
+import React, { useState } from 'react';
+import CodeEditor from '~components/code-editor';
 import { i18nStrings } from './base-props';
+import { useAce } from './ace-loader';
 
 import 'ace-builds/css/ace.css';
 import 'ace-builds/css/theme/dawn.css';
@@ -12,20 +13,8 @@ import Box from '~components/box';
 import { sayHelloSample } from './code-samples';
 
 export default function () {
-  const [ace, setAce] = useState<CodeEditorProps['ace']>();
   const [value, setValue] = useState(sayHelloSample);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    import('ace-builds').then(ace => {
-      ace.config.set('basePath', './ace/');
-      ace.config.set('themePath', './ace/');
-      ace.config.set('modePath', './ace/');
-      ace.config.set('workerPath', './ace/');
-      ace.config.set('useStrictCSP', true);
-      setAce(ace);
-      setLoading(false);
-    });
-  }, []);
+  const { ace, loading } = useAce();
 
   return (
     <article>

@@ -4172,6 +4172,12 @@ is provided by its parent form field component.
       "type": "number",
     },
     Object {
+      "description": "Callback to modify \`Ace.Editor\` instance.",
+      "name": "editorCustomizer",
+      "optional": true,
+      "type": "(editor: Editor) => void",
+    },
+    Object {
       "description": "An object containing all the necessary localized strings required by the component.
 The object should contain, among others:
 * \`loadingState\` - Specifies the text to display while the component is loading.

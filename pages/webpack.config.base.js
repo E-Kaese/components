@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 const path = require('path');
 const { NormalModuleReplacementPlugin } = require('webpack');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
@@ -31,7 +30,7 @@ module.exports = ({
     output: {
       path: path.resolve(outputPath),
       publicPath: './',
-      chunkFilename: 'chunks/[name].js',
+      chunkFilename: '[name].js',
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js'],
@@ -113,15 +112,6 @@ module.exports = ({
         ignoreOrder: true,
         filename: '[name].css',
         chunkFilename: 'chunks/[id].css',
-      }),
-      new CopyWebpackPlugin({
-        patterns: [
-          {
-            from: '**/*',
-            to: path.resolve(outputPath, 'ace'),
-            context: path.dirname(require.resolve('ace-builds/src-min-noconflict/ace')),
-          },
-        ],
       }),
       new HtmlWebpackPlugin({
         template: path.join(__dirname, './app/index.html'),

@@ -5,6 +5,7 @@ import Button from '~components/button';
 import CodeEditor, { CodeEditorProps } from '~components/code-editor';
 import SpaceBetween from '~components/space-between';
 import ScreenshotArea from '../utils/screenshot-area';
+import { loadAce } from './ace-loader';
 import { i18nStrings, themes } from './base-props';
 
 import { buildSample, awsTemplateSample } from './code-samples';
@@ -34,14 +35,9 @@ export default class App extends React.PureComponent<null, IState> {
   componentDidMount() {
     this.setState({ loading: true });
 
-    import('ace-builds').then(ace => {
-      ace.config.set('basePath', './ace/');
-      ace.config.set('themePath', './ace/');
-      ace.config.set('modePath', './ace/');
-      ace.config.set('workerPath', './ace/');
-      ace.config.set('useStrictCSP', true);
-      this.setState({ ace, loading: false });
-    });
+    loadAce()
+      .then(ace => this.setState({ ace }))
+      .finally(() => this.setState({ loading: false }));
   }
 
   onPreferencesChange(preferences: CodeEditorProps.Preferences) {
