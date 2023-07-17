@@ -111,6 +111,9 @@ export class GridFocusModel {
     return this._focusedRow;
   }
   private set focusedRow(row: null | number) {
+    if (this.focusedColumn === null && row !== null && this.focusedRow !== row) {
+      this.onCellFocus?.(row, 0);
+    }
     this._focusedRow = row;
   }
 
@@ -119,7 +122,9 @@ export class GridFocusModel {
   }
   private set focusedColumn(column: null | number) {
     this._focusedColumn = column;
-    this.onCellFocus?.(this.focusedRow ?? 0, this.focusedColumn ?? 0);
+    if (column !== null) {
+      this.onCellFocus?.(this.focusedRow ?? 0, this.focusedColumn ?? 0);
+    }
   }
 
   constructor(
