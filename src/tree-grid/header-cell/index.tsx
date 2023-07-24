@@ -111,6 +111,7 @@ export function TableHeaderCell<ItemType>({
       aria-sort={sortingStatus && getAriaSort(sortingStatus)}
       style={{ ...style, ...stickyStyles.style }}
       scope="col"
+      aria-colindex={colIndex + 1}
     >
       <div
         className={clsx(styles['header-cell-content'], {

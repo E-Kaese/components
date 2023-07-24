@@ -445,7 +445,8 @@ const InternalTreeGrid = React.forwardRef(
                 )}
                 role="treegrid"
                 aria-label={ariaLabels?.tableLabel}
-                aria-rowcount={totalItemsCount ? totalItemsCount + 1 : -1}
+                aria-rowcount={totalItemsCount ? totalItemsCount + 1 : items.length + 1}
+                aria-colcount={visibleColumns?.length} // TODO: separately include selection and grouping cols
               >
                 <Thead
                   ref={theadRef}
@@ -519,10 +520,11 @@ const InternalTreeGrid = React.forwardRef(
                           {...focusMarkers.item}
                           onClick={onRowClickHandler && onRowClickHandler.bind(null, rowIndex, item)}
                           onContextMenu={onRowContextMenuHandler && onRowContextMenuHandler.bind(null, rowIndex, item)}
-                          aria-rowindex={firstIndex ? firstIndex + rowIndex + 1 : undefined}
+                          aria-rowindex={rowIndex + 2}
                         >
                           {selectionType !== undefined && (
                             <TableTdElement
+                              colIndex={-1} // TODO: fix
                               className={clsx(styles['selection-control'])}
                               isVisualRefresh={isVisualRefresh}
                               isFirstRow={firstVisible}
