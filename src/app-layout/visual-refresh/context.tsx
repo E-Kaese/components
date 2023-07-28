@@ -132,6 +132,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
       }
     }
 
+    const hasContentHeader = !!props.contentHeader;
     /**
      * The overlap height has a default set in CSS but can also be dynamically overridden
      * for content types (such as Table and Wizard) that have variable size content in the overlap.
@@ -139,7 +140,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
      * if the background remains in the same vertical position.
      */
     const [isDynamicOverlapSet, setIsDynamicOverlapSet] = useState(false);
-    const [isDynamicOverlapDisabled, setIsDynamicOverlapDisabled] = useState(true);
+    const [isDynamicOverlapDisabled, setIsDynamicOverlapDisabled] = useState(!hasContentHeader);
     const [hasStickyBackground, setHasStickyBackground] = useState(false);
 
     /**
@@ -489,8 +490,6 @@ export const AppLayoutInternalsProvider = React.forwardRef(
 
     const mainElement = useRef<HTMLDivElement>(null);
     const [mainOffsetLeft, setMainOffsetLeft] = useState(0);
-
-    const hasContentHeader = !!props.contentHeader;
 
     const updateDynamicOverlapHeight = useCallback(
       (height: number) => {
