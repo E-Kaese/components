@@ -514,7 +514,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
          * Using React state for `isDynamicOverlapSet` and `isDynamicOverlapDisabled` is less problematic
          * because they will rarely change within the lifecycle of an application.
          */
-        const element = typeof layoutElement !== 'function' && layoutElement?.current; // Layout component uses RefObject
+        const element = typeof layoutElement === 'function' ? layoutElement(null) : layoutElement?.current;
         if (isOverlapDisabled || height <= 0) {
           element?.style.removeProperty(customCssProps.overlapHeight);
         } else {
