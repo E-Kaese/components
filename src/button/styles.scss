@@ -88,6 +88,7 @@
   padding-block: styles.$control-padding-vertical;
   padding-inline: awsui.$space-button-horizontal;
   display: inline-block; // for <a> as a button
+  min-height: awsui.$size-vertical-input;
   text-decoration: none;
   cursor: pointer;
 
