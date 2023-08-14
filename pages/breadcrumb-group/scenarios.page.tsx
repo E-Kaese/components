@@ -26,14 +26,16 @@ export default function ButtonDropdownPage() {
     <ScreenshotArea disableAnimations={true}>
       <article>
         <h1>BreadcrumbGroup variations</h1>
-        {testCases.map((testcase, index) => (
-          <BreadcrumbGroup
-            key={index}
-            ariaLabel={'Navigation' + index}
-            expandAriaLabel="Show path"
-            items={testcase.map((text, i) => ({ text, href: `#item-${index}-${i}` }))}
-          />
-        ))}
+        <div className="orion-context-breadcrumbs">
+          {testCases.map((testcase, index) => (
+            <BreadcrumbGroup
+              key={index}
+              ariaLabel={'Navigation' + index}
+              expandAriaLabel="Show path"
+              items={testcase.map((text, i) => ({ text, href: `#item-${index}-${i}` }))}
+            />
+          ))}
+        </div>
       </article>
     </ScreenshotArea>
   );

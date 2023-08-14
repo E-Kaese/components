@@ -85,7 +85,9 @@
   border-end-end-radius: awsui.$border-radius-button;
   border-block: styles.$control-border-width solid;
   border-inline: styles.$control-border-width solid;
-  padding-block: styles.$control-padding-vertical;
+  padding-block: calc(
+    (#{awsui.$size-vertical-input} - (2 * #{styles.$control-border-width}) - #{awsui.$line-height-body-m}) / 2
+  );
   padding-inline: awsui.$space-button-horizontal;
   display: inline-block; // for <a> as a button
   min-height: awsui.$size-vertical-input;

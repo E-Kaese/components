@@ -2,6 +2,7 @@
  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  SPDX-License-Identifier: Apache-2.0
 */
+@use '~design-tokens' as tokens;
 
 .container {
   padding: 10px;
@@ -72,4 +73,52 @@
 
 .dropdown-permutation {
   height: 50px;
+}
+
+.custom-shadow-primary {
+  --shadow-hover: 0px 0px 12px 0px #ffc0ad, 0px 0px 16px 0px #f299ff, 0px 0px 20px 0px #b2a8ff;
+  --shadow-active: 0px 0px 4px 0px #ffc0ad, 0px 0px 6px 0px #f299ff, 0px 0px 8px 0px #b2a8ff;
+}
+.custom-shadow {
+  --shadow-hover: 0px 0px 12px 0px #3dff9e, 0px 0px 16px 0px #00f5e4, 0px 0px 20px 0px #94afff;
+  --shadow-active: 0px 0px 4px 0px #3dff9e, 0px 0px 6px 0px #00f5e4, 0px 0px 8px 0px #94afff;
+}
+
+.custom-shadow-primary,
+.custom-shadow {
+  /* stylelint-disable-next-line @cloudscape-design/no-motion-outside-of-mixin */
+  transition: all tokens.$motion-duration-expressive tokens.$motion-easing-responsive;
+
+  /* stylelint-disable-next-line @cloudscape-design/no-implicit-descendant */
+  .button-icon-wrapper {
+    display: none;
+  }
+
+  &:hover:not(.disabled) {
+    box-shadow: var(--shadow-hover);
+    border-radius: tokens.$border-radius-button;
+    display: inline-block;
+    &:active {
+      box-shadow: var(--shadow-active);
+    }
+
+    /* stylelint-disable-next-line @cloudscape-design/no-implicit-descendant */
+    .button-icon-wrapper {
+      display: inline-block;
+      padding-left: tokens.$space-static-xs;
+      /* stylelint-disable-next-line @cloudscape-design/no-motion-outside-of-mixin */
+      animation: fadeIn tokens.$motion-duration-expressive tokens.$motion-easing-responsive;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    padding-left: 0;
+  }
+  100% {
+    opacity: 1;
+    padding-left: tokens.$space-static-xs;
+  }
 }

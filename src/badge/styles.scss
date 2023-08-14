@@ -21,18 +21,18 @@
   color: awsui.$color-text-notification-default;
 
   &.badge-color-grey {
-    background-color: awsui.$color-background-notification-grey;
+    background: awsui.$color-background-notification-grey;
   }
 
   &.badge-color-green {
-    background-color: awsui.$color-background-notification-green;
+    background: awsui.$color-background-notification-green;
   }
 
   &.badge-color-blue {
-    background-color: awsui.$color-background-notification-blue;
+    background: awsui.$color-background-notification-blue;
   }
 
   &.badge-color-red {
-    background-color: awsui.$color-background-notification-red;
+    background: awsui.$color-background-notification-red;
   }
 }

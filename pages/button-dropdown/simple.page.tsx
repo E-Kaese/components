@@ -5,6 +5,9 @@ import styles from './styles.scss';
 
 import ButtonDropdown, { ButtonDropdownProps } from '~components/button-dropdown';
 import ScreenshotArea from '../utils/screenshot-area';
+import Button from '~components/button';
+import Icon from '~components/icon';
+import SpaceBetween from '~components/space-between';
 
 const items: ButtonDropdownProps['items'] = [
   {
@@ -189,6 +192,54 @@ export default function ButtonDropdownPage() {
           <ButtonDropdown id="ButtonDropdown8" expandableGroups={true} items={withDisabledItems}>
             With expandable groups and disabled items
           </ButtonDropdown>
+        </div>
+
+        <div className={styles['orion-styles']}>
+          <h2>Marketing</h2>
+          <SpaceBetween direction="horizontal" size="xxl">
+            <SpaceBetween size="l">
+              <span className={(styles.container, styles['custom-shadow-primary'])}>
+                <ButtonDropdown id="ButtonDropdown9" variant="primary" items={items}>
+                  Primary dropdown
+                </ButtonDropdown>
+              </span>
+              <span className={(styles.container, styles['custom-shadow'])}>
+                <ButtonDropdown id="ButtonDropdown10" items={withNestedOptions}>
+                  With nested options
+                </ButtonDropdown>
+              </span>
+
+              <span className={(styles.container, styles['custom-shadow'])}>
+                <ButtonDropdown id="ButtonDropdown11" items={items} disabled={true}>
+                  Disabled
+                </ButtonDropdown>
+              </span>
+            </SpaceBetween>
+            <SpaceBetween size="l">
+              <span className={styles['custom-shadow-primary']}>
+                <Button variant="primary">Primary button</Button>
+              </span>
+              <span className={styles['custom-shadow']}>
+                <Button variant="normal">Secondary button</Button>
+              </span>
+              <span className={(styles['custom-shadow'], styles.disabled)}>
+                <Button variant="normal" disabled={true}>
+                  Disabled button
+                </Button>
+              </span>
+              <span className={`orion-context-tertiary-button`}>
+                <Button variant="normal">Tertiary button</Button>
+              </span>
+              <span className={styles['custom-shadow']}>
+                <Button variant="normal">
+                  Secondary button with icon{' '}
+                  <span className={styles['button-icon-wrapper']}>
+                    <Icon name="angle-right" />
+                  </span>
+                </Button>
+              </span>
+            </SpaceBetween>
+          </SpaceBetween>
         </div>
       </article>
     </ScreenshotArea>
