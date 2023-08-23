@@ -1,0 +1,25 @@
+/*
+ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+*/
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+.grid {
+  margin-left: auto;
+  margin-right: auto;
+  display: grid;
+  padding: 96px 120px 120px 120px;
+  max-width: 1440px;
+  gap: 36px;
+  width: 100%;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+@for $i from 1 through 12 {
+  .col-#{$i} {
+    display: flex;
+    width: 100%;
+    grid-column: span #{$i};
+  }
+}
