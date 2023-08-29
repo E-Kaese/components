@@ -2,17 +2,32 @@
  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  SPDX-License-Identifier: Apache-2.0
 */
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
+
+.page {
+  margin-left: auto;
+  margin-right: auto;
+  display: grid;
+  padding: clamp(24px, 9.9vw + (-29.93px), 96px) clamp(24px, 13.31vw + (-39.9px), 120px)
+    clamp(32px, 12.21vw + (-26.58px), 120px) clamp(24px, 13.31vw + (-39.9px), 120px);
+  max-width: 1440px;
+  gap: 36px;
+}
+
+.cta-link {
+  display: flex;
+  justify-content: flex-end;
+  align-items: last baseline;
+  height: 100%;
+}
 
 .grid {
   margin-left: auto;
   margin-right: auto;
   display: grid;
-  padding: 96px 120px 120px 120px;
+  padding: clamp(24px, 9.9vw + (-29.93px), 96px) clamp(24px, 13.31vw + (-39.9px), 120px)
+    clamp(32px, 12.21vw + (-26.58px), 120px) clamp(24px, 13.31vw + (-39.9px), 120px);
   max-width: 1440px;
   gap: 36px;
-  width: 100%;
   grid-template-columns: repeat(12, 1fr);
 }
 

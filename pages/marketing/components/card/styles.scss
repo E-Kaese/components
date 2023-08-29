@@ -1,0 +1,53 @@
+/*
+ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+*/
+@use '~design-tokens' as awsui;
+
+a.classic-card {
+  display: flex;
+  flex-direction: column;
+  background-color: awsui.$color-background-container-content;
+  border-radius: awsui.$border-radius-container;
+  text-decoration: none;
+  padding: awsui.$space-static-xxxl;
+  cursor: default;
+  /* stylelint-disable-next-line @cloudscape-design/no-motion-outside-of-mixin */
+  transition: box-shadow awsui.$motion-duration-complex;
+  min-height: 280px;
+  height: 100%;
+  box-sizing: border-box;
+
+  &.theme-fushia {
+    --shadow-hover: 0px 0px 12px 0px #ffc0ad, 0px 0px 16px 0px #f299ff, 0px 0px 20px 0px #b2a8ff;
+    --shadow-active: 0px 0px 4px 0px #ffc0ad, 0px 0px 6px 0px #f299ff, 0px 0px 8px 0px #b2a8ff;
+  }
+
+  &.theme-teal {
+    --shadow-hover: 0px 0px 12px 0px #3dff9e, 0px 0px 16px 0px #00f5e4, 0px 0px 20px 0px #94afff;
+    --shadow-active: 0px 0px 4px 0px #3dff9e, 0px 0px 6px 0px #00f5e4, 0px 0px 8px 0px #94afff;
+  }
+
+  &:hover {
+    box-shadow: var(--shadow-hover);
+  }
+  &:active {
+    box-shadow: var(--shadow-active);
+  }
+}
+
+.body {
+  margin: awsui.$space-static-xs 0 0 0;
+  overflow: hidden;
+}
+
+.footer {
+  width: 100%;
+  padding-top: 8px;
+  margin-top: auto;
+  align-self: flex-end;
+}
+
+.icon {
+  transform: scale(-1);
+}
