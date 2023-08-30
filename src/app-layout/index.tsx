@@ -41,6 +41,7 @@ import { useSplitPanelFocusControl } from './utils/use-split-panel-focus-control
 import { TOOLS_DRAWER_ID, useDrawers } from './utils/use-drawers';
 import { useContainerQuery } from '@cloudscape-design/component-toolkit';
 import { togglesConfig } from './toggles';
+import UniversalAppLayout from './universal';
 
 export { AppLayoutProps };
 
@@ -68,12 +69,18 @@ const AppLayout = React.forwardRef(
 
     // This re-builds the props including the default values
     const props = { contentType, headerSelector, footerSelector, ...rest, ariaLabels };
-
     const baseProps = getBaseProps(rest);
+    const universalAppLayout = { ...(props as any) }.universalAppLayout;
 
     return (
       <div ref={__internalRootRef} {...baseProps}>
-        {isRefresh ? <RefreshedAppLayout {...props} ref={ref} /> : <OldAppLayout {...props} ref={ref} />}
+        {universalAppLayout ? (
+          <UniversalAppLayout {...props} ref={ref} />
+        ) : isRefresh ? (
+          <RefreshedAppLayout {...props} ref={ref} />
+        ) : (
+          <OldAppLayout {...props} ref={ref} />
+        )}
       </div>
     );
   }

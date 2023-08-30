@@ -27,7 +27,7 @@ const tokens: StyleDictionary.ColorsDictionary = {
   colorBackgroundContainerHeader: { light: '{colorGrey100}', dark: '{colorGrey750}' },
   colorBackgroundDropdownItemDefault: { dark: '{colorGrey700}' },
   colorBackgroundDropdownItemFilterMatch: { dark: '{colorBlue900}' },
-  colorBackgroundHomeHeader: { light: '{colorBlack}', dark: '{colorBlack}' },
+  colorBackgroundHomeHeader: { light: '{colorWhite}', dark: '{colorBlack}' },
   colorBackgroundInputDisabled: { dark: '{colorGrey650}' },
   colorBackgroundItemSelected: { dark: '{colorBlue900}' },
   colorBackgroundLayoutMain: { light: '{colorGrey150}', dark: '{colorGrey900}' },

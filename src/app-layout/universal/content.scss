@@ -1,0 +1,27 @@
+/*
+ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+*/
+@use '../../internal/styles/tokens' as awsui;
+@use '../../internal/generated/custom-css-properties/index.scss' as custom-props;
+
+section.content {
+  display: grid;
+  grid-area: content;
+  grid-template-columns: #{awsui.$space-scaled-m} 1fr #{awsui.$space-scaled-m};
+  padding-bottom: awsui.$space-layout-content-bottom;
+}
+
+div.content {
+  grid-column: 2;
+
+  &:not(.is-visual-refresh) {
+    #{custom-props.$maxContentWidth}: 800px;
+  }
+
+  /* stylelint-disable plugin/no-unsupported-browser-features */
+  &:has([data-component='content-layout']) {
+    #{custom-props.$overlapHeight}: 0;
+    grid-column: 1 / 4;
+  }
+}
