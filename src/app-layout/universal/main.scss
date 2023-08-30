@@ -1,0 +1,17 @@
+/*
+ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+*/
+
+@use '../../internal/styles/tokens' as awsui;
+
+.main {
+  background-color: awsui.$color-background-layout-main;
+  color: awsui.$color-text-body-default;
+  display: grid;
+  grid-template-areas:
+    'header header header'
+    'drawerInlineStart content drawerInlineEnd';
+  grid-template-columns: min-content 1fr min-content;
+  grid-template-rows: minmax(0, auto) 1fr;
+}
