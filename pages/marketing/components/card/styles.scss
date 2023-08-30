@@ -3,20 +3,24 @@
  SPDX-License-Identifier: Apache-2.0
 */
 @use '~design-tokens' as awsui;
-
-a.classic-card {
+a.card {
   display: flex;
   flex-direction: column;
-  background-color: awsui.$color-background-container-content;
   border-radius: awsui.$border-radius-container;
   text-decoration: none;
-  padding: awsui.$space-static-xxxl;
+
   cursor: default;
   /* stylelint-disable-next-line @cloudscape-design/no-motion-outside-of-mixin */
   transition: box-shadow awsui.$motion-duration-complex;
-  min-height: 280px;
+  min-height: var(--max-height);
   height: 100%;
   box-sizing: border-box;
+  &[data-type='classic'] {
+    --max-height: 280px;
+  }
+  &[data-type='img'] {
+    --max-height: 480px;
+  }
 
   &.theme-fushia {
     --shadow-hover: 0px 0px 12px 0px #ffc0ad, 0px 0px 16px 0px #f299ff, 0px 0px 20px 0px #b2a8ff;
@@ -33,6 +37,21 @@ a.classic-card {
   }
   &:active {
     box-shadow: var(--shadow-active);
+  }
+}
+
+.inner-content {
+  padding: awsui.$space-static-xxxl;
+  box-sizing: border-box;
+  height: 100%;
+  row-gap: awsui.$space-static-xs;
+  display: grid;
+  grid-template-columns: auto;
+  &[data-type='classic'] {
+    grid-template-rows: min-content auto min-content;
+  }
+  &[data-type='img'] {
+    grid-template-rows: 1fr auto min-content;
   }
 }
 

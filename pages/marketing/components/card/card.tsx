@@ -8,7 +8,10 @@ import SpaceBetween from '~components/space-between';
 import styles from './styles.scss';
 import Text from '../text/text';
 import Badge from '../badge/badge';
+import BackgroundImage from '../background/image';
+
 import clsx from 'clsx';
+import { Container } from '~components';
 
 interface CardProps {
   title: string;
@@ -17,22 +20,29 @@ interface CardProps {
   body?: string;
   badge?: string;
   color?: 'fushia' | 'teal';
+  image?: string;
+  imageAlt?: string;
 }
 
-export default function Card({ title, ctaLink, ctaLabel, body, badge, color = 'teal' }: CardProps): ReactElement {
-  return (
-    <a className={clsx(styles['classic-card'], styles[`theme-${color}`])} href={ctaLink}>
-      <div className={styles.header}>
-        <SpaceBetween size="s">
-          {badge && <Badge text={badge} variant="fushia" />}
-          <Text type="title" size={2} tag="h3">
-            {title}
-          </Text>
-        </SpaceBetween>
-      </div>
+export default function Card({
+  title,
+  ctaLink,
+  ctaLabel,
+  body,
+  badge,
+  color = 'teal',
+  image,
+  imageAlt,
+}: CardProps): ReactElement {
+  const InnerContent = (
+    <div data-type={image ? 'img' : 'classic'} className={clsx(styles['inner-content'])}>
+      {badge && <Badge text={badge} variant={image ? 'grey' : color} />}
+      <Text type="title" size={2} tag="h3">
+        {title}
+      </Text>
 
       {body && (
-        <Box variant="p" color="text-body-secondary" padding={{ vertical: 'm' }}>
+        <Box variant="p" color="text-body-secondary">
           {body}
         </Box>
       )}
@@ -49,6 +59,19 @@ export default function Card({ title, ctaLink, ctaLabel, body, badge, color = 't
           </Text>
         </SpaceBetween>
       </div>
+    </div>
+  );
+  return (
+    <a data-type={image ? 'img' : 'classic'} className={clsx(styles.card, styles[`theme-${color}`])} href={ctaLink}>
+      <Container fitHeight={true} disableContentPaddings={true}>
+        {image ? (
+          <BackgroundImage image={image} imageAlt={imageAlt}>
+            {InnerContent}
+          </BackgroundImage>
+        ) : (
+          InnerContent
+        )}
+      </Container>
     </a>
   );
 }

@@ -1,0 +1,14 @@
+/*
+ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+*/
+@use '~design-tokens' as awsui;
+
+.card-background-image {
+  background-color: lightgrey;
+  background-position: 50%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: awsui.$border-radius-container;
+  height: 100%;
+}

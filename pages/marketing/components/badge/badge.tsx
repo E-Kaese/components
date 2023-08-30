@@ -6,7 +6,7 @@ import Box, { BoxProps } from '~components/box';
 
 type BadgeProps = Omit<CloudscapeBadgeProps, 'color'> & {
   size?: 'medium' | 'small';
-  variant?: 'grey' | 'fushia';
+  variant?: 'grey' | 'fushia' | 'teal';
   text?: string;
 };
 
@@ -18,6 +18,7 @@ export default function Badge({ size = 'medium', variant = 'fushia', text, ...pr
   const colorMap: Record<string, CloudscapeBadgeProps['color']> = {
     grey: 'grey',
     fushia: 'red',
+    teal: 'green',
   };
   return (
     <div className="orion-context-badge">

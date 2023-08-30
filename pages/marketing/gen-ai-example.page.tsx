@@ -8,6 +8,7 @@ import Text from './components/text/text';
 import Box from '~components/box';
 import styles from './gen-ai-example.scss';
 import { Grid, Link, SpaceBetween } from '~components';
+import imagePlaceholder from '../container/images/9-16.png';
 
 export default function DemoPage() {
   const toolsCardsData = [
@@ -29,6 +30,19 @@ export default function DemoPage() {
     'Demystifying LLMs with distinguished scientists',
     'Introduction to generative AI by Swami Sivasubramanian',
     'AI coding companions change how developers work',
+  ];
+
+  const imageCardsData = [
+    {
+      title: 'Technology Innovation Institute trains FM on Amazon SageMaker',
+      badge: 'Blog',
+      image: imagePlaceholder,
+    },
+    {
+      title: 'AWS Cloud Adoption Framework for AI and ML ',
+      badge: 'Whitepaper',
+      image: imagePlaceholder,
+    },
   ];
 
   return (
@@ -71,6 +85,19 @@ export default function DemoPage() {
         <Grid gridDefinition={new Array(toolsCardsData.length).fill({ colspan: { default: 12, xxs: 6, xs: 4 } })}>
           {toolsCardsData.map((card, i) => (
             <Card key={i} ctaLink="#" title={card.title} body={card.body} />
+          ))}
+        </Grid>
+      </div>
+
+      <div className={styles.page}>
+        <Grid gridDefinition={[{ colspan: { default: 12, xs: 8 } }]}>
+          <Text type="heading" size={2}>
+            Explore architectures and implementations for generative AI
+          </Text>
+        </Grid>
+        <Grid gridDefinition={new Array(imageCardsData.length).fill({ colspan: { default: 12, xxs: 6 } })}>
+          {imageCardsData.map((card, i) => (
+            <Card key={i} ctaLink="#" title={card.title} badge={card.badge} image={card.image} />
           ))}
         </Grid>
       </div>
