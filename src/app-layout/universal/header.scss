@@ -11,23 +11,33 @@
   background-color: awsui.$color-background-home-header;
   border-bottom: 1px solid awsui.$color-border-divider-default;
   box-shadow: awsui.$shadow-panel-toggle;
+  column-gap: #{awsui.$space-scaled-m};
   display: grid;
-  gap: #{awsui.$space-m};
   grid-area: header;
   grid-template-columns: 0 minmax(0, auto) minmax(0, 1fr) minmax(0, auto) 0;
+  grid-template-rows: 0 minmax(0, auto) 0;
   position: sticky;
+  row-gap: #{awsui.$space-scaled-xxs};
   top: var(#{custom-props.$headerHeight});
   z-index: 1000;
 
   > .actions-inline-start {
     grid-column: 2;
+    grid-row: 2;
   }
 
   > .breadcrumbs {
     grid-column: 3;
+    grid-row: 2;
   }
 
   > .actions-inline-end {
     grid-column: 4;
+    grid-row: 2;
+  }
+
+  > .actions-inline-start > .action,
+  > .actions-inline-end > .action {
+    padding: 0;
   }
 }

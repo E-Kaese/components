@@ -8,10 +8,16 @@
 .main {
   background-color: awsui.$color-background-layout-main;
   color: awsui.$color-text-body-default;
+  column-gap: #{awsui.$space-m};
   display: grid;
   grid-template-areas:
     'header header header'
     'drawerInlineStart content drawerInlineEnd';
   grid-template-columns: min-content 1fr min-content;
   grid-template-rows: minmax(0, auto) 1fr;
+
+  /* stylelint-disable plugin/no-unsupported-browser-features */
+  &:has([data-component='content-layout']) {
+    column-gap: 0;
+  }
 }

@@ -12,13 +12,13 @@ export default function Header() {
   return (
     <header className={clsx(styles.header, 'awsui-context-content-header')}>
       <section className={styles['actions-inline-start']}>
-        <InternalButton formAction="none" iconName="menu" variant="icon" />
+        <InternalButton className={styles.button} formAction="none" iconName="menu" variant="icon" />
       </section>
 
       {breadcrumbs && <section className={styles.breadcrumbs}>{breadcrumbs}</section>}
 
       <section className={styles['actions-inline-end']}>
-        <InternalButton formAction="none" iconName="status-info" variant="icon" />
+        <InternalButton className={styles.button} formAction="none" iconName="status-info" variant="icon" />
       </section>
     </header>
   );

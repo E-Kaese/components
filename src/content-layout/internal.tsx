@@ -5,7 +5,6 @@ import clsx from 'clsx';
 import { ContentLayoutProps } from './interfaces';
 import { getBaseProps } from '../internal/base-component';
 import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
-import { useDynamicOverlap } from '../internal/hooks/use-dynamic-overlap';
 import { useMergeRefs } from '../internal/hooks/use-merge-refs';
 import { useVisualRefresh } from '../internal/hooks/use-visual-mode';
 import styles from './styles.css.js';
@@ -22,10 +21,7 @@ export default function InternalContentLayout({
   const baseProps = getBaseProps(rest);
   const rootElement = useRef<HTMLDivElement>(null);
   const mergedRef = useMergeRefs(rootElement, __internalRootRef);
-
   const isVisualRefresh = useVisualRefresh();
-  const overlapElement = useDynamicOverlap();
-
   const isOverlapDisabled = !children || disableOverlap;
 
   return (
@@ -36,6 +32,7 @@ export default function InternalContentLayout({
         [styles['is-visual-refresh']]: isVisualRefresh,
         [styles['has-header']]: !!header,
       })}
+      data-component="content-layout"
       ref={mergedRef}
     >
       <div
@@ -44,7 +41,6 @@ export default function InternalContentLayout({
           { [styles['is-overlap-disabled']]: isOverlapDisabled },
           'awsui-context-content-header'
         )}
-        ref={overlapElement}
       />
 
       {header && <div className={clsx(styles.header, 'awsui-context-content-header')}>{header}</div>}

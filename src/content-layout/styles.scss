@@ -6,34 +6,22 @@
 @use '../internal/styles/tokens' as awsui;
 @use '../internal/generated/custom-css-properties/index.scss' as custom-props;
 
-/*
-Pass through the header and child content if not rendering in 
-visual refresh mode. The padding is still added to the header 
-in this scenario because otherwise the header and child 
-nodes will directly touch with no gap between them.
-*/
-.layout:not(.is-visual-refresh) {
-  display: contents;
-
-  > .background {
-    display: none;
-  }
-
-  > .header {
-    padding-bottom: awsui.$space-content-header-padding-bottom;
-  }
-}
-
-.layout.is-visual-refresh {
+.layout {
+  column-gap: #{awsui.$space-scaled-m};
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto #{awsui.$space-dark-header-overlap-distance} 1fr;
+  grid-template-columns: 0 minmax(0, 1fr) 0;
+  grid-template-rows: 0 minmax(0, auto) #{awsui.$space-dark-header-overlap-distance} minmax(0, 1fr);
   min-height: 100%;
+  row-gap: #{awsui.$space-scaled-s};
+
+  &.is-overlap-disabled {
+    grid-template-rows: 0 minmax(0, auto) 0 minmax(0, 1fr);
+  }
 
   > .background {
     background-color: awsui.$color-background-layout-main;
-    grid-column: 1;
-    grid-row: 1 / 3;
+    grid-column: 1 / 4;
+    grid-row: 1 / 4;
     color: awsui.$color-text-body-default;
 
     &.is-overlap-disabled {
@@ -42,29 +30,12 @@ nodes will directly touch with no gap between them.
   }
 
   > .header {
-    grid-column: 1;
-    grid-row: 1;
-    padding-bottom: awsui.$space-content-header-padding-bottom;
+    grid-column: 2;
+    grid-row: 2;
   }
 
   > .content {
-    grid-column: 1;
-    grid-row: 2 / 4;
-  }
-
-  &:not(.has-header) {
-    grid-template-rows:
-      auto calc(
-        #{awsui.$space-dark-header-overlap-distance} + var(#{custom-props.$containerFirstOverlapExtension}, 0px) + var(#{custom-props.$containerFirstGap}, 0px)
-      )
-      1fr;
-
-    > .content {
-      padding-top: var(#{custom-props.$containerFirstGap}, 0px);
-    }
-  }
-
-  &.is-overlap-disabled {
-    grid-template-rows: auto 0 1fr;
+    grid-column: 2;
+    grid-row: 3 / 5;
   }
 }
