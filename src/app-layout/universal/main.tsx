@@ -4,6 +4,7 @@ import React from 'react';
 import clsx from 'clsx';
 import customCssProps from '../../internal/generated/custom-css-properties';
 import { useAppLayoutInternals } from '../visual-refresh/context';
+import { useVisualRefresh } from '../../internal/hooks/use-visual-mode';
 import styles from './styles.css.js';
 
 interface LayoutProps {
@@ -12,10 +13,13 @@ interface LayoutProps {
 
 export default function Main({ children }: LayoutProps) {
   const { headerHeight } = useAppLayoutInternals();
+  const isVisualRefresh = useVisualRefresh();
 
   return (
     <main
-      className={clsx(styles.main)}
+      className={clsx(styles.main, {
+        [styles['is-visual-refresh']]: isVisualRefresh,
+      })}
       style={{
         [customCssProps.headerHeight]: `${headerHeight}px`,
       }}

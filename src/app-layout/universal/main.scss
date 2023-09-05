@@ -2,22 +2,36 @@
  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  SPDX-License-Identifier: Apache-2.0
 */
-
 @use '../../internal/styles/tokens' as awsui;
+@use '../../internal/generated/custom-css-properties/index.scss' as custom-props;
 
 .main {
+  #{custom-props.$contentGapLeft}: #{awsui.$space-m};
+  #{custom-props.$contentGapRight}: #{awsui.$space-m};
+  #{custom-props.$maxContentWidth}: 1280px;
+  #{custom-props.$minContentWidth}: 280px;
   background-color: awsui.$color-background-layout-main;
   color: awsui.$color-text-body-default;
-  column-gap: #{awsui.$space-m};
   display: grid;
   grid-template-areas:
-    'header header header'
-    'drawerInlineStart content drawerInlineEnd';
-  grid-template-columns: min-content 1fr min-content;
+    'header header header header header header header'
+    '. . . content . . .';
+  grid-template-columns:
+    #{awsui.$space-scaled-m}
+    #{awsui.$size-icon-normal}
+    #{awsui.$space-scaled-m}
+    minmax(var(#{custom-props.$minContentWidth}), 1fr)
+    #{awsui.$space-scaled-m}
+    #{awsui.$size-icon-normal}
+    #{awsui.$space-scaled-m};
   grid-template-rows: minmax(0, auto) 1fr;
+
+  &:not(.is-visual-refresh) {
+    #{custom-props.$maxContentWidth}: 800px;
+  }
 
   /* stylelint-disable plugin/no-unsupported-browser-features */
   &:has([data-component='content-layout']) {
-    column-gap: 0;
+    // column-gap: 0;
   }
 }
