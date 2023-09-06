@@ -18,7 +18,7 @@ export interface CardsForwardRefType {
   <T>(props: CardsProps<T> & { ref?: React.Ref<CardsProps.Ref> }): JSX.Element;
 }
 
-export interface CardsProps<T = any> extends BaseComponentProps {
+export interface CardsProps<T> extends BaseComponentProps {
   /**
    * Displayed only when the list of items is empty.
    */

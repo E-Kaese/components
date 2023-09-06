@@ -12,7 +12,7 @@ export const applyTrackBy = <T>(trackBy: TableProps.TrackBy<T>, item: T) => {
   return (item as any)[trackBy];
 };
 
-export const getItemKey = <T>(trackBy: TableProps.TrackBy<T> | undefined, item: T, index: number) => {
+export const getItemKey = <T>(trackBy: TableProps.TrackBy<T> | undefined, item: T, index: number): string | number => {
   if (!trackBy) {
     return index;
   }

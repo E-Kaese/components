@@ -174,7 +174,7 @@
       }
     },
     {
-      "files": ["none"],
+      "files": ["src/cards/**"],
       "excludedFiles": [
         "src/**/__tests__/**",
         "src/**/__integ__/**",

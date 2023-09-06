@@ -34,7 +34,7 @@ import { LinkDefaultVariantContext } from '../internal/context/link-default-vari
 
 export { CardsProps };
 
-const Cards = React.forwardRef(function <T = any>(
+const Cards = React.forwardRef(function <T>(
   {
     items = [],
     cardDefinition,
