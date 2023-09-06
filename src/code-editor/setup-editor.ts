@@ -3,9 +3,10 @@
 import React from 'react';
 import { Ace } from 'ace-builds';
 import { PaneStatus, supportsKeyboardAccessibility } from './util';
+import { AceObject } from './ace-types';
 
 export function setupEditor(
-  ace: any,
+  ace: AceObject,
   editor: Ace.Editor,
   setAnnotations: React.Dispatch<React.SetStateAction<Ace.Annotation[]>>,
   setCursorPosition: React.Dispatch<React.SetStateAction<Ace.Point>>,
@@ -19,7 +20,7 @@ export function setupEditor(
     setCursorPosition(editor.getCursorPosition());
   });
 
-  editor.session.on('changeAnnotation' as any, () => {
+  editor.session.on('changeAnnotation', () => {
     const editorAnnotations = editor.session.getAnnotations();
     const newAnnotations = editorAnnotations.filter(a => a.type !== 'info');
     if (editorAnnotations.length !== newAnnotations.length) {
@@ -53,13 +54,13 @@ export function setupEditor(
   };
 
   // open error/warning pane when user clicks on gutter icon
-  editor.on('gutterclick' as any, (e: any) => {
-    const { row }: Ace.Point = e.getDocumentPosition();
+  editor.on('gutterclick', (e: Ace.MouseEvent) => {
+    const { row } = e.getDocumentPosition();
     openAnnotation(row);
   });
 
   // open error/warning pane when user presses space/enter on gutter icon
-  editor.on('gutterkeydown', e => {
+  editor.on('gutterkeydown', (e: Ace.GutterKeyboardEvent) => {
     if (e.isInAnnotationLane() && (e.getKey() === 'space' || e.getKey() === 'return')) {
       const row: number = e.getRow();
       openAnnotation(row);
@@ -116,6 +117,7 @@ function setEditorDefaults(ace: any, editor: Ace.Editor) {
   // HACK: Wrapped lines are highlighted individually. This is seriously the recommended fix.
   // See: https://github.com/ajaxorg/ace/issues/3067
   editor.setHighlightActiveLine(false);
+  /* eslint-disable */
   (editor as any).$updateHighlightActiveLine = function () {
     const session = this.getSession();
 
@@ -143,12 +145,13 @@ function setEditorDefaults(ace: any, editor: Ace.Editor) {
       session._signal('changeBackMarker');
     }
   };
+  /* eslint-enable */
 
   editor.setHighlightActiveLine(true);
 
   // HACK: "disable" error tooltips by hiding them as soon as they appear.
   // See https://github.com/ajaxorg/ace/issues/4004
-  editor.on('showGutterTooltip' as any, (tooltip: any) => {
+  editor.on('showGutterTooltip', (tooltip: Ace.Tooltip) => {
     tooltip.hide();
   });
 }

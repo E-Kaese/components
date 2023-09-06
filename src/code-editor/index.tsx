@@ -22,7 +22,7 @@ import ErrorScreen from './error-screen';
 import useBaseComponent from '../internal/hooks/use-base-component';
 import useForwardFocus from '../internal/hooks/forward-focus';
 import { applyDisplayName } from '../internal/utils/apply-display-name';
-import { useCurrentMode } from '@cloudscape-design/component-toolkit/internal';
+import { isDevelopment, useCurrentMode, warnOnce } from '@cloudscape-design/component-toolkit/internal';
 import { useInternalI18n } from '../i18n/context';
 import { StatusBar } from './status-bar';
 import { useFormFieldContext } from '../internal/context/form-field-context';
@@ -48,7 +48,6 @@ const CodeEditor = forwardRef((props: CodeEditorProps, ref: React.Ref<CodeEditor
   const { __internalRootRef } = useBaseComponent('CodeEditor');
   const { controlId, ariaLabelledby, ariaDescribedby } = useFormFieldContext(props);
   const {
-    ace,
     value,
     language,
     i18nStrings,
@@ -61,6 +60,8 @@ const CodeEditor = forwardRef((props: CodeEditorProps, ref: React.Ref<CodeEditor
     themes,
     ...rest
   } = props;
+  const ace: unknown = props.ace;
+
   const [editorHeight = 480, setEditorHeight] = useControllable(editorContentHeight, onEditorContentResize, 480, {
     componentName: 'code-editor',
     changeHandler: 'onEditorContentResize',
@@ -89,7 +90,7 @@ const CodeEditor = forwardRef((props: CodeEditorProps, ref: React.Ref<CodeEditor
   useForwardFocus(ref, editorRef);
 
   useEffect(() => {
-    if (!ace || !editor) {
+    if (!ace || !editor || !isAceLike(ace)) {
       return;
     }
 
