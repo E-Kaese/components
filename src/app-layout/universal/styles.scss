@@ -3,6 +3,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 
+@use './background.scss';
 @use './content.scss';
-@use './header.scss';
 @use './main.scss';
+@use './toolbar.scss';

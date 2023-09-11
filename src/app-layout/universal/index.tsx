@@ -3,9 +3,10 @@
 import React from 'react';
 import { AppLayoutInternalsProvider } from '../visual-refresh/context';
 import { AppLayoutProps } from '../interfaces';
+import Background from './background';
 import Content from './content';
-import Header from './header';
 import Main from './main';
+import Toolbar from './toolbar';
 
 const AppLayoutWithRef = React.forwardRef(function AppLayout(
   props: AppLayoutProps,
@@ -14,7 +15,8 @@ const AppLayoutWithRef = React.forwardRef(function AppLayout(
   return (
     <AppLayoutInternalsProvider {...props} ref={ref}>
       <Main>
-        <Header />
+        <Background />
+        <Toolbar />
         <Content />
       </Main>
     </AppLayoutInternalsProvider>

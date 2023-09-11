@@ -5,13 +5,9 @@
 @use '../../internal/styles/tokens' as awsui;
 @use '../../internal/generated/custom-css-properties/index.scss' as custom-props;
 
-section.content {
-  display: grid;
-  grid-area: content;
-  grid-template-columns: #{awsui.$space-scaled-m} 1fr #{awsui.$space-scaled-m};
-  padding-bottom: awsui.$space-layout-content-bottom;
-}
-
-div.content {
-  grid-column: 2;
+.background {
+  background-color: awsui.$color-background-layout-main;
+  grid-column: 1 / 4;
+  grid-row: 1 / 3;
+  transition: ease all 0.5s;
 }

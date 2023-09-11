@@ -7,5 +7,11 @@ import styles from './styles.css.js';
 export default function Content() {
   const { content } = useAppLayoutInternals();
 
-  return <section className={styles.content}>{content}</section>;
+  return (
+    <section className={styles.content}>
+      <div className={styles.content}>
+        {content}
+      </div>
+    </section>
+  );
 }

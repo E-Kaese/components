@@ -31,6 +31,7 @@ export default function () {
   return (
     <ScreenshotArea gutters={false}>
       <AppLayout
+      {...{ universalAppLayout: true }}
         ariaLabels={labels}
         breadcrumbs={<Breadcrumbs />}
         navigation={<Navigation />}
