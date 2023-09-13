@@ -9,9 +9,9 @@
   #{custom-props.$overlapHeight}: #{awsui.$space-dark-header-overlap-distance};
   display: grid;
   grid-template-areas: 
-    '. toolbar .'
-    '. content .'
-    '. content .';
+    'navigation toolbar tools'
+    'navigation content tools'
+    'navigation content tools';
   grid-template-columns: 
     min-content 
     1fr
@@ -20,6 +20,11 @@
     minmax(0, auto)
     var(#{custom-props.$overlapHeight})
     1fr;
+
+  /* stylelint-disable plugin/no-unsupported-browser-features */
+  &:has([data-component='content-layout']) {
+    #{custom-props.$overlapHeight}: 0;
+  }
 }
 
 /*

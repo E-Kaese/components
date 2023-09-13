@@ -14,4 +14,14 @@ section.content {
 
 div.content {
   grid-column: 2;
+
+  &:not(.is-visual-refresh) {
+    #{custom-props.$maxContentWidth}: 800px;
+  }
+
+  /* stylelint-disable plugin/no-unsupported-browser-features */
+  &:has([data-component='content-layout']) {
+    #{custom-props.$overlapHeight}: 0;
+    grid-column: 1 / 4;
+  }
 }

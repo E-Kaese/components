@@ -5,9 +5,7 @@
 @use '../../internal/styles/tokens' as awsui;
 @use '../../internal/generated/custom-css-properties/index.scss' as custom-props;
 
-.background {
-  background-color: awsui.$color-background-layout-main;
-  grid-column: 2 / 3;
-  grid-row: 1 / 3;
-  transition: ease all 0.5s;
+section.navigation {
+  grid-area: navigation;
+  width: 200px;
 }
