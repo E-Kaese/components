@@ -6,17 +6,18 @@
 @use '../../internal/generated/custom-css-properties/index.scss' as custom-props;
 
 .main {
+  background-color: awsui.$color-background-layout-main;
   #{custom-props.$overlapHeight}: #{awsui.$space-dark-header-overlap-distance};
   display: grid;
-  grid-template-areas: 
+  grid-template-areas:
     'navigation toolbar tools'
     'navigation content tools'
     'navigation content tools';
-  grid-template-columns: 
-    min-content 
+  grid-template-columns:
+    min-content
     1fr
     min-content;
-  grid-template-rows: 
+  grid-template-rows:
     minmax(0, auto)
     var(#{custom-props.$overlapHeight})
     1fr;

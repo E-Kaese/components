@@ -6,27 +6,24 @@
 @use '../../internal/generated/custom-css-properties/index.scss' as custom-props;
 
 .toolbar {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.3) 10%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 80%, rgba(0, 0, 0, 0) 100%);
+  background: awsui.$color-background-layout-panel-content;
+  border-bottom: awsui.$border-panel-header-width solid awsui.$color-border-divider-panel-side;
   display: grid;
   grid-area: toolbar;
   grid-template-columns: #{awsui.$space-scaled-m} 1fr #{awsui.$space-scaled-m};
-  grid-template-rows: #{awsui.$space-scaled-s} 1fr #{awsui.$space-scaled-s};
+  grid-template-rows: #{awsui.$space-scaled-xxs} 1fr #{awsui.$space-scaled-xxs};
   position: sticky;
-  transition: ease all 0.5s;
+  transition: ease all 0.7s;
   z-index: 850;
+  margin-bottom: awsui.$space-scaled-s;
 }
 
 .container {
   align-items: center;
-  background: #1E2938;
-  border: 1px solid #000;
-  border-radius: 18px;
-  box-shadow: 0px 1px 4px 3px rgba(48, 39, 39, 0.3);
   display: grid;
   grid-column: 2;
   grid-row: 2;
   grid-template-columns: minmax(0, auto) 1fr minmax(0, auto);
-  padding: calc(#{awsui.$space-xxxs} + 1px) #{awsui.$space-xxs};
 }
 
 .actions-inline-start {
@@ -54,26 +51,29 @@
 
 .button {
   align-items: center;
-  background: #000716;
-  border: 1px solid #000;
-  border-radius: 50%;
-  box-shadow: 0px 0px 4px rgba(80, 75, 75, 0.25);
-  color: #fff;
+  background: awsui.$color-background-layout-panel-content;
+  border: none;
+  border-radius: awsui.$border-radius-item;
+  color: awsui.$color-text-interactive-default;
   cursor: pointer;
   display: flex;
   height: 28px;
   justify-content: center;
   padding: 0;
-  transition: ease all 0.4s;
+  transition: ease all awsui.$motion-duration-expressive;
   width: 28px;
 
-  &:hover, 
-  .selected {
-    background: #0972D3;
-    border: 1px solid #0972D3;
+  &:hover {
+    background: awsui.$color-background-layout-toggle-hover;
+    color: awsui.$color-text-layout-toggle;
   }
 
   &:active {
-   opacity: 0.7;
+    opacity: 0.7;
+  }
+
+  &.selected {
+    background: awsui.$color-background-layout-toggle-selected-active;
+    color: awsui.$color-text-layout-toggle-active;
   }
 }

@@ -1,0 +1,50 @@
+/*
+ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+*/
+@use '../../internal/styles/tokens' as awsui;
+@use '../../internal/generated/custom-css-properties/index.scss' as custom-props;
+
+section.notifications {
+  z-index: 500;
+  display: grid;
+  grid-area: content;
+  grid-template-columns: 1fr 500px #{awsui.$space-scaled-m};
+  grid-row: 2/3;
+  position: sticky;
+  animation: ease-in-out fadeIn awsui.$motion-duration-complex;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-500px);
+  }
+
+  100% {
+    opacity: 100%;
+    transform: translateY(100%);
+  }
+}
+
+div.overlay {
+  grid-column: 2/3;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: transparent;
+    box-sizing: border-box;
+
+    grid-column: 2/3;
+    opacity: 0.75;
+    border-radius: awsui.$border-radius-item;
+    backdrop-filter: blur(33px);
+    background-blend-mode: overlay;
+  }
+}

@@ -34,7 +34,7 @@ const tokens: StyleDictionary.ColorsDictionary = {
   colorBackgroundLayoutMobilePanel: '{colorBackgroundLayoutPanelContent}',
   colorBackgroundLayoutToggleActive: '{colorGrey700}',
   colorBackgroundLayoutToggleDefault: 'transparent',
-  colorBackgroundLayoutToggleHover: '{colorGrey600}',
+  colorBackgroundLayoutToggleHover: { light: '{colorGrey200}', dark: '{colorGrey650}' },
   colorBackgroundLayoutToggleSelectedDefault: { light: '{colorBlue600}', dark: '{colorBlue400}' },
   colorBackgroundModalOverlay: { light: '{colorGreyOpaque90}', dark: '{colorGreyOpaque80}' },
   colorBackgroundNotificationStackBar: '{colorGrey700}',

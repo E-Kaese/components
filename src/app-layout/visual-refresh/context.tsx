@@ -51,6 +51,7 @@ interface AppLayoutInternals extends AppLayoutProps {
   handleSplitPanelPreferencesChange: (detail: AppLayoutProps.SplitPanelPreferences) => void;
   handleSplitPanelResize: (detail: { size: number }) => void;
   handleToolsClick: (value: boolean, skipFocusControl?: boolean) => void;
+  handleNotificationsClick: (isOpen: boolean) => void;
   hasBackgroundOverlap: boolean;
   hasDefaultToolsWidth: boolean;
   hasDrawerViewportOverlay: boolean;
@@ -63,6 +64,7 @@ interface AppLayoutInternals extends AppLayoutProps {
   isSplitPanelForcedPosition: boolean;
   isSplitPanelOpen?: boolean;
   isToolsOpen: boolean;
+  isNotificationsOpen: boolean;
   layoutElement: React.Ref<HTMLElement>;
   layoutWidth: number;
   loseToolsFocus: () => void;
@@ -188,6 +190,10 @@ export const AppLayoutInternalsProvider = React.forwardRef(
       fireNonCancelableEvent(props.onNavigationChange, { open: isOpen });
     });
 
+    const handleNotificationsClick = useStableCallback(function handleNotificationsChange(isOpen: boolean) {
+      setIsNotificationsOpen(isOpen);
+    });
+
     useEffect(() => {
       // Close navigation drawer on mobile so that the main content is visible
       if (isMobile) {
@@ -215,6 +221,8 @@ export const AppLayoutInternalsProvider = React.forwardRef(
       isMobile ? false : contentTypeDefaults.toolsOpen,
       { componentName: 'AppLayout', controlledProp: 'toolsOpen', changeHandler: 'onToolsChange' }
     );
+
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
     const {
       refs: toolsRefs,
@@ -615,6 +623,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
           handleSplitPanelPreferencesChange,
           handleSplitPanelResize,
           handleToolsClick,
+          handleNotificationsClick,
           hasBackgroundOverlap,
           hasNotificationsContent,
           hasOpenDrawer,
@@ -625,6 +634,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
           isSplitPanelForcedPosition,
           isSplitPanelOpen,
           isToolsOpen,
+          isNotificationsOpen,
           layoutElement,
           layoutWidth,
           loseToolsFocus,
