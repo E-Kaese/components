@@ -53,6 +53,7 @@ const tokens: StyleDictionary.ColorsDictionary = {
   colorBorderCalendarGridSelectedFocusRing: '{colorBorderItemFocused}',
   colorBorderCodeEditorPaneItemHover: { light: '{colorGrey550}', dark: '{colorGrey500}' },
   colorBorderContainerDivider: '{colorBorderDividerDefault}',
+  colorBorderContainer: 'transparent',
   colorBorderContainerTop: { light: '{colorGrey200}', dark: '{colorGrey700}' },
   colorBorderControlDefault: { light: '{colorGrey550}' },
   colorBorderDividerActive: '{colorGrey550}',

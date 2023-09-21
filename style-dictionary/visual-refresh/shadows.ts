@@ -6,12 +6,11 @@ import { expandColorDictionary } from '../utils';
 
 const tokens: StyleDictionary.ShadowsDictionary = {
   shadowContainer: {
-    light: '0px 0px 1px 1px #e9ebed, 0px 1px 8px 2px rgba(0, 7, 22, 0.12)', // 1px grey-200 faux border
+    light: 'none',
     dark: '0px 1px 8px 2px rgba(0, 7, 22, 0.6)',
   },
   shadowContainerStacked: {
-    light:
-      '-1px 1px 1px 0px #e9ebed, 1px 1px 1px 0px #e9ebed, 0px 9px 8px -7px rgb(0 7 22 / 12%), 8px 0px 8px -7px rgb(0 7 22 / 12%), -8px 0px 8px -7px rgb(0 7 22 / 12%)',
+    light: 'none',
     dark: '0px 9px 8px -7px rgb(0 7 22 / 60%), 8px 0px 8px -7px rgb(0 7 22 / 60%), -8px 0px 8px -7px rgb(0 7 22 / 60%)',
   },
   shadowContainerActive: {
@@ -27,17 +26,17 @@ const tokens: StyleDictionary.ShadowsDictionary = {
   },
   shadowModal: '{shadowDropdown}',
   shadowPanel: {
-    light: '0px 1px 1px 1px #e9ebed, 0px 6px 36px rgba(0, 7, 22, 0.10)',
+    light: 'none',
     dark: '0px 1px 1px 1px #192534, 0px 6px 36px rgba(0, 7, 22, 1)', // 1px grey-750 faux border
   },
   shadowPanelToggle: { light: '0px 6px 12px 1px rgba(0, 7, 22, 0.12)', dark: '0px 6px 12px 1px rgba(0, 7, 22, 1)' },
   shadowPopover: '{shadowDropdown}',
   shadowSplitBottom: {
-    light: '0px -36px 36px -36px rgba(0, 7, 22, 0.10)',
+    light: 'none',
     dark: '0px -36px 36px -36px rgba(0, 7, 22, 1)',
   },
   shadowSplitSide: {
-    light: '-1px 0px 1px 0px #e9ebed, -36px 6px 36px -36px rgba(0, 7, 22, 0.10)',
+    light: 'none',
     dark: '-1px 0px 1px 0px #192534, -36px 6px 36px -36px rgba(0, 7, 22, 1)',
   },
   shadowSticky: '{shadowDropdown}',

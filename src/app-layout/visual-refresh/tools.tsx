@@ -118,7 +118,7 @@ export default function Tools({ children }: ToolsProps) {
             </aside>
           )}
 
-          {!isMobile && (
+          {/* {!isMobile && (
             <aside
               aria-hidden={!hasToolsForm ? true : false}
               aria-label={ariaLabels?.tools ?? undefined}
@@ -156,7 +156,7 @@ export default function Tools({ children }: ToolsProps) {
                 />
               )}
             </aside>
-          )}
+          )} */}
         </div>
       )}
     </Transition>
@@ -201,24 +201,24 @@ function getToolsFormStatus(
   isToolsOpen?: boolean,
   toolsHide?: boolean
 ) {
-  let hasToolsForm = false;
+  const hasToolsForm = false;
 
-  if (!isMobile) {
-    // Both the Split Panel and Tools button are needed
-    if (hasSplitPanel && !toolsHide) {
-      hasToolsForm = true;
-    }
+  // if (!isMobile) {
+  //   // Both the Split Panel and Tools button are needed
+  //   if (hasSplitPanel && !toolsHide) {
+  //     hasToolsForm = true;
+  //   }
 
-    // The Split Panel button is needed
-    if (hasSplitPanel && !isSplitPanelOpen && toolsHide) {
-      hasToolsForm = true;
-    }
+  //   // The Split Panel button is needed
+  //   if (hasSplitPanel && !isSplitPanelOpen && toolsHide) {
+  //     hasToolsForm = true;
+  //   }
 
-    // The Tools button is needed
-    if (!hasSplitPanel && !toolsHide && !isToolsOpen) {
-      hasToolsForm = true;
-    }
-  }
+  //   // The Tools button is needed
+  //   if (!hasSplitPanel && !toolsHide && !isToolsOpen) {
+  //     hasToolsForm = true;
+  //   }
+  // }
 
   return hasToolsForm;
 }
@@ -237,12 +237,12 @@ function getToolsFormPersistence(
   isToolsOpen?: boolean,
   toolsHide?: boolean
 ) {
-  let hasToolsFormPersistence = false;
+  const hasToolsFormPersistence = false;
 
   // Both Tools and Split Panel exist and one or both is open
-  if (hasSplitPanel && !toolsHide && (isSplitPanelOpen || isToolsOpen)) {
-    hasToolsFormPersistence = true;
-  }
+  // if (hasSplitPanel && !toolsHide && (isSplitPanelOpen || isToolsOpen)) {
+  //   hasToolsFormPersistence = true;
+  // }
 
   return hasToolsFormPersistence;
 }

@@ -1,0 +1,44 @@
+/*
+ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+*/
+
+@use '../../internal/styles/' as styles;
+@use '../../internal/styles/tokens' as awsui;
+@use '../../internal/generated/custom-css-properties/index.scss' as custom-props;
+
+section.universal-toolbar {
+  align-items: center;
+  background-color: awsui.$color-background-layout-panel-content;
+  border-bottom: awsui.$border-divider-section-width solid awsui.$color-border-divider-default;
+  box-shadow: awsui.$shadow-panel;
+  box-sizing: border-box;
+  height: var(#{custom-props.$mobileBarHeight});
+  display: grid;
+  grid-area: universalToolbar;
+  grid-column: 2 / span 3;
+  grid-template-columns: minmax(0, auto) 1fr minmax(0, auto) minmax(0, auto);
+  column-gap: awsui.$space-m;
+  padding: 0 awsui.$space-m;
+  position: sticky;
+  top: var(#{custom-props.$offsetTop});
+  transition: ease-in-out top 0.7s, ease opacity 0.5s, ease-in-out box-shadow 0.2s;
+  z-index: 800;
+
+  &.toolbar-sticky {
+    box-shadow: 0 4px 16px 0 rgba(0, 7, 22, 0.06);
+  }
+
+  > .universal-toolbar-nav {
+    grid-column: 1;
+  }
+
+  > .universal-toolbar-breadcrumbs {
+    grid-column: 2;
+    background-color: awsui.$color-background-layout-panel-content;
+  }
+
+  > .universal-toolbar-tools {
+    grid-column: 3;
+  }
+}
