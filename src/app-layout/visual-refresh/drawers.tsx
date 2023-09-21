@@ -23,15 +23,8 @@ import { TOOLS_DRAWER_ID } from '../utils/use-drawers';
  * do not exist then the Tools and SplitPanel will be handled by the Tools component.
  */
 export default function Drawers() {
-  const {
-    disableBodyScroll,
-    drawers,
-    hasDrawerViewportOverlay,
-    hasOpenDrawer,
-    isNavigationOpen,
-    navigationHide,
-    isMobile,
-  } = useAppLayoutInternals();
+  const { disableBodyScroll, drawers, hasDrawerViewportOverlay, hasOpenDrawer, isNavigationOpen, navigationHide } =
+    useAppLayoutInternals();
 
   const isUnfocusable = hasDrawerViewportOverlay && isNavigationOpen && !navigationHide;
 
@@ -49,7 +42,6 @@ export default function Drawers() {
     >
       <SplitPanel.Side />
       <ActiveDrawer />
-      {!isMobile && <DesktopTriggers />}
     </div>
   );
 }
@@ -138,7 +130,7 @@ function ActiveDrawer() {
  * tracked by the previousActiveDrawerId property in order to appropriately apply
  * the ref required to manage focus control.
  */
-function DesktopTriggers() {
+export function DesktopTriggers() {
   const {
     activeDrawerId,
     drawers,
@@ -195,7 +187,7 @@ function DesktopTriggers() {
     return 0;
   };
 
-  const { visibleItems, overflowItems } = splitItems(drawers, getIndexOfOverflowItem(), activeDrawerId);
+  const { visibleItems, overflowItems } = splitItems(drawers, 7, activeDrawerId);
   const overflowMenuHasBadge = !!overflowItems.find(item => item.badge);
 
   function handleItemClick(itemId: string | undefined) {
@@ -226,7 +218,7 @@ function DesktopTriggers() {
           [styles['has-open-drawer']]: hasOpenDrawer,
         })}
         role="toolbar"
-        aria-orientation="vertical"
+        aria-orientation="horizontal"
       >
         {visibleItems.map(item => {
           return (
@@ -310,7 +302,7 @@ export function MobileTriggers() {
 
   const previousActiveDrawerId = useRef(activeDrawerId);
 
-  if (!isMobile || drawers.length === 0) {
+  if (drawers.length === 0) {
     return null;
   }
 
@@ -318,7 +310,7 @@ export function MobileTriggers() {
     previousActiveDrawerId.current = activeDrawerId;
   }
 
-  const splitIndex = 2;
+  const splitIndex = isMobile ? 2 : 7;
 
   const { visibleItems, overflowItems } = splitItems(drawers, splitIndex, activeDrawerId, true);
 

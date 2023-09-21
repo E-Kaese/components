@@ -49,11 +49,9 @@ explicitly set in script.
   color: awsui.$color-text-body-default;
   display: grid;
   grid-template-areas:
-    '. . mobileToolbar . .'
+    '. . universalToolbar . .'
     '. . notificationsGap . .'
     '. . notifications . .'
-    '. . breadcrumbsGap . .'
-    '. . breadcrumbs . .'
     '. . headerGap . .'
     '. . header . .'
     '. . mainGap . .'
@@ -66,11 +64,9 @@ explicitly set in script.
     minmax(var(#{custom-props.$contentGapRight}), 1fr)
     min-content;
   grid-template-rows:
-    auto // mobileToolbar template area
+    auto // universalToolbar template area
     var(#{custom-props.$notificationsGap})
     auto // notifications template area
-    var(#{custom-props.$breadcrumbsGap})
-    auto // breadcrumbs template area
     var(#{custom-props.$headerGap})
     auto // contentHeader template area
     var(#{custom-props.$mainGap})

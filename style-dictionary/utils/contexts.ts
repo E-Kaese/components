@@ -18,14 +18,6 @@ export const createCompactTableContext = (tokens: TokenCategory<string, GlobalVa
   };
 };
 
-export const createHeaderContext = (tokens: TokenCategory<string, GlobalValue | ModeValue>) => {
-  return {
-    id: 'header',
-    selector: '.awsui-context-content-header',
-    tokens,
-  };
-};
-
 export const createFlashbarContext = (tokens: TokenCategory<string, GlobalValue | ModeValue>) => {
   return {
     id: 'flashbar',

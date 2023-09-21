@@ -63,7 +63,7 @@ export default function Navigation() {
           // Overwrite the default nav width (depends on breakpoints) only when the `navigationWidth` property is set.
           style={{ ...(navigationWidth && { [customCssProps.navigationWidth]: `${navigationWidth}px` }) }}
         >
-          {!isMobile && (
+          {/* {!isMobile && (
             <nav
               aria-hidden={isMobile || isNavigationOpen ? true : false}
               aria-label={ariaLabels?.navigation ?? undefined}
@@ -82,7 +82,7 @@ export default function Navigation() {
                 ref={navigationRefs.toggle}
               />
             </nav>
-          )}
+          )} */}
 
           <nav
             aria-label={ariaLabels?.navigation ?? undefined}
