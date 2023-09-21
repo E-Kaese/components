@@ -37,7 +37,7 @@ const tokens: StyleDictionary.SpacingDictionary = {
   spaceGridGutter: { comfortable: '{spaceL}', compact: '{spaceM}' },
   spaceKeyValueGap: '0px',
   spaceLayoutContentBottom: '{spaceScaled2xXxxl}',
-  spaceLayoutToggleDiameter: '28px',
+  spaceLayoutToggleDiameter: '32px',
   spaceLayoutTogglePadding: '{spaceScaledL}',
   spaceModalContentBottom: '{spaceScaled2xM}',
   spaceModalHorizontal: '{spaceContainerHorizontal}',

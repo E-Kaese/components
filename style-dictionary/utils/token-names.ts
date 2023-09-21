@@ -498,6 +498,7 @@ export type BordersTokenName =
   | 'borderContainerWidth'
   | 'borderControlFocusRingShadowSpread'
   | 'borderControlInvalidFocusRingShadowSpread'
+  | 'borderDividerLayoutWidth'
   | 'borderDividerListWidth'
   | 'borderDividerSectionWidth'
   | 'borderDropdownVirtualOffsetWidth'

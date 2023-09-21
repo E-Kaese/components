@@ -16,7 +16,7 @@
   pointer-events: none;
   position: sticky;
   top: var(#{custom-props.$offsetTop});
-  z-index: 830;
+  z-index: 850;
 
   &.has-open-drawer {
     background-color: awsui.$color-background-container-content;
@@ -160,7 +160,7 @@
   }
 
   &.is-drawer-open {
-    border-left: awsui.$border-divider-section-width solid awsui.$color-border-divider-panel-side;
+    border-left: awsui.$border-divider-layout-width solid awsui.$color-border-divider-panel-side;
     opacity: 1;
     width: var(#{custom-props.$drawerSize});
   }

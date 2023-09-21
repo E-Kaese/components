@@ -10,7 +10,7 @@
 .notifications {
   color: awsui.$color-text-body-default;
   grid-area: notifications;
-  z-index: 850;
+  z-index: 810;
 
   @include styles.media-breakpoint-up(styles.$breakpoint-x-small) {
     &.sticky-notifications {

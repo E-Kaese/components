@@ -10,10 +10,9 @@
 section.universal-toolbar {
   align-items: center;
   background-color: awsui.$color-background-layout-panel-content;
-  border-bottom: awsui.$border-divider-section-width solid awsui.$color-border-divider-default;
-  box-shadow: awsui.$shadow-panel;
+  border-bottom: awsui.$border-divider-layout-width solid awsui.$color-border-divider-panel-bottom;
   box-sizing: border-box;
-  height: var(#{custom-props.$mobileBarHeight});
+  height: 48px;
   display: grid;
   grid-area: universalToolbar;
   grid-column: 2 / span 3;
@@ -22,8 +21,8 @@ section.universal-toolbar {
   padding: 0 awsui.$space-m;
   position: sticky;
   top: var(#{custom-props.$offsetTop});
-  transition: ease-in-out top 0.7s, ease opacity 0.5s, ease-in-out box-shadow 0.2s;
-  z-index: 800;
+  transition: ease all 0.7s;
+  z-index: 840;
 
   &.toolbar-sticky {
     box-shadow: 0 4px 16px 0 rgba(0, 7, 22, 0.06);
