@@ -39,7 +39,7 @@ explicitly set in script.
   #{custom-props.$mainTemplateRows}: 1fr;
   #{custom-props.$maxContentWidth}: 0px;
   #{custom-props.$minContentWidth}: 280px;
-  #{custom-props.$mobileBarHeight}: calc(2 * #{awsui.$space-m} + #{awsui.$space-scaled-xs});
+  #{custom-props.$mobileBarHeight}: 48px;
   #{custom-props.$notificationsGap}: 0px;
   #{custom-props.$notificationsHeight}: 0px;
   #{custom-props.$offsetTop}: var(#{custom-props.$headerHeight});
@@ -138,11 +138,15 @@ explicitly set in script.
   and some additional vertical space for aesthetics.
   */
   &:not(.has-sticky-notifications):not(.has-sticky-background) {
-    #{custom-props.$offsetTopWithNotifications}: var(#{custom-props.$headerHeight});
+    #{custom-props.$offsetTopWithNotifications}: calc(
+      var(#{custom-props.$headerHeight}) + var(#{custom-props.$mobileBarHeight})
+    );
   }
 
   &:not(.has-sticky-notifications).has-sticky-background {
-    #{custom-props.$offsetTopWithNotifications}: calc(var(#{custom-props.$headerHeight}) + #{awsui.$space-scaled-s});
+    #{custom-props.$offsetTopWithNotifications}: calc(
+      var(#{custom-props.$headerHeight}) + #{awsui.$space-scaled-s} + var(#{custom-props.$mobileBarHeight})
+    );
   }
 
   /* stylelint-disable scss/operator-no-newline-after */

@@ -43,6 +43,7 @@ export default function Layout({ children }: LayoutProps) {
     splitPanelPosition,
     stickyNotifications,
     splitPanelDisplayed,
+    toolbarHeight,
   } = useAppLayoutInternals();
 
   // Determine the first content child so the gap will vertically align with the trigger buttons
@@ -84,6 +85,7 @@ export default function Layout({ children }: LayoutProps) {
         ...(maxContentWidth && { [customCssProps.maxContentWidth]: `${maxContentWidth}px` }),
         ...(minContentWidth && { [customCssProps.minContentWidth]: `${minContentWidth}px` }),
         [customCssProps.notificationsHeight]: `${notificationsHeight}px`,
+        [customCssProps.mobileBarHeight]: `${toolbarHeight}px`,
       }}
     >
       {children}

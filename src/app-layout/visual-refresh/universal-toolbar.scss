@@ -21,7 +21,7 @@ section.universal-toolbar {
   padding: 0 awsui.$space-m;
   position: sticky;
   top: var(#{custom-props.$offsetTop});
-  transition: ease all 0.7s;
+  transition: ease all 0.5s;
   z-index: 840;
 
   &.toolbar-sticky {

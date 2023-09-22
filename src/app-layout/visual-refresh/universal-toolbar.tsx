@@ -25,6 +25,7 @@ export default function UniversalToolbar() {
     navigationRefs,
     toolsHide,
     toolsRefs,
+    toolbarRef,
   } = useAppLayoutInternals();
 
   if (navigationHide && !breadcrumbs && toolsHide && drawers.length === 0) {
@@ -42,10 +43,12 @@ export default function UniversalToolbar() {
       if (previousScrollPosition > currentScrollPosition) {
         toolbar.style.top = toolbar.style.getPropertyValue(customCssProps.offsetTop);
         toolbar.style.opacity = '1';
+        toolbar.style.height = `48px`;
         // 80 is an arbitrary number to have a pause before the toolbar scrolls out of view. toolbar.offsetHeight was another option
       } else if (currentScrollPosition > 80) {
         toolbar.style.top = '-60px';
         toolbar.style.opacity = '0';
+        toolbar.style.height = '0px';
       }
       if (currentScrollPosition > 0) {
         toolbar.classList.add(styles['toolbar-sticky']);
@@ -60,6 +63,7 @@ export default function UniversalToolbar() {
   return (
     <section
       id="toolbar"
+      ref={toolbarRef}
       className={clsx(
         styles['universal-toolbar'],
         {

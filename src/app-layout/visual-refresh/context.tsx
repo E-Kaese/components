@@ -90,6 +90,8 @@ interface AppLayoutInternals extends AppLayoutProps {
   setSplitPanelToggle: (toggle: SplitPanelSideToggleProps) => void;
   splitPanelDisplayed: boolean;
   splitPanelRefs: SplitPanelFocusControlRefs;
+  toolbarRef: React.Ref<HTMLElement>;
+  toolbarHeight: number;
   toolsControlId: string;
   toolsRefs: FocusControlRefs;
 }
@@ -529,6 +531,13 @@ export const AppLayoutInternalsProvider = React.forwardRef(
       [notificationsContainerQuery]
     );
 
+    const [toolbarContainerQuery, toolbarRef] = useContainerQuery(rect => rect.borderBoxHeight);
+    const [toolbarHeight, setToolbarHeight] = useState(0);
+
+    useEffect(() => {
+      setToolbarHeight(toolbarContainerQuery ?? 0);
+    }, [toolbarContainerQuery]);
+
     /**
      * Determine the offsetBottom value based on the presence of a footer element and
      * the SplitPanel component. Ignore the SplitPanel if it is not in the bottom
@@ -664,6 +673,8 @@ export const AppLayoutInternalsProvider = React.forwardRef(
           splitPanelToggle,
           setSplitPanelToggle,
           splitPanelRefs,
+          toolbarRef,
+          toolbarHeight,
           toolsControlId,
           toolsHide,
           toolsOpen: isToolsOpen,
