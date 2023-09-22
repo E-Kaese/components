@@ -139,11 +139,7 @@ export default function InternalContainer({
               {...stickyStyles}
               ref={headerMergedRef}
             >
-              {__darkHeader ? (
-                <div className={clsx(styles['dark-header'], 'awsui-context-content-header')}>{header}</div>
-              ) : (
-                header
-              )}
+              {__darkHeader ? <div className={clsx(styles['dark-header'])}>{header}</div> : header}
             </div>
           </StickyHeaderContext.Provider>
         )}

@@ -54,7 +54,7 @@ export default function DarkRibbon({ children, isRefresh, hasPlainStyling }: Dar
   }
 
   return (
-    <div ref={containerRef} className="awsui-context-content-header">
+    <div ref={containerRef}>
       <div ref={fillRef} className={styles['background-fill']} />
       <div className={styles.content}>{children}</div>
     </div>

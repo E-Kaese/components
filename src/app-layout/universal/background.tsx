@@ -5,5 +5,5 @@ import clsx from 'clsx';
 import styles from './styles.css.js';
 
 export default function Background() {
-  return <div id='background' className={clsx(styles.background, 'awsui-context-content-header')} />;
+  return <div id="background" className={clsx(styles.background)} />;
 }

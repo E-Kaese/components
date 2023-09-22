@@ -28,8 +28,7 @@ export default function Notifications() {
           [styles['sticky-notifications']]: stickyNotifications,
           [styles.unfocusable]: hasDrawerViewportOverlay,
         },
-        testutilStyles.notifications,
-        'awsui-context-content-header'
+        testutilStyles.notifications
       )}
     >
       <div ref={notificationsElement}>{notifications}</div>

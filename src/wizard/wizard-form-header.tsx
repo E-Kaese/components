@@ -15,14 +15,7 @@ export default function WizardFormHeader({ children, isVisualRefresh }: WizardFo
   const overlapElement = useDynamicOverlap();
 
   return (
-    <div
-      className={clsx(
-        styles['form-header'],
-        isVisualRefresh && styles['form-header-refresh'],
-        isVisualRefresh && 'awsui-context-content-header'
-      )}
-      ref={overlapElement}
-    >
+    <div className={clsx(styles['form-header'], isVisualRefresh && styles['form-header-refresh'])} ref={overlapElement}>
       <div className={clsx(styles['form-header-content'])}>{children}</div>
     </div>
   );

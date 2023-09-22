@@ -248,10 +248,7 @@ const InternalTable = React.forwardRef(
             header={
               <>
                 {hasHeader && (
-                  <div
-                    ref={overlapElement}
-                    className={clsx(hasDynamicHeight && [styles['dark-header'], 'awsui-context-content-header'])}
-                  >
+                  <div ref={overlapElement} className={clsx(hasDynamicHeight && [styles['dark-header']])}>
                     <div
                       ref={toolsHeaderWrapper}
                       className={clsx(styles['header-controls'], styles[`variant-${computedVariant}`])}

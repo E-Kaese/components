@@ -15,14 +15,9 @@ export default function Breadcrumbs() {
 
   return (
     <div
-      className={clsx(
-        styles.breadcrumbs,
-        testutilStyles.breadcrumbs,
-        {
-          [styles['has-sticky-background']]: hasStickyBackground,
-        },
-        'awsui-context-content-header'
-      )}
+      className={clsx(styles.breadcrumbs, testutilStyles.breadcrumbs, {
+        [styles['has-sticky-background']]: hasStickyBackground,
+      })}
     >
       {breadcrumbs}
     </div>

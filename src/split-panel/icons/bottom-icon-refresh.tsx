@@ -48,7 +48,7 @@ const bottomPositionIcon = (
     <g className="awsui-context-top-navigation">
       <rect x="2" y="2" width="226" height="6" className={getClassName('layout-top')} />
     </g>
-    <g className="awsui-context-content-header">
+    <g>
       <path d="M0 8H230V23H0V8Z" className={getClassName('layout-main')} />
       <g className={getClassName('default')}>
         <path

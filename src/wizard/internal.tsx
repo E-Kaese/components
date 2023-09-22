@@ -162,7 +162,7 @@ export default function InternalWizard({
         <div
           className={clsx(styles.form, isVisualRefresh && styles.refresh, smallContainer && styles['small-container'])}
         >
-          {isVisualRefresh && <div className={clsx(styles.background, 'awsui-context-content-header')} />}
+          {isVisualRefresh && <div className={clsx(styles.background)} />}
           <WizardForm
             steps={steps}
             isVisualRefresh={isVisualRefresh}

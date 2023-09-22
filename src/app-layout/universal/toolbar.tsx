@@ -36,7 +36,7 @@ export default function Toolbar() {
   };
 
   return (
-    <section id="toolbar" className={clsx(styles.toolbar, 'awsui-context-content-header')}>
+    <section id="toolbar" className={clsx(styles.toolbar)}>
       <div className={styles.container}>
         <div className={styles['actions-inline-start']}>
           <button

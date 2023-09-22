@@ -35,15 +35,9 @@ export default function InternalContentLayout({
       data-component="content-layout"
       ref={mergedRef}
     >
-      <div
-        className={clsx(
-          styles.background,
-          { [styles['is-overlap-disabled']]: isOverlapDisabled },
-          'awsui-context-content-header'
-        )}
-      />
+      <div className={clsx(styles.background, { [styles['is-overlap-disabled']]: isOverlapDisabled })} />
 
-      {header && <div className={clsx(styles.header, 'awsui-context-content-header')}>{header}</div>}
+      {header && <div className={clsx(styles.header)}>{header}</div>}
 
       <div className={styles.content}>{children}</div>
     </div>

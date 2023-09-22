@@ -14,15 +14,11 @@ export default function Header() {
 
   return (
     <header
-      className={clsx(
-        styles.content,
-        {
-          [styles['has-breadcrumbs']]: breadcrumbs,
-          [styles['has-notifications-content']]: hasNotificationsContent,
-          [styles.unfocusable]: hasDrawerViewportOverlay,
-        },
-        'awsui-context-content-header'
-      )}
+      className={clsx(styles.content, {
+        [styles['has-breadcrumbs']]: breadcrumbs,
+        [styles['has-notifications-content']]: hasNotificationsContent,
+        [styles.unfocusable]: hasDrawerViewportOverlay,
+      })}
     >
       {contentHeader}
     </header>

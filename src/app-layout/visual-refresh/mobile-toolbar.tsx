@@ -38,8 +38,7 @@ export default function MobileToolbar() {
           [styles.unfocusable]: hasDrawerViewportOverlay,
           [testutilStyles['mobile-bar']]: isMobile,
         },
-        testutilStyles['mobile-bar'],
-        'awsui-context-content-header'
+        testutilStyles['mobile-bar']
       )}
     >
       {!navigationHide && (
