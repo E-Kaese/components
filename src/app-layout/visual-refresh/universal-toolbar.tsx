@@ -9,6 +9,7 @@ import { useAppLayoutInternals } from './context';
 import customCssProps from '../../internal/generated/custom-css-properties';
 import styles from './styles.css.js';
 import testutilStyles from '../test-classes/styles.css.js';
+import TriggerButton from './trigger-button';
 
 export default function UniversalToolbar() {
   const {
@@ -44,11 +45,13 @@ export default function UniversalToolbar() {
         toolbar.style.top = toolbar.style.getPropertyValue(customCssProps.offsetTop);
         toolbar.style.opacity = '1';
         toolbar.style.height = `48px`;
+        toolbar.classList.remove(styles['toolbar-hidden']);
         // 80 is an arbitrary number to have a pause before the toolbar scrolls out of view. toolbar.offsetHeight was another option
       } else if (currentScrollPosition > 80) {
-        toolbar.style.top = '-60px';
-        toolbar.style.opacity = '0';
+        // toolbar.style.top = '-60px';
+        // toolbar.style.opacity = '0';
         toolbar.style.height = '0px';
+        toolbar.classList.add(styles['toolbar-hidden']);
       }
       if (currentScrollPosition > 0) {
         toolbar.classList.add(styles['toolbar-sticky']);
@@ -79,17 +82,14 @@ export default function UniversalToolbar() {
           aria-hidden={isNavigationOpen}
           className={clsx(styles['universal-toolbar-nav'], { [testutilStyles['drawer-closed']]: !isNavigationOpen })}
         >
-          <InternalButton
+          <TriggerButton
             ariaLabel={ariaLabels?.navigationToggle ?? undefined}
             ariaExpanded={isNavigationOpen ? undefined : false}
             iconName="menu"
-            formAction="none"
-            onClick={() => handleNavigationClick(!isNavigationOpen)}
-            variant="icon"
             className={testutilStyles['navigation-toggle']}
+            onClick={() => handleNavigationClick(!isNavigationOpen)}
             ref={navigationRefs.toggle}
-            disabled={hasDrawerViewportOverlay}
-            __nativeAttributes={{ 'aria-haspopup': isNavigationOpen ? undefined : true }}
+            selected={isNavigationOpen}
           />
         </nav>
       )}
@@ -104,17 +104,14 @@ export default function UniversalToolbar() {
           aria-label={ariaLabels?.tools ?? undefined}
           className={clsx(styles['universal-toolbar-tools'], { [testutilStyles['drawer-closed']]: !isToolsOpen })}
         >
-          <InternalButton
+          <TriggerButton
             className={testutilStyles['tools-toggle']}
             ariaExpanded={isToolsOpen}
-            disabled={hasDrawerViewportOverlay}
             ariaLabel={ariaLabels?.toolsToggle ?? undefined}
             iconName="status-info"
-            formAction="none"
             onClick={() => handleToolsClick(!isToolsOpen)}
-            variant="icon"
             ref={toolsRefs.toggle}
-            __nativeAttributes={{ 'aria-haspopup': true }}
+            selected={isToolsOpen}
           />
         </aside>
       )}

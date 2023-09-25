@@ -16,16 +16,22 @@ section.universal-toolbar {
   display: grid;
   grid-area: universalToolbar;
   grid-column: 2 / span 3;
-  grid-template-columns: minmax(0, auto) 1fr minmax(0, auto) minmax(0, auto);
-  column-gap: awsui.$space-m;
+  grid-template-columns: minmax(0, auto) awsui.$space-m 1fr minmax(0, auto) minmax(0, auto);
   padding: 0 awsui.$space-m;
   position: sticky;
   top: var(#{custom-props.$offsetTop});
   transition: ease all 0.5s;
   z-index: 840;
 
+  &.toolbar-hidden {
+    top: -60px;
+    opacity: 0;
+    height: 0px;
+    border-bottom: none;
+  }
+
   &.toolbar-sticky {
-    box-shadow: 0 4px 16px 0 rgba(0, 7, 22, 0.06);
+    // box-shadow: 0 4px 16px 0 rgba(0, 7, 22, 0.06);
   }
 
   > .universal-toolbar-nav {
@@ -33,11 +39,11 @@ section.universal-toolbar {
   }
 
   > .universal-toolbar-breadcrumbs {
-    grid-column: 2;
+    grid-column: 3;
     background-color: awsui.$color-background-layout-panel-content;
   }
 
   > .universal-toolbar-tools {
-    grid-column: 3;
+    grid-column: 4;
   }
 }
