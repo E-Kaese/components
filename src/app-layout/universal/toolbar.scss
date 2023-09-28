@@ -7,7 +7,7 @@
 
 .toolbar {
   background: awsui.$color-background-layout-panel-content;
-  border-bottom: awsui.$border-panel-header-width solid awsui.$color-border-divider-panel-side;
+  border-bottom: awsui.$border-divider-layout-width solid awsui.$color-border-divider-panel-side;
   display: grid;
   grid-area: toolbar;
   grid-template-columns: #{awsui.$space-scaled-m} 1fr #{awsui.$space-scaled-m};

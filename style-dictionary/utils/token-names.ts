@@ -618,6 +618,8 @@ export type SpacingTokenName =
   | 'spaceModalContentBottom'
   | 'spaceModalHorizontal'
   | 'spaceOptionIconBigTop'
+  | 'spacePanelContentTop'
+  | 'spacePanelHeaderVertical'
   | 'spacePanelNavLeft'
   | 'spacePanelSideLeft'
   | 'spacePanelSideRight'

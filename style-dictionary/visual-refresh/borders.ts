@@ -20,7 +20,7 @@ export const tokens: StyleDictionary.BordersDictionary = {
   borderLineChartDashArray: '3 5',
   borderLineChartLineJoin: 'round',
   borderLineChartWidth: '2px',
-  borderPanelHeaderWidth: '2px',
+  borderPanelHeaderWidth: '0px',
   borderPanelTopWidth: '1px',
   borderRadiusAlert: '{borderRadiusFlashbar}',
   borderRadiusBadge: '4px',
