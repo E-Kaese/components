@@ -10,7 +10,7 @@
 section.universal-toolbar {
   align-items: center;
   background-color: awsui.$color-background-layout-panel-content;
-  border-bottom: awsui.$border-divider-layout-width solid awsui.$color-border-divider-panel-bottom;
+  border-bottom: awsui.$border-divider-layout-width solid transparent;
   box-sizing: border-box;
   height: 48px;
   display: grid;
@@ -32,6 +32,7 @@ section.universal-toolbar {
 
   &.toolbar-sticky {
     // box-shadow: 0 4px 16px 0 rgba(0, 7, 22, 0.06);
+    border-bottom: awsui.$border-divider-layout-width solid awsui.$color-border-divider-panel-bottom;
   }
 
   > .universal-toolbar-nav {

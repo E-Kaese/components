@@ -9,7 +9,11 @@
 
 .container {
   grid-area: main;
-  padding-bottom: calc(var(#{custom-props.$notificationsHeight}) + #{awsui.$space-layout-content-bottom});
+  // padding-bottom: minmax(
+  //   #{awsui.$space-layout-content-bottom},
+  //   calc(var(#{custom-props.$notificationsHeight}) + #{awsui.$space-scaled-s})
+  // );
+  padding-bottom: awsui.$space-layout-content-bottom;
 
   /*
   If the split panel is in the bottom position additional padding will need to be
@@ -18,9 +22,9 @@
   sticky position of the split panel.
   */
   &.has-split-panel.split-panel-position-bottom {
-    padding-bottom: calc(
-      var(#{custom-props.$splitPanelHeight}) + #{awsui.$space-scaled-s} + var(#{custom-props.$notificationsHeight}) + #{awsui.$space-layout-content-bottom}
-    );
+    // padding-bottom: calc(
+    //   var(#{custom-props.$splitPanelHeight}) + #{awsui.$space-scaled-s} + var(#{custom-props.$notificationsHeight}) + #{awsui.$space-layout-content-bottom}
+    // );
   }
 
   /*

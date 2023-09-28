@@ -123,6 +123,8 @@ export const useStickyHeader = (
     if (rootRef.current && headerRef.current) {
       const rootTop = rootRef.current.getBoundingClientRect().top;
       const headerTop = headerRef.current.getBoundingClientRect().top;
+      console.log('sticky states: ', rootTop, headerTop);
+      console.log(rootRef, headerRef);
       if (rootTop < headerTop) {
         setIsStuck(true);
       } else {

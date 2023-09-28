@@ -238,7 +238,7 @@ explicitly set in script.
 
   // Set the Main gap when it follows the Breadcrumbs with an overlap
   &.has-breadcrumbs:not(.has-header):not(.is-overlap-disabled) {
-    #{custom-props.$mainGap}: #{awsui.$space-scaled-xxs};
+    #{custom-props.$mainGap}: #{awsui.$space-scaled-s};
   }
 
   // Set the Main gap when it follows the Header
