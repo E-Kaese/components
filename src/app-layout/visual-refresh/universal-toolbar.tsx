@@ -48,8 +48,8 @@ export default function UniversalToolbar() {
         toolbar.classList.remove(styles['toolbar-hidden']);
         // 80 is an arbitrary number to have a pause before the toolbar scrolls out of view. toolbar.offsetHeight was another option
       } else if (currentScrollPosition > 80) {
-        // toolbar.style.top = '-60px';
-        // toolbar.style.opacity = '0';
+        toolbar.style.top = '-60px';
+        toolbar.style.opacity = '0';
         toolbar.style.height = '0px';
         toolbar.classList.add(styles['toolbar-hidden']);
       }

@@ -40,9 +40,12 @@ export default function Layout({ children }: LayoutProps) {
     minContentWidth,
     navigationHide,
     notificationsHeight,
+    offsetBottom,
     splitPanelPosition,
     stickyNotifications,
     splitPanelDisplayed,
+    // splitPanelReportedHeaderHeight,
+    // splitPanelReportedSize,
     toolbarHeight,
   } = useAppLayoutInternals();
 
@@ -53,6 +56,7 @@ export default function Layout({ children }: LayoutProps) {
   const hasContentGapLeft = isNavigationOpen || navigationHide;
   const hasContentGapRight = drawersTriggerCount <= 0 || hasOpenDrawer;
 
+  const splitPanelHeight = offsetBottom - footerHeight;
   return (
     <main
       className={clsx(
@@ -69,6 +73,7 @@ export default function Layout({ children }: LayoutProps) {
           [styles['has-content-gap-right']]: hasContentGapRight,
           [styles['has-header']]: contentHeader,
           [styles['has-max-content-width']]: maxContentWidth && maxContentWidth > 0,
+          [styles['has-notifications']]: hasNotificationsContent,
           [styles['has-split-panel']]: splitPanelDisplayed,
           [styles['has-sticky-background']]: hasStickyBackground,
           [styles['has-sticky-notifications']]: stickyNotifications && hasNotificationsContent,
@@ -86,6 +91,7 @@ export default function Layout({ children }: LayoutProps) {
         ...(minContentWidth && { [customCssProps.minContentWidth]: `${minContentWidth}px` }),
         [customCssProps.notificationsHeight]: `${notificationsHeight}px`,
         [customCssProps.mobileBarHeight]: `${toolbarHeight}px`,
+        [customCssProps.splitPanelHeight]: `${splitPanelHeight}px`,
       }}
     >
       {children}
