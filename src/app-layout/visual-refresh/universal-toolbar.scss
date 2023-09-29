@@ -44,5 +44,6 @@ section.universal-toolbar {
   > .universal-toolbar-drawers {
     column-gap: awsui.$space-static-xs;
     display: flex;
+    margin-left: auto;
   }
 }
