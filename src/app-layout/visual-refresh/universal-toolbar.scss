@@ -10,13 +10,13 @@
 section.universal-toolbar {
   align-items: center;
   background-color: awsui.$color-background-layout-panel-content;
-  border-bottom: awsui.$border-divider-layout-width solid transparent;
+  border-bottom: awsui.$border-divider-layout-width solid awsui.$color-border-divider-panel-bottom;
   box-sizing: border-box;
   height: 48px;
-  display: grid;
+  display: inline-flex;
   grid-area: universalToolbar;
   grid-column: 2 / span 3;
-  grid-template-columns: minmax(0, auto) awsui.$space-m 1fr minmax(0, auto) minmax(0, auto);
+  column-gap: awsui.$space-static-xs;
   padding: 0 awsui.$space-m;
   position: sticky;
   top: var(#{custom-props.$offsetTop});
@@ -32,19 +32,17 @@ section.universal-toolbar {
 
   &.toolbar-sticky {
     // box-shadow: 0 4px 16px 0 rgba(0, 7, 22, 0.06);
-    border-bottom: awsui.$border-divider-layout-width solid awsui.$color-border-divider-panel-bottom;
-  }
-
-  > .universal-toolbar-nav {
-    grid-column: 1;
+    // border-bottom: awsui.$border-divider-layout-width solid awsui.$color-border-divider-panel-bottom;
   }
 
   > .universal-toolbar-breadcrumbs {
-    grid-column: 3;
+    flex: 1;
+    padding-left: awsui.$space-static-xxs;
     background-color: awsui.$color-background-layout-panel-content;
   }
 
-  > .universal-toolbar-tools {
-    grid-column: 4;
+  > .universal-toolbar-drawers {
+    column-gap: awsui.$space-static-xs;
+    display: flex;
   }
 }

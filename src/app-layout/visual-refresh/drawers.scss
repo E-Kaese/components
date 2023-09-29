@@ -87,7 +87,7 @@
   align-items: center;
   display: flex;
   flex-direction: row;
-  gap: awsui.$space-xs;
+  gap: awsui.$space-xxs;
 
   &:not(.has-multiple-triggers).has-open-drawer {
     opacity: 0;

@@ -10,30 +10,37 @@
 @mixin trigger-selected-styles {
   background: awsui.$color-background-layout-toggle-selected-default;
   color: awsui.$color-text-layout-toggle-selected;
+  border: awsui.$border-field-width solid awsui.$color-background-layout-toggle-selected-default;
 
   &:hover {
     background: awsui.$color-background-layout-toggle-selected-hover;
+    border-color: awsui.$color-background-layout-toggle-selected-hover;
   }
   &:active {
     background: awsui.$color-background-layout-toggle-selected-active;
+    border-color: awsui.$color-background-layout-toggle-selected-active;
   }
 }
 
 @mixin trigger-button-styles {
   background: awsui.$color-background-layout-panel-content;
   color: awsui.$color-text-interactive-default;
+  border: awsui.$border-field-width solid awsui.$color-background-layout-panel-content;
   border-radius: 50%;
   height: awsui.$space-layout-toggle-diameter;
   width: awsui.$space-layout-toggle-diameter;
+  box-sizing: border-box;
 
   &:hover {
-    background: awsui.$color-background-layout-toggle-hover;
-    color: awsui.$color-text-layout-toggle-selected;
+    background: awsui.$color-background-input-disabled;
+    color: awsui.$color-text-interactive-hover;
+    border-color: awsui.$color-background-input-disabled;
   }
 
   &:active {
-    background: awsui.$color-background-layout-toggle-active;
-    color: awsui.$color-text-layout-toggle-active;
+    background: awsui.$color-background-control-disabled;
+    color: awsui.$color-text-interactive-hover;
+    border-color: awsui.$color-background-control-disabled;
   }
 }
 
@@ -56,12 +63,9 @@ handleSplitPanelMaxWidth function in the context.
 .trigger {
   @include trigger-button-styles();
 
-  border: none;
-
   cursor: pointer;
   padding: 0;
   pointer-events: auto;
-  position: relative;
 
   @include focus-visible.when-visible {
     @include styles.focus-highlight(3px);

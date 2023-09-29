@@ -166,6 +166,10 @@ export function DesktopTriggers() {
   const previousActiveDrawerId = useRef(activeDrawerId);
   const [containerHeight, triggersContainerRef] = useContainerQuery(rect => rect.contentBoxHeight);
 
+  if (drawers.length === 0 && !hasSplitPanel) {
+    return null;
+  }
+
   if (activeDrawerId) {
     previousActiveDrawerId.current = activeDrawerId;
   }

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
 import clsx from 'clsx';
-import { InternalButton } from '../../button/internal';
 import { MobileTriggers as DrawersMobileTriggers } from './drawers';
 import { DesktopTriggers as DrawersToolbarTriggers } from './drawers';
 import { useAppLayoutInternals } from './context';
@@ -21,15 +20,61 @@ export default function UniversalToolbar() {
     hasDrawerViewportOverlay,
     isMobile,
     isNavigationOpen,
+    isSplitPanelOpen,
     isToolsOpen,
     navigationHide,
     navigationRefs,
+    splitPanel,
+    splitPanelDisplayed,
+    splitPanelPosition,
     toolsHide,
     toolsRefs,
     toolbarRef,
   } = useAppLayoutInternals();
 
-  if (navigationHide && !breadcrumbs && toolsHide && drawers.length === 0) {
+  const hasSplitPanel = !!splitPanel && getSplitPanelStatus(splitPanelDisplayed, splitPanelPosition);
+  const showToolsTrigger = getTriggerStatus(hasSplitPanel, isSplitPanelOpen, isToolsOpen, toolsHide);
+
+  /**
+   * This simple function returns the presence of the split panel as a child of the
+   * Tools component. It must exist and be in side position.
+   */
+  function getSplitPanelStatus(splitPanelDisplayed: boolean, splitPanelPosition: string) {
+    return splitPanelDisplayed && splitPanelPosition === 'side' ? true : false;
+  }
+
+  function getTriggerStatus(
+    hasSplitPanel: boolean,
+    isSplitPanelOpen?: boolean,
+    isToolsOpen?: boolean,
+    toolsHide?: boolean
+  ) {
+    let hasToolsForm = false;
+
+    // Both the Split Panel and Tools button are needed
+    if (hasSplitPanel && !toolsHide) {
+      hasToolsForm = true;
+    }
+
+    // The Split Panel button is needed
+    if (hasSplitPanel && !isSplitPanelOpen && toolsHide) {
+      hasToolsForm = true;
+    }
+
+    // The Tools button is needed
+    if (!hasSplitPanel && !toolsHide && !isToolsOpen) {
+      hasToolsForm = true;
+    }
+
+    // Both Tools and Split Panel exist and one or both is open
+    if (hasSplitPanel && !toolsHide && (isSplitPanelOpen || isToolsOpen)) {
+      hasToolsForm = true;
+    }
+
+    return hasToolsForm;
+  }
+
+  if ((navigationHide || isNavigationOpen) && !breadcrumbs && (toolsHide || isToolsOpen) && drawers.length === 0) {
     return null;
   }
 
@@ -77,7 +122,7 @@ export default function UniversalToolbar() {
         testutilStyles['mobile-bar']
       )}
     >
-      {!navigationHide && (
+      {!navigationHide && !isNavigationOpen && (
         <nav
           aria-hidden={isNavigationOpen}
           className={clsx(styles['universal-toolbar-nav'], { [testutilStyles['drawer-closed']]: !isNavigationOpen })}
@@ -93,29 +138,30 @@ export default function UniversalToolbar() {
           />
         </nav>
       )}
-
       {breadcrumbs && (
         <div className={clsx(styles['universal-toolbar-breadcrumbs'], testutilStyles.breadcrumbs)}>{breadcrumbs}</div>
       )}
 
-      {!toolsHide && drawers.length === 0 && (
-        <aside
-          aria-hidden={isToolsOpen}
-          aria-label={ariaLabels?.tools ?? undefined}
-          className={clsx(styles['universal-toolbar-tools'], { [testutilStyles['drawer-closed']]: !isToolsOpen })}
-        >
-          <TriggerButton
-            className={testutilStyles['tools-toggle']}
-            ariaExpanded={isToolsOpen}
-            ariaLabel={ariaLabels?.toolsToggle ?? undefined}
-            iconName="status-info"
-            onClick={() => handleToolsClick(!isToolsOpen)}
-            ref={toolsRefs.toggle}
-            selected={isToolsOpen}
-          />
-        </aside>
-      )}
-      {isMobile ? <DrawersMobileTriggers /> : <DrawersToolbarTriggers />}
+      <span className={clsx(styles['universal-toolbar-drawers'])}>
+        {showToolsTrigger && drawers.length === 0 && (
+          <aside
+            aria-hidden={isToolsOpen}
+            aria-label={ariaLabels?.tools ?? undefined}
+            className={clsx(styles['universal-toolbar-tools'], { [testutilStyles['drawer-closed']]: !isToolsOpen })}
+          >
+            <TriggerButton
+              className={testutilStyles['tools-toggle']}
+              ariaExpanded={isToolsOpen}
+              ariaLabel={ariaLabels?.toolsToggle ?? undefined}
+              iconName="status-info"
+              onClick={() => handleToolsClick(!isToolsOpen)}
+              ref={toolsRefs.toggle}
+              selected={isToolsOpen}
+            />
+          </aside>
+        )}
+        {isMobile ? <DrawersMobileTriggers /> : <DrawersToolbarTriggers />}
+      </span>
     </section>
   );
 }
