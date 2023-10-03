@@ -339,7 +339,7 @@ export default function CollapsibleFlashbar({ items, ...restProps }: FlashbarPro
               aria-label={notificationBarAriaLabel}
               className={clsx(styles.button, isFlashbarStackExpanded && styles.expanded)}
             >
-              <InternalIcon className={styles.icon} size="normal" name="angle-down" />
+              <InternalIcon className={styles.icon} size="normal" name="angle-up" />
             </button>
           </div>
         )}

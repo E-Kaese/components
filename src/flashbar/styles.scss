@@ -38,7 +38,7 @@
   &::before {
     @include styles.base-pseudo-element;
     border-radius: awsui.$border-radius-flashbar;
-    box-shadow: awsui.$shadow-flash-sticky;
+    box-shadow: awsui.$shadow-flash-collapsed;
   }
   &-refresh::before {
     z-index: -1;
