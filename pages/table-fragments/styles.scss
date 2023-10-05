@@ -58,6 +58,10 @@
         padding-left: 32px;
       }
     }
+
+    &:focus {
+      outline-offset: -2px;
+    }
   }
 
   &-selection-cell {
