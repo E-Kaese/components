@@ -14,7 +14,7 @@ import {
 } from '~components/table/table-role';
 import { Dictionary, groupBy, mapValues, orderBy, range, sortBy } from 'lodash';
 import pseudoRandom from '../utils/pseudo-random';
-import { format } from 'date-fns';
+import { format, startOfMonth } from 'date-fns';
 import * as tokens from '~design-tokens';
 
 const K = 1000;
@@ -207,7 +207,11 @@ export default function Page() {
     if (sortingKey === 'date') {
       return orderBy(transactions, [sortingKey], [sortingDirection === -1 ? 'desc' : 'asc']);
     }
-    return orderBy(transactions, ['date', sortingKey], ['desc', sortingDirection === -1 ? 'desc' : 'asc']);
+    return orderBy(
+      transactions,
+      [it => startOfMonth(it.date), sortingKey],
+      ['desc', sortingDirection === -1 ? 'desc' : 'asc']
+    );
   }, [sortingKey, sortingDirection]);
 
   const transactionRows = useMemo(() => {
