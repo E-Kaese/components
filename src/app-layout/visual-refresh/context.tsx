@@ -188,6 +188,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
 
     const handleNavigationClick = useStableCallback(function handleNavigationChange(isOpen: boolean) {
       setIsNavigationOpen(isOpen);
+      !isOpen && setToolbarHeight(48);
       focusNavButtons();
       fireNonCancelableEvent(props.onNavigationChange, { open: isOpen });
     });
@@ -235,6 +236,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
     const handleToolsClick = useCallback(
       function handleToolsChange(isOpen: boolean, skipFocusControl?: boolean) {
         setIsToolsOpen(isOpen);
+        !isOpen && setToolbarHeight(48);
         !skipFocusControl && focusToolsButtons();
         fireNonCancelableEvent(props.onToolsChange, { open: isOpen });
       },

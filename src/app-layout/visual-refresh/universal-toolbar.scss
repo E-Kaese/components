@@ -8,15 +8,11 @@
 @use '../../internal/generated/custom-css-properties/index.scss' as custom-props;
 
 section.universal-toolbar {
-  align-items: center;
   background-color: awsui.$color-background-layout-panel-content;
   border-bottom: awsui.$border-divider-layout-width solid awsui.$color-border-divider-panel-bottom;
   box-sizing: border-box;
-  height: 48px;
-  display: inline-flex;
   grid-area: universalToolbar;
   grid-column: 2 / span 3;
-  column-gap: awsui.$space-static-xs;
   padding: 0 awsui.$space-m;
   position: sticky;
   top: var(#{custom-props.$offsetTop});
@@ -35,13 +31,21 @@ section.universal-toolbar {
     // border-bottom: awsui.$border-divider-layout-width solid awsui.$color-border-divider-panel-bottom;
   }
 
-  > .universal-toolbar-breadcrumbs {
+  .toolbar-container {
+    height: 48px;
+    align-items: center;
+    display: inline-flex;
+    column-gap: awsui.$space-static-xs;
+    width: 100%;
+  }
+
+  .universal-toolbar-breadcrumbs {
     flex: 1;
     padding-left: awsui.$space-static-xxs;
     background-color: awsui.$color-background-layout-panel-content;
   }
 
-  > .universal-toolbar-drawers {
+  .universal-toolbar-drawers {
     column-gap: awsui.$space-static-xs;
     display: flex;
     margin-left: auto;

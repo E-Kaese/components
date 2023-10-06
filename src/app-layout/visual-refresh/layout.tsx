@@ -114,9 +114,9 @@ function getContentFirstChild(
   let contentFirstChild = 'main';
 
   if (hasNotificationsContent) {
-    contentFirstChild = 'notifications';
-  } else if (breadcrumbs && !isMobile) {
-    contentFirstChild = 'breadcrumbs';
+    // contentFirstChild = 'notifications';
+    // } else if (breadcrumbs && !isMobile) {
+    //   contentFirstChild = 'breadcrumbs';
   } else if (contentHeader) {
     contentFirstChild = 'header';
   }
