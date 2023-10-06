@@ -31,6 +31,7 @@ export default function UniversalToolbar() {
     toolsRefs,
     toolbarRef,
     toolbarHeight,
+    pinnedToolbar,
   } = useAppLayoutInternals();
 
   const hasSplitPanel = !!splitPanel && getSplitPanelStatus(splitPanelDisplayed, splitPanelPosition);
@@ -156,7 +157,8 @@ export default function UniversalToolbar() {
           [styles.unfocusable]: hasDrawerViewportOverlay,
           [testutilStyles['mobile-bar']]: isMobile,
           [styles['toolbar-hidden']]:
-            scrollDirection === 'hide' ||
+            (scrollDirection === 'hide' && !pinnedToolbar) ||
+            // when the toolbar does not have anything to show inside, don't show it at all, but leave it rendered in case triggers come back
             ((navigationHide || isNavigationOpen) &&
               !breadcrumbs &&
               (toolsHide || isToolsOpen) &&
