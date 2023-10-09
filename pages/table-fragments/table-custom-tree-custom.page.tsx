@@ -216,76 +216,87 @@ export default function Page() {
     },
   ];
 
-  const createDeviceColumnDefinitions = (station: Station) => [
-    {
-      key: 'selection',
-      label: (
-        <Box margin={{ left: 'xxs' }}>
-          <Checkbox
-            checked={selectedDevices.length === station.devices.length}
-            indeterminate={selectedDevices.length > 0 && selectedDevices.length < station.devices.length}
-            onChange={() =>
-              setSelectedDevices(prev => (prev.length < station.devices.length ? station.devices.map(d => d.id) : []))
-            }
-          />
-        </Box>
-      ),
-      render: (row: Device) => (
-        <Box margin={{ left: 'xxs' }}>
-          <Checkbox
-            checked={selectedDevices.includes(row.id)}
-            onChange={() =>
-              setSelectedDevices(prev => {
-                const next = prev.filter(id => id !== row.id);
-                return next.length !== prev.length ? next : [...next, row.id];
-              })
-            }
-          />
-        </Box>
-      ),
-    },
-    {
-      key: 'id',
-      label: 'Device ID',
-      render: (item: Device, index: number) => `D${index + 1}`,
-    },
-    {
-      key: 'ownerId',
-      label: 'Owner',
-      render: (item: Device) => item.ownerId,
-    },
-    {
-      key: 'primary',
-      label: 'Primary',
-      render: (item: Device) => (item.primary ? 'Yes' : 'No'),
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      render: (item: Device) => {
-        switch (item.status) {
-          case 'hibernating':
-            return <StatusIndicator type="pending">Hibernating</StatusIndicator>;
-          case 'connecting':
-            return <StatusIndicator type="in-progress">Connecting</StatusIndicator>;
-          case 'connected':
-            return <StatusIndicator type="success">Connected</StatusIndicator>;
-          case 'failed':
-            return <StatusIndicator type="error">Failed</StatusIndicator>;
-        }
+  const createDeviceColumnDefinitions = (station: Station) => {
+    const stationDeviceIds = new Set(station.devices.map(d => d.id));
+    const selectedStationDevices = selectedDevices.filter(d => stationDeviceIds.has(d));
+
+    return [
+      {
+        key: 'selection',
+        label: (
+          <Box margin={{ left: 'xxs' }}>
+            <Checkbox
+              checked={selectedStationDevices.length === station.devices.length}
+              indeterminate={
+                selectedStationDevices.length > 0 && selectedStationDevices.length < station.devices.length
+              }
+              onChange={() =>
+                setSelectedDevices(prev =>
+                  prev.length < station.devices.length
+                    ? [...new Set([...selectedDevices, ...stationDeviceIds])]
+                    : selectedDevices.filter(d => !stationDeviceIds.has(d))
+                )
+              }
+            />
+          </Box>
+        ),
+        render: (row: Device) => (
+          <Box margin={{ left: 'xxs' }}>
+            <Checkbox
+              checked={selectedDevices.includes(row.id)}
+              onChange={() =>
+                setSelectedDevices(prev => {
+                  const next = prev.filter(id => id !== row.id);
+                  return next.length !== prev.length ? next : [...next, row.id];
+                })
+              }
+            />
+          </Box>
+        ),
       },
-    },
-    {
-      key: 'operatingCost',
-      label: 'Operating cost',
-      render: (item: Device) => '$' + item.operatingCost.toFixed(2),
-    },
-    {
-      key: 'lastUpdateDate',
-      label: 'Last update date',
-      render: (item: Device) => format(item.lastUpdateDate, 'yyyy-MM-dd hh:mm'),
-    },
-  ];
+      {
+        key: 'id',
+        label: 'Device ID',
+        render: (item: Device, index: number) => `D${index + 1}`,
+      },
+      {
+        key: 'ownerId',
+        label: 'Owner',
+        render: (item: Device) => item.ownerId,
+      },
+      {
+        key: 'primary',
+        label: 'Primary',
+        render: (item: Device) => (item.primary ? 'Yes' : 'No'),
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        render: (item: Device) => {
+          switch (item.status) {
+            case 'hibernating':
+              return <StatusIndicator type="pending">Hibernating</StatusIndicator>;
+            case 'connecting':
+              return <StatusIndicator type="in-progress">Connecting</StatusIndicator>;
+            case 'connected':
+              return <StatusIndicator type="success">Connected</StatusIndicator>;
+            case 'failed':
+              return <StatusIndicator type="error">Failed</StatusIndicator>;
+          }
+        },
+      },
+      {
+        key: 'operatingCost',
+        label: 'Operating cost',
+        render: (item: Device) => '$' + item.operatingCost.toFixed(2),
+      },
+      {
+        key: 'lastUpdateDate',
+        label: 'Last update date',
+        render: (item: Device) => format(item.lastUpdateDate, 'yyyy-MM-dd hh:mm'),
+      },
+    ];
+  };
 
   const allDevices = allStations.flatMap(s => s.devices);
 
