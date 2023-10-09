@@ -193,7 +193,7 @@ function useTreeSelection(rows: readonly TransactionRow[]) {
 export default function Page() {
   const [sortingKey, setSortingKey] = useState<null | string>(null);
   const [sortingDirection, setSortingDirection] = useState<1 | -1>(1);
-  const [expandedRows, setExpandedRows] = useState<string[]>([]);
+  const [expandedRows, setExpandedRows] = useState<Dictionary<number>>({ ALL: 10 });
 
   const tableRole = 'grid';
   const tableRef = useRef<HTMLTableElement>(null);
@@ -227,12 +227,15 @@ export default function Page() {
       return { average: total / transactions.length, total };
     }
 
-    function aggregateDate(transactions: Transaction[]) {
+    function aggregateDate(transactions: Transaction[], formatStr = 'MMM do') {
       const sorted = sortBy([...transactions], 'date');
-      return `${format(sorted[0].date, 'MMM do')} - ${format(sorted[sorted.length - 1].date, 'MMM do')}`;
+      return `${format(sorted[0].date, formatStr)} - ${format(sorted[sorted.length - 1].date, formatStr)}`;
     }
 
-    for (const [month, monthTransactions] of Object.entries(transactionsByMonth)) {
+    const transactionEntries = Object.entries(transactionsByMonth);
+    for (let t = 0; t < Math.min(transactionEntries.length, expandedRows.ALL); t++) {
+      const [month, monthTransactions] = transactionEntries[t];
+
       transactionRows.push({
         parentRowId: null,
         rowId: month,
@@ -247,13 +250,16 @@ export default function Page() {
         count: monthTransactions.length,
       });
 
-      if (!expandedRows.includes(month)) {
+      if (!expandedRows[month]) {
         continue;
       }
 
       const transactionsByAmount = groupBy(monthTransactions, 'accountId');
+      const transactionsByAmountEntries = Object.entries(transactionsByAmount);
 
-      for (const [accountId, accountTransactions] of Object.entries(transactionsByAmount)) {
+      for (let i = 0; i < Math.min(transactionsByAmountEntries.length, expandedRows[month]); i++) {
+        const [accountId, accountTransactions] = transactionsByAmountEntries[i];
+
         transactionRows.push({
           parentRowId: month,
           rowId: `${month}-${accountId}`,
@@ -268,13 +274,16 @@ export default function Page() {
           count: accountTransactions.length,
         });
 
-        if (!expandedRows.includes(`${month}-${accountId}`)) {
+        const accountKey = `${month}-${accountId}`;
+        if (!expandedRows[accountKey]) {
           continue;
         }
 
-        accountTransactions.forEach(transaction => {
+        for (let j = 0; j < Math.min(accountTransactions.length, expandedRows[accountKey]); j++) {
+          const transaction = accountTransactions[j];
+
           transactionRows.push({
-            parentRowId: `${month}-${accountId}`,
+            parentRowId: accountKey,
             rowId: transaction.id,
             id: transaction.id,
             external: transaction.external,
@@ -286,8 +295,65 @@ export default function Page() {
             group: transaction.id,
             count: 1,
           });
+        }
+        if (expandedRows[accountKey] < accountTransactions.length) {
+          const remTransactions = accountTransactions.slice(expandedRows[accountKey]);
+
+          transactionRows.push({
+            parentRowId: accountKey,
+            rowId: `${accountKey}-loader`,
+            id: remTransactions.length,
+            external: remTransactions.filter(t => t.external).length,
+            status: aggregateStatus(remTransactions),
+            accountId: new Set(remTransactions.map(t => t.accountId)).size,
+            amount: aggregateAmount(remTransactions),
+            date: aggregateDate(remTransactions),
+            level: 3,
+            group: 'Load more account transactions',
+            count: remTransactions.length,
+          });
+        }
+      }
+      if (expandedRows[month] < transactionsByAmountEntries.length) {
+        const remTransactions = transactionsByAmountEntries
+          .map(([, v]) => v)
+          .slice(expandedRows[month])
+          .flatMap(e => e);
+
+        transactionRows.push({
+          parentRowId: month,
+          rowId: `${month}-loader`,
+          id: remTransactions.length,
+          external: remTransactions.filter(t => t.external).length,
+          status: aggregateStatus(remTransactions),
+          accountId: new Set(remTransactions.map(t => t.accountId)).size,
+          amount: aggregateAmount(remTransactions),
+          date: aggregateDate(remTransactions),
+          level: 2,
+          group: `Load more ${format(new Date(month), 'MMMM')} transactions`,
+          count: remTransactions.length,
         });
       }
+    }
+    if (expandedRows.ALL < transactionEntries.length) {
+      const remTransactions = transactionEntries
+        .map(([, v]) => v)
+        .slice(expandedRows.ALL)
+        .flatMap(e => e);
+
+      transactionRows.push({
+        parentRowId: null,
+        rowId: 'all-loader',
+        id: remTransactions.length,
+        external: remTransactions.filter(t => t.external).length,
+        status: aggregateStatus(remTransactions),
+        accountId: new Set(remTransactions.map(t => t.accountId)).size,
+        amount: aggregateAmount(remTransactions),
+        date: aggregateDate(remTransactions, 'MMM yyyy'),
+        level: 1,
+        group: 'Load more monthly transactions',
+        count: remTransactions.length,
+      });
     }
 
     return transactionRows;
@@ -321,16 +387,28 @@ export default function Page() {
           <span>Month / Account / Transaction ID</span>
         </div>
       ),
-      render: (item: TransactionRow) =>
-        item.level !== 3 ? (
+      render: (item: TransactionRow) => {
+        if (item.rowId.includes('loader')) {
+          const parentId = item.parentRowId ?? 'ALL';
+          return (
+            <Button
+              variant="inline-link"
+              onClick={() => setExpandedRows(prev => ({ ...prev, [parentId]: prev[parentId] + 10 }))}
+            >
+              {item.group}
+            </Button>
+          );
+        }
+
+        return item.level !== 3 ? (
           <div style={{ display: 'flex', gap: '8px' }}>
             <Button
               variant="inline-icon"
-              iconName={expandedRows.includes(item.rowId) ? 'treeview-collapse' : 'treeview-expand'}
+              iconName={expandedRows[item.rowId] ? 'treeview-collapse' : 'treeview-expand'}
               onClick={() =>
                 setExpandedRows(prev => {
-                  const next = prev.filter(rowId => rowId !== item.rowId);
-                  return prev.length !== next.length ? next : [...next, item.rowId];
+                  const next = { ...prev, [item.rowId]: prev[item.rowId] ? 0 : 10 };
+                  return next;
                 })
               }
             />
@@ -338,7 +416,8 @@ export default function Page() {
           </div>
         ) : (
           <div style={{ paddingLeft: '8px' }}>{item.group}</div>
-        ),
+        );
+      },
     },
     {
       key: 'accountId',
