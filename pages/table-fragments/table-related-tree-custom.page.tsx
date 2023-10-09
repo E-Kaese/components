@@ -1,6 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Checkbox, ContentLayout, Header, Icon, StatusIndicator } from '~components';
 import styles from './styles.scss';
 import {
@@ -231,6 +231,14 @@ export default function Page() {
 
     return deviceRows;
   }, [sortingKey, sortingDirection, expandedRows]);
+
+  useEffect(() => {
+    const ids = new Set(deviceRows.map(r => r.id));
+    const visibleSelected = selectedDevices.filter(id => ids.has(id));
+    if (visibleSelected.length < selectedDevices.length) {
+      setSelectedDevices(visibleSelected);
+    }
+  }, [deviceRows, selectedDevices]);
 
   const visibleDevices = deviceRows.filter(d => !d.id.includes('loader'));
 
