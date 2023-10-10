@@ -3,6 +3,7 @@
 import { ComponentWrapper, ElementWrapper } from '@cloudscape-design/test-utils-core/dom';
 import SplitPanelWrapper from '../split-panel';
 import testutilStyles from '../../../app-layout/test-classes/styles.selectors.js';
+import { act } from 'react-dom/test-utils';
 
 export default class AppLayoutWrapper extends ComponentWrapper {
   static rootSelector = testutilStyles.root;
@@ -61,6 +62,14 @@ export default class AppLayoutWrapper extends ComponentWrapper {
 
   findDrawerTriggerById(id: string): ElementWrapper<HTMLButtonElement> | null {
     return this.find(`.${testutilStyles['drawers-trigger']}[data-testid="awsui-app-layout-trigger-${id}"]`);
+  }
+
+  async waitForDrawerTriggerById(id: string): Promise<ElementWrapper<HTMLButtonElement> | null> {
+    let element;
+    await act(async () => {
+      element = await this.find(`.${testutilStyles['drawers-trigger']}[data-testid="awsui-app-layout-trigger-${id}"]`);
+    });
+    return element as unknown as ElementWrapper<HTMLButtonElement> | null;
   }
 
   findActiveDrawerResizeHandle(): ElementWrapper | null {

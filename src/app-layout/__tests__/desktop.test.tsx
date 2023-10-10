@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
-import { act, screen, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 
 import {
   describeEachThemeAppLayout,
@@ -180,6 +180,7 @@ describeEachThemeAppLayout(false, () => {
         onResize: ({ detail }) => onResize(detail),
         activeDrawerId: 'security',
         items: resizableDrawer.drawers.items,
+        onChange: () => {},
       },
     };
     const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawers} />);
@@ -201,6 +202,7 @@ describeEachThemeAppLayout(false, () => {
             onResize: event => onDrawerItemResize(event.detail),
           },
         ],
+        onChange: () => {},
       },
     };
     const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawersOpen} />);
@@ -220,10 +222,12 @@ describeEachThemeAppLayout(false, () => {
     expect(wrapper.findActiveDrawerResizeHandle()!.getElement()).toHaveAttribute('aria-valuenow', '0');
   });
 
-  test('should render overflow item when expected', () => {
+  /* THIS */
+
+  test('should render overflow item when expected', async () => {
     const { wrapper } = renderComponent(<AppLayout contentType="form" {...manyDrawers} />);
 
-    expect(wrapper.findDrawersTriggers()!.length).toBeLessThan(100);
+    await waitFor(() => expect(wrapper.findDrawersTriggers()!.length).toBeLessThan(100));
   });
 
   test('Renders aria-controls on toggle only when active', () => {
@@ -233,11 +237,13 @@ describeEachThemeAppLayout(false, () => {
     expect(wrapper.findDrawerTriggerById('security')!.getElement()).toHaveAttribute('aria-controls', 'security');
   });
 
-  test('should render badge when defined', () => {
+  /* THIS */
+
+  test('should render badge when defined', async () => {
     const { wrapper } = renderComponent(<AppLayout contentType="form" {...manyDrawers} />);
 
-    expect(isDrawerTriggerWithBadge(wrapper, manyDrawers.drawers.items[0].id)).toEqual(true);
-    expect(isDrawerTriggerWithBadge(wrapper, manyDrawers.drawers.items[1].id)).toEqual(false);
+    await waitFor(() => expect(isDrawerTriggerWithBadge(wrapper, manyDrawers.drawers.items[0].id)).toEqual(true));
+    await waitFor(() => expect(isDrawerTriggerWithBadge(wrapper, manyDrawers.drawers.items[1].id)).toEqual(false));
   });
 
   test('should have width equal to the size declaration', () => {

@@ -52,10 +52,11 @@ describe('Virtual scroll support', () => {
     expect(wrapper.findDropdown().findOptionInGroup(2, 1)).toBeTruthy();
   });
 
-  test('should select an option in virtual list', () => {
+  /* this */
+  test('should select an option in virtual list', async () => {
     const onChange = jest.fn();
     const wrapper = renderWithWrapper(<Select {...defaultProps} onChange={event => onChange(event.detail)} />);
-    wrapper.openDropdown();
+    await wrapper.waitForOpenDropdown();
     wrapper.selectOptionByValue('2');
     expect(onChange).toHaveBeenCalledWith({ selectedOption: defaultProps.options![1] });
   });

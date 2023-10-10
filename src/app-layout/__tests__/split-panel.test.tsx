@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
-import { act, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import AppLayout from '../../../lib/components/app-layout';
 import { AppLayoutProps } from '../../../lib/components/app-layout/interfaces';
 import SplitPanel from '../../../lib/components/split-panel';
@@ -301,8 +301,8 @@ test('should change split panel position in uncontrolled mode', () => {
   wrapper.findSplitPanel()!.findPreferencesButton()!.click();
   expect(screen.getByRole('radio', { name: 'Bottom' })).toBeChecked();
   expect(screen.getByRole('radio', { name: 'Side' })).toBeEnabled();
-  screen.getByRole('radio', { name: 'Side' }).click();
-  screen.getByRole('button', { name: 'Confirm' }).click();
+  fireEvent.click(screen.getByRole('radio', { name: 'Side' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
   expect(wrapper.findSplitPanel()!.findOpenPanelSide()).not.toBeNull();
   expect(onPreferencesChange).toHaveBeenCalledWith({ position: 'side' });
 });

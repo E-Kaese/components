@@ -220,6 +220,7 @@ export const singleDrawerOpen: Required<InternalDrawerProps> = {
   drawers: {
     ariaLabel: 'Drawers',
     activeDrawerId: 'security',
+    onChange: () => {},
     items: [
       {
         ariaLabels: {

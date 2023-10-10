@@ -178,7 +178,7 @@ describe('TableBodyCell', () => {
 
     test('should not render success icon in default state when edit button is focused', () => {
       const { container } = render(<TestComponent />);
-      screen.getByRole('button', { name: 'Edit testData test' }).focus();
+      fireEvent.focus(screen.getByRole('button', { name: 'Edit testData test' }));
       expect(container.querySelector(bodyCellSuccessIcon$)!).not.toBeInTheDocument();
     });
 
@@ -190,7 +190,7 @@ describe('TableBodyCell', () => {
     test('should render success icon and live region after a successful edit', () => {
       const { container } = render(<TestComponent successfulEdit={true} />);
       // Success icon is shown when cell is focused.
-      screen.getByRole('button', { name: 'Edit testData test' }).focus();
+      fireEvent.focus(screen.getByRole('button', { name: 'Edit testData test' }));
 
       expect(container.querySelector(bodyCellSuccessIcon$)!).toBeInTheDocument();
       expect(screen.getByText('edit successful')).toBeInTheDocument();
@@ -200,11 +200,11 @@ describe('TableBodyCell', () => {
       const { container } = render(
         <>
           <TestComponent successfulEdit={true} />
-          <a href="#">dummy button</a>
+          <button>dummy button</button>
         </>
       );
       // Success icon is shown when cell is focused.
-      screen.getByRole('button', { name: 'Edit testData test' }).focus();
+      fireEvent.focus(screen.getByRole('button', { name: 'Edit testData test' }));
       expect(container.querySelector(bodyCellSuccessIcon$)!).toBeInTheDocument();
 
       // Success icon is hidden when cell lost focus.
@@ -212,14 +212,14 @@ describe('TableBodyCell', () => {
       expect(container.querySelector(bodyCellSuccessIcon$)!).not.toBeInTheDocument();
 
       // Cell is focused again.
-      screen.getByRole('button', { name: 'Edit testData test' }).focus();
+      fireEvent.focus(screen.getByRole('button', { name: 'Edit testData test' }));
       expect(container.querySelector(bodyCellSuccessIcon$)!).not.toBeInTheDocument();
     });
 
     test('should not render success icon when edit is cancelled after a successfully edit has been performed', () => {
       // Successful edit has been performed.
       const { container, rerender } = render(<TestComponent successfulEdit={true} />);
-      screen.getByRole('button', { name: 'Edit testData test' }).focus();
+      fireEvent.focus(screen.getByRole('button', { name: 'Edit testData test' }));
       expect(container.querySelector(bodyCellSuccessIcon$)!).toBeInTheDocument();
 
       // Switch into edit mode and click edit button (triggers onEditEnd which hides the success icon).
@@ -234,7 +234,7 @@ describe('TableBodyCell', () => {
     test('should call onEditStart when success icon is clicked', () => {
       const { container } = render(<TestComponent successfulEdit={true} />);
       // Success icon is shown when cell is focused.
-      screen.getByRole('button', { name: 'Edit testData test' }).focus();
+      fireEvent.focus(screen.getByRole('button', { name: 'Edit testData test' }));
       const successIcon = container.querySelector(bodyCellSuccessIcon$)!;
       fireEvent.mouseDown(successIcon);
       expect(onEditStart).toHaveBeenCalled();

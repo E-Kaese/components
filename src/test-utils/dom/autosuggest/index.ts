@@ -160,6 +160,15 @@ export default class AutosuggestWrapper extends InputWrapper {
     });
   }
 
+  @usesDom
+  async waitForSelectSuggestion(index: number, options = { expandToViewport: false }): Promise<void> {
+    await act(async () => {
+      await this.findDropdown(options)
+        ?.findOption(index)!
+        .fireEvent(new MouseEvent('mouseup', { bubbles: true }));
+    });
+  }
+
   /**
    * Selects a suggestion from the dropdown by simulating mouse events.
    *
@@ -171,6 +180,15 @@ export default class AutosuggestWrapper extends InputWrapper {
   selectSuggestionByValue(value: string, options = { expandToViewport: false }): void {
     act(() => {
       this.findDropdown(options)
+        ?.findOptionByValue(value)!
+        .fireEvent(new MouseEvent('mouseup', { bubbles: true }));
+    });
+  }
+
+  @usesDom
+  async waitForSelectSuggestionByValue(value: string, options = { expandToViewport: false }): Promise<void> {
+    await act(async () => {
+      await this.findDropdown(options)
         ?.findOptionByValue(value)!
         .fireEvent(new MouseEvent('mouseup', { bubbles: true }));
     });

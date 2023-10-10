@@ -42,6 +42,12 @@ export default abstract class DropdownHostComponentWrapper extends ComponentWrap
       this.findTrigger().fireEvent(new MouseEvent('mousedown', { bubbles: true }));
     });
   }
+  @usesDom
+  async waitForOpenDropdown(): Promise<void> {
+    await act(async () => {
+      await this.findTrigger().fireEvent(new MouseEvent('mousedown', { bubbles: true }));
+    });
+  }
 
   /**
    * @param options

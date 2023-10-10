@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, act, waitFor } from '@testing-library/react';
 import { KeyCode } from '@cloudscape-design/test-utils-core/dist/utils';
 import SplitPanel, { SplitPanelProps } from '../../../lib/components/split-panel';
 import {
@@ -177,23 +177,32 @@ describe('Split panel', () => {
       expect(modalWrapper).not.toBeNull();
     });
 
-    test('cancels modal', () => {
+    test('cancels modal', async () => {
       const { wrapper } = renderSplitPanel();
       wrapper.findPreferencesButton()!.click();
       const modalWrapper = createWrapper().findModal()!;
 
-      modalWrapper.findFooter()!.findAll('button')[0].getElement().click();
+      const footer = modalWrapper.findFooter()!;
+
+      await act(async () => {
+        await footer.findAll('button')[0].getElement().click();
+      });
 
       expect(defaultSplitPanelContextProps.onPreferencesChange).not.toHaveBeenCalled();
       expect(createWrapper().findModal()).toBeNull();
     });
 
+    //FAILS
     test('confirms modal', () => {
       const { wrapper } = renderSplitPanel();
       wrapper.findPreferencesButton()!.click();
       const modalWrapper = createWrapper().findModal()!;
 
-      modalWrapper.findFooter()!.findAll('button')[1].getElement().click();
+      const footer = modalWrapper.findFooter()!;
+
+      act(() => {
+        footer.findAll('button')[1].getElement().click();
+      });
 
       expect(defaultSplitPanelContextProps.onPreferencesChange).toHaveBeenCalledTimes(1);
       expect(defaultSplitPanelContextProps.onPreferencesChange).toHaveBeenCalledWith({
@@ -221,11 +230,13 @@ describe('Split panel', () => {
       expect(sidePanelElem).toHaveAttribute('role', 'region');
     });
 
-    test('split panel is labelled by panel header', () => {
+    //fails
+    test('split panel is labelled by panel header', async () => {
       const { wrapper } = renderSplitPanel({ contextProps: { position: 'side' } });
-      const sidePanelElem = wrapper.findByClassName(styles['drawer-content-side'])?.getElement();
+      const sidePanelElem = await waitFor(() => wrapper.findByClassName(styles['drawer-content-side'])?.getElement());
       const labelId = sidePanelElem?.getAttribute('aria-labelledby');
 
+      console.log(`labelId: ${labelId}`);
       expect(sidePanelElem?.querySelector(`#${labelId}`)!.textContent).toBe('Split panel header');
     });
   });

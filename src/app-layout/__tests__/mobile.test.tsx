@@ -433,9 +433,14 @@ describeEachThemeAppLayout(true, theme => {
     expect(wrapper.findActiveDrawer()).toBeTruthy();
   });
 
-  test('should render badge when defined', () => {
+  /* ISSUE */
+  test('should render badge when defined', async () => {
     const { wrapper } = renderComponent(<AppLayout contentType="form" {...manyDrawers} />);
-    expect(wrapper.findDrawerTriggerById('security')!.getElement().children[0]).toHaveClass(iconStyles.badge);
+    // await waitFor(() =>
+    //   expect(wrapper.findDrawerTriggerById('security')!.getElement().children[0]).toHaveClass(iconStyles.badge)
+    // );
+    const drawer = await wrapper.waitForDrawerTriggerById('security');
+    expect(drawer!.getElement().children[0]).toHaveClass(iconStyles.badge);
   });
 
   test('renders roles only when aria labels are not provided', () => {

@@ -167,7 +167,7 @@ test('a11y', async () => {
       }}
     />
   );
-  await expect(container).toValidateA11y();
+  await waitFor(() => expect(container).toValidateA11y());
 });
 
 test('drawers a11y', async () => {
@@ -193,5 +193,5 @@ test('drawers a11y', async () => {
       }}
     />
   );
-  await expect(container).toValidateA11y();
+  await waitFor(() => expect(container).toValidateA11y());
 });

@@ -56,11 +56,11 @@ describe('Virtual scroll support', () => {
     expect(wrapper.findDropdown().findOptionInGroup(2, 1)).toBeTruthy();
   });
 
-  test('should select an option in virtual list', () => {
+  test('should select an option in virtual list', async () => {
     const onChange = jest.fn();
     const wrapper = renderWithWrapper(<Autosuggest {...defaultProps} onChange={event => onChange(event.detail)} />);
     wrapper.findNativeInput().focus();
-    wrapper.selectSuggestionByValue('2');
+    await wrapper.waitForSelectSuggestionByValue('2');
     expect(onChange).toHaveBeenCalledWith({ value: '2' });
   });
 });

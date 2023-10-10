@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import Alert, { AlertProps } from '../../../lib/components/alert';
 import Button from '../../../lib/components/button';
 import createWrapper from '../../../lib/components/test-utils/dom';
@@ -71,6 +71,7 @@ describe('Alert Component', () => {
       expect(wrapper.find('[role="img"]')!.getElement()).toHaveAttribute('aria-label', 'Info');
     });
   });
+
   describe('visibility', () => {
     it('shows the alert by default', () => {
       const { wrapper } = renderAlert();
@@ -137,7 +138,7 @@ describe('Alert Component', () => {
       statusIconAriaLabel: 'Icon',
       action: <button type="button">Action</button>,
     });
-    await expect(container).toValidateA11y();
+    await waitFor(() => expect(container).toValidateA11y());
   });
 
   describe('analytics', () => {
