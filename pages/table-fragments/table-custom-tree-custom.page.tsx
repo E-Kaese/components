@@ -158,7 +158,7 @@ export default function Page() {
       sortingKey: 'devices.length',
       label: (
         <div style={{ display: 'flex', gap: '8px' }}>
-          <Button variant="inline-icon" iconName="treeview-expand" disabled={true} />
+          <Button variant="inline-icon" iconName="caret-right-filled" disabled={true} />
           <span>Devices</span>
         </div>
       ),
@@ -167,7 +167,7 @@ export default function Page() {
           <div style={{ display: 'flex', gap: '8px' }}>
             <Button
               variant="inline-icon"
-              iconName={expandedRows[item.id] ? 'treeview-collapse' : 'treeview-expand'}
+              iconName={expandedRows[item.id] ? 'caret-down-filled' : 'caret-right-filled'}
               onClick={() =>
                 setExpandedRows(prev => {
                   const next = { ...prev, [item.id]: prev[item.id] ? 0 : 10 };
