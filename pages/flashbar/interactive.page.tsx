@@ -1,21 +1,24 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import * as React from 'react';
-import { useRef, useState } from 'react';
+import { useContext, useState } from 'react';
 import { range } from 'lodash';
 import { Box, Button, SpaceBetween, Flashbar, FlashbarProps, Toggle } from '~components';
 import { generateItem, i18nStrings } from './common';
 import ScreenshotArea from '../utils/screenshot-area';
+import AppContext, { AppContextType } from '../app/app-context';
+
+type DemoContext = React.Context<AppContextType<{ stackItems: boolean }>>;
 
 export default function InteractiveFlashbar() {
+  const { urlParams, setUrlParams } = useContext(AppContext as DemoContext);
   const dismiss = (index: string) => {
     setItems(items => items.filter(item => item.id !== index));
   };
 
   const add = (type: FlashbarProps.Type, hasHeader = false) => {
-    const newItem = generateItem({ type, id: nextId.current.toString(), dismiss, hasHeader });
+    const newItem = generateItem({ type, dismiss, hasHeader });
     setItems(items => [newItem, ...items]);
-    nextId.current = nextId.current + 1;
   };
 
   const addMultiple = (type: FlashbarProps.Type, hasHeader = false, amount: number) => {
@@ -27,15 +30,13 @@ export default function InteractiveFlashbar() {
   };
 
   const addToBottom = (type: FlashbarProps.Type, hasHeader = false) => {
-    const newItem = generateItem({ type, dismiss, hasHeader, id: nextId.current.toString() });
+    const newItem = generateItem({ type, dismiss, hasHeader });
     setItems(items => [...items, newItem]);
-    nextId.current = nextId.current + 1;
   };
 
   const removeAndAddToBottom = (type: FlashbarProps.Type, hasHeader = false) => {
-    const newItem = generateItem({ type, dismiss, hasHeader, id: nextId.current.toString() });
+    const newItem = generateItem({ type, dismiss, hasHeader });
     setItems(items => [newItem, ...items.slice(1, items.length)]);
-    nextId.current = nextId.current + 1;
   };
 
   const initialItems = [
@@ -46,26 +47,13 @@ export default function InteractiveFlashbar() {
     generateItem({ type: 'info', dismiss, hasHeader: false, initial: false, id: '0' }),
   ];
 
-  const [collapsible, setCollapsible] = useState(false);
   const [items, setItems] = useState(initialItems);
-  const nextId = useRef(initialItems.length);
-
-  const restProps = collapsible
-    ? {
-        stackItems: true,
-        i18nStrings,
-      }
-    : {
-        i18nStrings: {
-          ariaLabel: i18nStrings.ariaLabel,
-        },
-      };
 
   return (
     <>
       <h1>Flashbar interactions test</h1>
       <SpaceBetween size="xs">
-        <Toggle checked={collapsible} onChange={({ detail }) => setCollapsible(detail.checked)}>
+        <Toggle checked={urlParams.stackItems} onChange={({ detail }) => setUrlParams({ stackItems: detail.checked })}>
           <span data-id="stack-items">Stack items</span>
         </Toggle>
         <SpaceBetween direction="horizontal" size="xs">
@@ -87,7 +75,7 @@ export default function InteractiveFlashbar() {
         </SpaceBetween>
         <ScreenshotArea>
           <Box padding="xxl">
-            <Flashbar items={items} {...restProps} />
+            <Flashbar items={items} stackItems={urlParams.stackItems} i18nStrings={i18nStrings} />
           </Box>
         </ScreenshotArea>
       </SpaceBetween>
