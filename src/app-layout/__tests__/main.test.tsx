@@ -8,6 +8,7 @@ import { AppLayoutWrapper } from '../../../lib/components/test-utils/dom';
 import mobileStyles from '../../../lib/components/app-layout/mobile-toolbar/styles.css.js';
 import sharedStyles from '../../../lib/components/app-layout/styles.css.js';
 import '../../__a11y__/to-validate-a11y';
+import { BetaDrawersProps } from '../../../lib/components/app-layout/drawer/interfaces';
 
 jest.mock('@cloudscape-design/component-toolkit/internal', () => ({
   ...jest.requireActual('@cloudscape-design/component-toolkit/internal'),
@@ -80,21 +81,19 @@ describe('drawers', () => {
 
   test('property is controlled', () => {
     const onChange = jest.fn();
-    const drawers = {
-      drawers: {
-        onChange: onChange,
-        activeDrawerId: null,
-        items: singleDrawer.drawers.items,
-      },
+    const drawersInner: BetaDrawersProps = {
+      onChange: onChange,
+      activeDrawerId: null,
+      items: singleDrawer.drawers.items,
     };
 
-    const drawersOpen = {
-      drawers: {
-        onChange: onChange,
-        activeDrawerId: 'security',
-        items: singleDrawer.drawers.items,
-      },
+    const drawersOpenInner: BetaDrawersProps = {
+      onChange: onChange,
+      activeDrawerId: 'security',
+      items: singleDrawer.drawers.items,
     };
+    const drawers: any = { drawers: drawersInner };
+    const drawersOpen: any = { drawers: drawersOpenInner };
 
     const { wrapper, rerender } = renderComponent(<AppLayout toolsHide={true} contentType="form" {...drawers} />);
 

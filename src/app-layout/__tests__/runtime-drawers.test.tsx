@@ -10,7 +10,7 @@ import {
   singleDrawer,
 } from './utils';
 import AppLayout, { AppLayoutProps } from '../../../lib/components/app-layout';
-import { InternalDrawerProps } from '../../../lib/components/app-layout/drawer/interfaces';
+import { BetaDrawersProps } from '../../../lib/components/app-layout/drawer/interfaces';
 import { TOOLS_DRAWER_ID } from '../../../lib/components/app-layout/utils/use-drawers';
 import { awsuiPlugins, awsuiPluginsInternal } from '../../../lib/components/internal/plugins/api';
 import { DrawerConfig } from '../../../lib/components/internal/plugins/controllers/drawers';
@@ -394,11 +394,12 @@ describeEachAppLayout(size => {
   test('updates active drawer id in controlled mode', async () => {
     awsuiPlugins.appLayout.registerDrawer({ ...drawerDefaults, defaultActive: true });
     const onChange = jest.fn();
-    const drawers: Required<InternalDrawerProps> = {
-      drawers: {
-        ...singleDrawer.drawers,
-        onChange: event => onChange(event.detail),
-      },
+    const drawersInner: BetaDrawersProps = {
+      ...singleDrawer.drawers,
+      onChange: event => onChange(event.detail),
+    };
+    const drawers: any = {
+      drawers: drawersInner,
     };
     const { wrapper } = await renderComponent(<AppLayout contentType="form" {...drawers} />);
     expect(onChange).toHaveBeenCalledWith(drawerDefaults.id);
@@ -523,10 +524,11 @@ describeEachAppLayout(size => {
         ariaLabels: { triggerButton: 'ccc' },
         orderPriority: -1,
       });
-      const drawers: InternalDrawerProps = {
-        drawers: {
-          items: [{ id: 'ddd', trigger: {}, content: null, ariaLabels: { triggerButton: 'ddd' } }],
-        },
+      const drawersInner: BetaDrawersProps = {
+        items: [{ id: 'ddd', trigger: {}, content: null, ariaLabels: { triggerButton: 'ddd' } }],
+      };
+      const drawers: any = {
+        drawers: drawersInner,
       };
       const { wrapper } = await renderComponent(
         <AppLayout {...(drawers as any)} ariaLabels={{ toolsToggle: 'tools toggle' }} />

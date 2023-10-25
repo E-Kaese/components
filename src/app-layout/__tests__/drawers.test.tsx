@@ -5,6 +5,7 @@ import {
   describeEachAppLayout,
   renderComponent,
   singleDrawer,
+  singleDrawerPublic,
   manyDrawers,
   manyDrawersWithBadges,
   findActiveDrawerLandmark,
@@ -13,7 +14,7 @@ import createWrapper from '../../../lib/components/test-utils/dom';
 
 import { render } from '@testing-library/react';
 import AppLayout from '../../../lib/components/app-layout';
-import { InternalDrawerProps } from '../../../lib/components/app-layout/drawer/interfaces';
+import { BetaDrawersProps } from '../../../lib/components/app-layout/drawer/interfaces';
 
 jest.mock('../../../lib/components/internal/hooks/use-mobile', () => ({
   useMobile: jest.fn().mockReturnValue(true),
@@ -33,11 +34,12 @@ describeEachAppLayout(size => {
   });
 
   test('should not apply drawers treatment to the tools if the drawers array is empty', () => {
-    const emptyDrawerItems = {
-      drawers: {
-        ariaLabel: 'Drawers',
-        items: [],
-      },
+    const emptyDrawerItemsInner: BetaDrawersProps = {
+      ariaLabel: 'Drawers',
+      items: [],
+    };
+    const emptyDrawerItems: any = {
+      drawers: emptyDrawerItemsInner,
     };
     const { wrapper } = renderComponent(<AppLayout contentType="form" {...emptyDrawerItems} />);
 
@@ -88,17 +90,18 @@ describeEachAppLayout(size => {
   });
 
   test('renders resize only on resizable drawer', async () => {
-    const drawers: Required<InternalDrawerProps> = {
-      drawers: {
-        items: [
-          singleDrawer.drawers.items[0],
-          {
-            ...singleDrawer.drawers.items[0],
-            id: 'security-resizable',
-            resizable: true,
-          },
-        ],
-      },
+    const drawersInner: BetaDrawersProps = {
+      items: [
+        singleDrawer.drawers.items[0],
+        {
+          ...singleDrawer.drawers.items[0],
+          id: 'security-resizable',
+          resizable: true,
+        },
+      ],
+    };
+    const drawers: any = {
+      drawers: drawersInner,
     };
     const { wrapper } = await renderComponent(<AppLayout contentType="form" {...drawers} />);
 
@@ -115,5 +118,10 @@ describeEachAppLayout(size => {
     } else {
       expect(wrapper.findActiveDrawerResizeHandle()).toBeFalsy();
     }
+  });
+
+  test(`registers public drawers api`, () => {
+    const { wrapper } = renderComponent(<AppLayout contentType="form" drawers={singleDrawerPublic} />);
+    expect(wrapper.findDrawersTriggers()).toHaveLength(1);
   });
 });

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import * as React from 'react';
 import { render } from '@testing-library/react';
-import AppLayout from '../../../lib/components/app-layout';
+import AppLayout, { AppLayoutProps } from '../../../lib/components/app-layout';
 import { SplitPanelProps } from '../../../lib/components/split-panel';
 import createWrapper, { AppLayoutWrapper, ElementWrapper } from '../../../lib/components/test-utils/dom';
 import { useMobile } from '../../../lib/components/internal/hooks/use-mobile';
@@ -10,7 +10,7 @@ import { useVisualRefresh } from '../../../lib/components/internal/hooks/use-vis
 import { findUpUntil } from '../../../lib/components/internal/utils/dom';
 import visualRefreshStyles from '../../../lib/components/app-layout/visual-refresh/styles.css.js';
 import testutilStyles from '../../../lib/components/app-layout/test-classes/styles.css.js';
-import { InternalDrawerProps, DrawerItem } from '../../../lib/components/app-layout/drawer/interfaces';
+import { BetaDrawersProps } from '../../../lib/components/app-layout/drawer/interfaces';
 import { IconProps } from '../../../lib/components/icon/interfaces';
 import customCssProps from '../../../lib/components/internal/generated/custom-css-properties';
 import iconStyles from '../../../lib/components/icon/styles.css.js';
@@ -137,25 +137,23 @@ export const splitPanelI18nStrings: SplitPanelProps.I18nStrings = {
   resizeHandleAriaLabel: 'Resize panel',
 };
 
-export const singleDrawer: Required<InternalDrawerProps> = {
-  drawers: {
-    ariaLabel: 'Drawers',
-    items: [
-      {
-        ariaLabels: {
-          closeButton: 'Security close button',
-          content: 'Security drawer content',
-          triggerButton: 'Security trigger button',
-          resizeHandle: 'Security resize handle',
-        },
-        content: <span>Security</span>,
-        id: 'security',
-        trigger: {
-          iconName: 'security',
-        },
+const singleDrawerInner: BetaDrawersProps = {
+  ariaLabel: 'Drawers',
+  items: [
+    {
+      ariaLabels: {
+        closeButton: 'Security close button',
+        content: 'Security drawer content',
+        triggerButton: 'Security trigger button',
+        resizeHandle: 'Security resize handle',
       },
-    ],
-  },
+      content: <span>Security</span>,
+      id: 'security',
+      trigger: {
+        iconName: 'security',
+      },
+    },
+  ],
 };
 
 const getDrawerItem = (id: string, iconName: IconProps.Name, badge: boolean) => {
@@ -177,94 +175,124 @@ const getDrawerItem = (id: string, iconName: IconProps.Name, badge: boolean) => 
 
 const manyDrawersArray = [...Array(100).keys()].map(item => item.toString());
 
-export const manyDrawers: Required<InternalDrawerProps> = {
-  drawers: {
-    ariaLabel: 'Drawers',
-    overflowAriaLabel: 'Overflow drawers',
-    overflowWithBadgeAriaLabel: 'Overflow drawers (Unread notifications)',
-    items: [
-      {
-        ariaLabels: {
-          closeButton: 'Security close button',
-          content: 'Security drawer content',
-          triggerButton: 'Security trigger button',
-          resizeHandle: 'Security resize handle',
-        },
-        content: <span>Security</span>,
-        badge: true,
-        id: 'security',
-        trigger: {
-          iconName: 'security',
-        },
+const manyDrawersInner: BetaDrawersProps = {
+  ariaLabel: 'Drawers',
+  overflowAriaLabel: 'Overflow drawers',
+  overflowWithBadgeAriaLabel: 'Overflow drawers (Unread notifications)',
+  items: [
+    {
+      ariaLabels: {
+        closeButton: 'Security close button',
+        content: 'Security drawer content',
+        triggerButton: 'Security trigger button',
+        resizeHandle: 'Security resize handle',
       },
-      ...manyDrawersArray.map(item => getDrawerItem(item, 'security', false)),
-    ],
-  },
-};
-
-export const manyDrawersWithBadges: Required<InternalDrawerProps> = {
-  drawers: {
-    ariaLabel: 'Drawers',
-    overflowAriaLabel: 'Overflow drawers',
-    overflowWithBadgeAriaLabel: 'Overflow drawers (Unread notifications)',
-    items: [...manyDrawersArray.map(item => getDrawerItem(item, 'security', true))],
-  },
-};
-
-export const singleDrawerOpen: Required<InternalDrawerProps> = {
-  drawers: {
-    ariaLabel: 'Drawers',
-    activeDrawerId: 'security',
-    items: [
-      {
-        ariaLabels: {
-          closeButton: 'Security close button',
-          content: 'Security drawer content',
-          triggerButton: 'Security trigger button',
-          resizeHandle: 'Security resize handle',
-        },
-        content: <span>Security</span>,
-        id: 'security',
-        trigger: {
-          iconName: 'security',
-        },
+      content: <span>Security</span>,
+      badge: true,
+      id: 'security',
+      trigger: {
+        iconName: 'security',
       },
-    ],
-  },
+    },
+    ...manyDrawersArray.map(item => getDrawerItem(item, 'security', false)),
+  ],
 };
 
-export const resizableDrawer: Required<InternalDrawerProps> = {
-  drawers: {
-    ariaLabel: 'Drawers',
-    items: [
-      {
-        ariaLabels: {
-          closeButton: 'Security close button',
-          content: 'Security drawer content',
-          triggerButton: 'Security trigger button',
-          resizeHandle: 'Security resize handle',
-        },
-        resizable: true,
-        content: <span>Security</span>,
-        id: 'security',
-        trigger: {
-          iconName: 'security',
-        },
+const manyDrawersWithBadgesInner: BetaDrawersProps = {
+  ariaLabel: 'Drawers',
+  overflowAriaLabel: 'Overflow drawers',
+  overflowWithBadgeAriaLabel: 'Overflow drawers (Unread notifications)',
+  items: [...manyDrawersArray.map(item => getDrawerItem(item, 'security', true))],
+};
+
+const singleDrawerOpenInner: BetaDrawersProps = {
+  ariaLabel: 'Drawers',
+  activeDrawerId: 'security',
+  items: [
+    {
+      ariaLabels: {
+        closeButton: 'Security close button',
+        content: 'Security drawer content',
+        triggerButton: 'Security trigger button',
+        resizeHandle: 'Security resize handle',
       },
-    ],
-  },
+      content: <span>Security</span>,
+      id: 'security',
+      trigger: {
+        iconName: 'security',
+      },
+    },
+  ],
 };
 
-export const drawerWithoutLabels: Required<InternalDrawerProps> = {
-  drawers: {
-    items: [
-      {
-        content: <span>Security</span>,
-        id: 'security',
-        trigger: {
-          iconName: 'security',
-        },
-      } as DrawerItem,
-    ],
+const resizableDrawerInner: BetaDrawersProps = {
+  ariaLabel: 'Drawers',
+  items: [
+    {
+      ariaLabels: {
+        closeButton: 'Security close button',
+        content: 'Security drawer content',
+        triggerButton: 'Security trigger button',
+        resizeHandle: 'Security resize handle',
+      },
+      resizable: true,
+      content: <span>Security</span>,
+      id: 'security',
+      trigger: {
+        iconName: 'security',
+      },
+    },
+  ],
+};
+
+const drawerWithoutLabelsInner: BetaDrawersProps = {
+  items: [
+    {
+      content: <span>Security</span>,
+      id: 'security',
+      trigger: {
+        iconName: 'security',
+      },
+    },
+  ] as BetaDrawersProps['items'],
+};
+
+export const singleDrawerPublic: AppLayoutProps['drawers'] = [
+  {
+    ariaLabels: {
+      closeButton: 'Security close button',
+      drawerName: 'Security drawer content',
+      triggerButton: 'Security trigger button',
+      resizeHandle: 'Security resize handle',
+    },
+    content: <span>Security</span>,
+    id: 'security',
+    trigger: {
+      iconName: 'security',
+    },
   },
+];
+
+export const singleDrawer: any = {
+  drawers: singleDrawerInner,
+};
+
+export const manyDrawers: any = {
+  drawers: manyDrawersInner,
+};
+
+export const manyDrawersWithBadges: any = {
+  drawers: manyDrawersWithBadgesInner,
+};
+
+export const singleDrawerOpen: any = {
+  drawers: singleDrawerOpenInner,
+};
+
+export const resizableDrawer: any = {
+  drawers: resizableDrawerInner,
+};
+
+export const drawerWithoutLabels: any = {
+  drawers: drawerWithoutLabelsInner,
 };

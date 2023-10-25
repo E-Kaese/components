@@ -6,7 +6,7 @@ import { getBaseProps } from '../../base-component';
 import InternalStatusIndicator from '../../../status-indicator/internal';
 import styles from './styles.css.js';
 import { DrawerProps } from './interfaces';
-import LiveRegion from '../../components/live-region';
+import LiveRegion from '../live-region';
 import { useInternalI18n } from '../../../i18n/context';
 
 export default function Drawer({ header, children, loading, i18nStrings, ...restProps }: DrawerProps) {

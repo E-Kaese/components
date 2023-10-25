@@ -10,7 +10,6 @@ import { applyDefaults } from './defaults';
 import { AppLayoutProps } from './interfaces';
 import { Notifications } from './notifications';
 import { MobileToolbar } from './mobile-toolbar';
-import { useFocusControl } from './utils/use-focus-control';
 import useWindowWidth from './utils/use-window-width';
 import useContentHeight from './utils/use-content-height';
 import styles from './styles.css.js';
@@ -38,10 +37,10 @@ import { useStableCallback, warnOnce } from '@cloudscape-design/component-toolki
 import RefreshedAppLayout from './visual-refresh';
 import { useInternalI18n } from '../i18n/context';
 import { useSplitPanelFocusControl } from './utils/use-split-panel-focus-control';
-import { useDrawerFocusControl } from './utils/use-drawer-focus-control';
+import { useFocusControl } from './utils/use-focus-control';
 import { TOOLS_DRAWER_ID, useDrawers } from './utils/use-drawers';
-import { InternalDrawerProps } from './drawer/interfaces';
 import { useContainerQuery } from '@cloudscape-design/component-toolkit';
+import { togglesConfig } from './toggles';
 
 export { AppLayoutProps };
 
@@ -62,6 +61,9 @@ const AppLayout = React.forwardRef(
       tools: i18n('ariaLabels.tools', rest.ariaLabels?.tools),
       toolsClose: i18n('ariaLabels.toolsClose', rest.ariaLabels?.toolsClose),
       toolsToggle: i18n('ariaLabels.toolsToggle', rest.ariaLabels?.toolsToggle),
+      drawers: i18n('ariaLabels.drawers', rest.ariaLabels?.drawers),
+      drawersOverflow: i18n('ariaLabels.drawersOverflow', rest.ariaLabels?.drawersOverflow),
+      drawersOverflowWithBadge: i18n('ariaLabels.drawersOverflowWithBadge', rest.ariaLabels?.drawersOverflowWithBadge),
     };
 
     // This re-builds the props including the default values
@@ -111,7 +113,10 @@ const OldAppLayout = React.forwardRef(
       onSplitPanelToggle,
       onNavigationChange,
       onToolsChange,
-      ...props
+      drawers: controlledDrawers,
+      onDrawerChange,
+      activeDrawerId: controlledActiveDrawerId,
+      ...rest
     }: AppLayoutProps,
     ref: React.Ref<AppLayoutProps.Ref>
   ) => {
@@ -152,17 +157,27 @@ const OldAppLayout = React.forwardRef(
       activeDrawer,
       activeDrawerSize,
       activeDrawerId,
+      ariaLabelsWithDrawers,
       onActiveDrawerChange,
       onActiveDrawerResize,
-      ...drawersProps
-    } = useDrawers(props as InternalDrawerProps, {
+    } = useDrawers(
+      {
+        drawers: controlledDrawers,
+        onDrawerChange,
+        activeDrawerId: controlledActiveDrawerId,
+        ...rest,
+      },
       ariaLabels,
-      tools,
-      toolsOpen,
-      toolsHide,
-      toolsWidth,
-      onToolsToggle,
-    });
+      {
+        ariaLabels,
+        tools,
+        toolsOpen,
+        toolsHide,
+        toolsWidth,
+        onToolsToggle,
+      }
+    );
+    ariaLabels = ariaLabelsWithDrawers;
     const hasDrawers = !!drawers;
 
     const { refs: navigationRefs, setFocus: focusNavButtons } = useFocusControl(navigationOpen);
@@ -175,8 +190,7 @@ const OldAppLayout = React.forwardRef(
       refs: drawerRefs,
       setFocus: focusDrawersButtons,
       loseFocus: loseDrawersFocus,
-      setLastInteraction: setDrawerLastInteraction,
-    } = useDrawerFocusControl([activeDrawer?.resizable], toolsOpen || activeDrawer !== undefined, true);
+    } = useFocusControl(!!activeDrawerId, true);
 
     const onNavigationToggle = useStableCallback((open: boolean) => {
       setNavigationOpen(open);
@@ -474,6 +488,7 @@ const OldAppLayout = React.forwardRef(
         }
       },
       focusToolsClose: () => focusToolsButtons(true),
+      focusActiveDrawerClose: () => focusDrawersButtons(true),
       focusSplitPanel: () => splitPanelRefs.slider.current?.focus(),
     }));
 
@@ -496,6 +511,7 @@ const OldAppLayout = React.forwardRef(
           <MobileToolbar
             anyPanelOpen={anyPanelOpen}
             toggleRefs={{ navigation: navigationRefs.toggle, tools: toolsRefs.toggle }}
+            drawersRefs={drawerRefs}
             topOffset={headerHeight}
             ariaLabels={ariaLabels}
             navigationHide={navigationHide}
@@ -504,25 +520,15 @@ const OldAppLayout = React.forwardRef(
             onToolsOpen={() => onToolsToggle(true)}
             unfocusable={anyPanelOpen}
             mobileBarRef={mobileBarRef}
-            drawers={
-              hasDrawers
-                ? {
-                    items: drawers,
-                    activeDrawerId: activeDrawerId,
-                    onChange: changeDetail => {
-                      onActiveDrawerChange(changeDetail.activeDrawerId);
-                      if (changeDetail.activeDrawerId !== activeDrawerId) {
-                        focusToolsButtons();
-                        focusDrawersButtons();
-                        setDrawerLastInteraction({ type: 'open' });
-                      }
-                    },
-                    ariaLabel: drawersProps.ariaLabel,
-                    overflowAriaLabel: drawersProps.overflowAriaLabel,
-                    overflowWithBadgeAriaLabel: drawersProps.overflowWithBadgeAriaLabel,
-                  }
-                : undefined
-            }
+            drawers={drawers}
+            activeDrawerId={activeDrawerId}
+            onDrawerChange={newDrawerId => {
+              onActiveDrawerChange(newDrawerId);
+              if (newDrawerId !== activeDrawerId) {
+                onToolsToggle(newDrawerId === TOOLS_DRAWER_ID);
+                focusDrawersButtons();
+              }
+            }}
           >
             {breadcrumbs}
           </MobileToolbar>
@@ -533,7 +539,7 @@ const OldAppLayout = React.forwardRef(
               contentClassName={testutilStyles.navigation}
               toggleClassName={testutilStyles['navigation-toggle']}
               closeClassName={testutilStyles['navigation-close']}
-              ariaLabels={ariaLabels}
+              ariaLabels={togglesConfig.navigation.getLabels(ariaLabels)}
               bottomOffset={footerHeight}
               topOffset={headerHeight}
               isMobile={isMobile}
@@ -543,6 +549,9 @@ const OldAppLayout = React.forwardRef(
               toggleRefs={navigationRefs}
               type="navigation"
               width={navigationWidth}
+              onDrawerChange={() => {
+                // noop in this mode
+              }}
             >
               {navigation}
             </Drawer>
@@ -642,7 +651,12 @@ const OldAppLayout = React.forwardRef(
                 testutilStyles['active-drawer-close-button'],
                 activeDrawerId === TOOLS_DRAWER_ID && testutilStyles['tools-close']
               )}
-              ariaLabels={ariaLabels}
+              ariaLabels={{
+                openLabel: activeDrawer?.ariaLabels?.triggerButton,
+                closeLabel: activeDrawer?.ariaLabels?.closeButton,
+                mainLabel: activeDrawer?.ariaLabels.drawerName,
+                resizeHandle: activeDrawer?.ariaLabels?.resizeHandle,
+              }}
               width={!isResizeInvalid ? activeDrawerSize : toolsWidth}
               bottomOffset={footerHeight}
               topOffset={headerHeight}
@@ -651,18 +665,17 @@ const OldAppLayout = React.forwardRef(
                 /*noop in this mode*/
               }}
               isOpen={true}
-              toggleRefs={toolsRefs}
+              toggleRefs={drawerRefs}
+              hideOpenButton={true}
               type="tools"
               onLoseFocus={loseDrawersFocus}
               activeDrawer={activeDrawer}
-              drawers={{
-                items: drawers,
-                activeDrawerId: activeDrawerId,
-                onChange: changeDetail => {
+              onDrawerChange={newDrawerId => {
+                if (activeDrawerId !== newDrawerId) {
                   focusToolsButtons();
-                  setDrawerLastInteraction({ type: 'close' });
-                  onActiveDrawerChange(changeDetail.activeDrawerId);
-                },
+                  focusDrawersButtons();
+                }
+                onActiveDrawerChange(null);
               }}
               size={!isResizeInvalid ? activeDrawerSize : toolsWidth}
               onResize={changeDetail => onActiveDrawerResize(changeDetail)}
@@ -678,7 +691,7 @@ const OldAppLayout = React.forwardRef(
                 contentClassName={testutilStyles.tools}
                 toggleClassName={testutilStyles['tools-toggle']}
                 closeClassName={testutilStyles['tools-close']}
-                ariaLabels={ariaLabels}
+                ariaLabels={togglesConfig.tools.getLabels(ariaLabels)}
                 width={effectiveToolsWidth}
                 bottomOffset={footerHeight}
                 topOffset={headerHeight}
@@ -688,6 +701,9 @@ const OldAppLayout = React.forwardRef(
                 toggleRefs={toolsRefs}
                 type="tools"
                 onLoseFocus={loseToolsFocus}
+                onDrawerChange={() => {
+                  /*noop in this mode*/
+                }}
               >
                 {tools}
               </Drawer>
@@ -698,21 +714,17 @@ const OldAppLayout = React.forwardRef(
               bottomOffset={footerHeight}
               topOffset={headerHeight}
               isMobile={isMobile}
-              drawers={{
-                items: drawers,
-                activeDrawerId: activeDrawerId,
-                onChange: changeDetail => {
-                  if (activeDrawerId !== changeDetail.activeDrawerId) {
-                    focusToolsButtons();
-                    focusDrawersButtons();
-                    setDrawerLastInteraction({ type: 'open' });
-                  }
-                  onActiveDrawerChange(changeDetail.activeDrawerId);
-                },
-                ariaLabel: drawersProps.ariaLabel,
-                overflowAriaLabel: drawersProps.overflowAriaLabel,
-                overflowWithBadgeAriaLabel: drawersProps.overflowWithBadgeAriaLabel,
+              drawers={drawers}
+              activeDrawerId={activeDrawerId}
+              onDrawerChange={newDrawerId => {
+                if (activeDrawerId !== newDrawerId) {
+                  focusToolsButtons();
+                  focusDrawersButtons();
+                }
+                onActiveDrawerChange(newDrawerId);
               }}
+              ariaLabels={ariaLabels}
+              drawerRefs={drawerRefs}
             />
           )}
         </div>

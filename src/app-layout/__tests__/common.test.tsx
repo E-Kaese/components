@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
 import { act } from 'react-dom/test-utils';
+
 import { AppLayoutWrapper } from '../../../lib/components/test-utils/dom';
 import {
   describeEachAppLayout,
@@ -12,6 +13,7 @@ import {
   singleDrawerOpen,
 } from './utils';
 import AppLayout from '../../../lib/components/app-layout';
+import { BetaDrawersProps } from '../../../lib/components/app-layout/drawer/interfaces';
 
 jest.mock('@cloudscape-design/component-toolkit', () => ({
   ...jest.requireActual('@cloudscape-design/component-toolkit'),
@@ -247,11 +249,12 @@ describeEachAppLayout(size => {
   describe(`Drawers`, () => {
     test(`Should call handler once on open when toggle is clicked`, () => {
       const onChange = jest.fn();
-      const drawersClosed = {
-        drawers: {
-          onChange: onChange,
-          items: singleDrawer.drawers.items,
-        },
+      const drawersClosedInner: BetaDrawersProps = {
+        onChange: onChange,
+        items: singleDrawer.drawers.items,
+      };
+      const drawersClosed: any = {
+        drawers: drawersClosedInner,
       };
       const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawersClosed} />);
 
@@ -262,11 +265,12 @@ describeEachAppLayout(size => {
 
     test(`Should call handler once on open when span inside toggle is clicked`, () => {
       const onChange = jest.fn();
-      const drawersClosed = {
-        drawers: {
-          onChange: onChange,
-          items: singleDrawer.drawers.items,
-        },
+      const drawersClosedInner: BetaDrawersProps = {
+        onChange: onChange,
+        items: singleDrawer.drawers.items,
+      };
+      const drawersClosed: any = {
+        drawers: drawersClosedInner,
       };
       const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawersClosed} />);
 
@@ -278,12 +282,13 @@ describeEachAppLayout(size => {
 
     test(`Should call handler once on close`, () => {
       const onChange = jest.fn();
-      const drawersOpen = {
-        drawers: {
-          onChange: onChange,
-          activeDrawerId: 'security',
-          items: singleDrawer.drawers.items,
-        },
+      const drawersOpenInner: BetaDrawersProps = {
+        onChange: onChange,
+        activeDrawerId: 'security',
+        items: singleDrawer.drawers.items,
+      };
+      const drawersOpen: any = {
+        drawers: drawersOpenInner,
       };
 
       const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawersOpen} />);
@@ -316,11 +321,12 @@ describeEachAppLayout(size => {
     });
 
     test('Close button does not render a label if is not defined', () => {
-      const drawersOpen = {
-        drawers: {
-          activeDrawerId: 'security',
-          items: drawerWithoutLabels.drawers.items,
-        },
+      const drawersOpenInner: BetaDrawersProps = {
+        activeDrawerId: 'security',
+        items: drawerWithoutLabels.drawers.items,
+      };
+      const drawersOpen: any = {
+        drawers: drawersOpenInner,
       };
 
       const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawersOpen} />);

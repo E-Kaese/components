@@ -23,7 +23,7 @@ import drawerStyles from '../../../lib/components/app-layout/drawer/styles.css.j
 import customCssProps from '../../../lib/components/internal/generated/custom-css-properties';
 import { KeyCode } from '../../internal/keycode';
 import { useVisualRefresh } from '../../../lib/components/internal/hooks/use-visual-mode';
-import { InternalDrawerProps } from '../../../lib/components/app-layout/drawer/interfaces';
+import { BetaDrawersProps } from '../../../lib/components/app-layout/drawer/interfaces';
 
 jest.mock('@cloudscape-design/component-toolkit', () => ({
   ...jest.requireActual('@cloudscape-design/component-toolkit'),
@@ -174,35 +174,39 @@ describeEachThemeAppLayout(false, () => {
   });
 
   test('should change size via keyboard events on slider handle', () => {
+    const onDrawerItemResize = jest.fn();
     const onResize = jest.fn();
-    const drawers: Required<InternalDrawerProps> = {
-      drawers: {
-        onResize: ({ detail }) => onResize(detail),
-        activeDrawerId: 'security',
-        items: resizableDrawer.drawers.items,
-      },
+    const drawersInner: BetaDrawersProps = {
+      activeDrawerId: 'security',
+      onResize: (event: any) => onResize(event.detail),
+      items: [
+        {
+          ...resizableDrawer.drawers.items[0],
+          onResize: (event: any) => onDrawerItemResize(event.detail),
+        },
+      ],
     };
+    const drawers: any = { drawers: drawersInner };
     const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawers} />);
     wrapper.findActiveDrawerResizeHandle()!.keydown(KeyCode.left);
-
     expect(onResize).toHaveBeenCalledWith({ size: expect.any(Number), id: 'security' });
+    expect(onDrawerItemResize).toHaveBeenCalledWith({ size: expect.any(Number), id: 'security' });
   });
 
   test('should change size via mouse pointer on slider handle', () => {
-    const onResize = jest.fn();
     const onDrawerItemResize = jest.fn();
-    const drawersOpen: Required<InternalDrawerProps> = {
-      drawers: {
-        onResize: ({ detail }) => onResize(detail),
-        activeDrawerId: 'security',
-        items: [
-          {
-            ...resizableDrawer.drawers.items[0],
-            onResize: event => onDrawerItemResize(event.detail),
-          },
-        ],
-      },
+    const onResize = jest.fn();
+    const drawersOpenInner: BetaDrawersProps = {
+      activeDrawerId: 'security',
+      onResize: (event: any) => onResize(event.detail),
+      items: [
+        {
+          ...resizableDrawer.drawers.items[0],
+          onResize: event => onDrawerItemResize(event.detail),
+        },
+      ],
     };
+    const drawersOpen: any = { drawers: drawersOpenInner };
     const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawersOpen} />);
     wrapper.findActiveDrawerResizeHandle()!.fireEvent(new MouseEvent('pointerdown', { bubbles: true }));
     const resizeEvent = new MouseEvent('pointermove', { bubbles: true });
@@ -241,29 +245,28 @@ describeEachThemeAppLayout(false, () => {
   });
 
   test('should have width equal to the size declaration', () => {
-    const resizableDrawer = {
-      drawers: {
-        ariaLabel: 'Drawers',
-        activeDrawerId: 'security',
-        items: [
-          {
-            ariaLabels: {
-              closeButton: 'Security close button',
-              content: 'Security drawer content',
-              triggerButton: 'Security trigger button',
-              resizeHandle: 'Security resize handle',
-            },
-            resizable: true,
-            defaultSize: 500,
-            content: <span>Security</span>,
-            id: 'security',
-            trigger: {
-              iconName: 'security',
-            },
+    const resizableDrawerInner: BetaDrawersProps = {
+      ariaLabel: 'Drawers',
+      activeDrawerId: 'security',
+      items: [
+        {
+          ariaLabels: {
+            closeButton: 'Security close button',
+            content: 'Security drawer content',
+            triggerButton: 'Security trigger button',
+            resizeHandle: 'Security resize handle',
           },
-        ],
-      },
+          resizable: true,
+          defaultSize: 500,
+          content: <span>Security</span>,
+          id: 'security',
+          trigger: {
+            iconName: 'security',
+          },
+        },
+      ],
     };
+    const resizableDrawer: any = { drawers: resizableDrawerInner };
     const { wrapper } = renderComponent(<AppLayout contentType="form" {...resizableDrawer} />);
 
     wrapper.findDrawersTriggers()![0].click();
