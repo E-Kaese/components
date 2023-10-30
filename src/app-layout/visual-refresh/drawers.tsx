@@ -31,11 +31,12 @@ export default function Drawers() {
     isNavigationOpen,
     navigationHide,
     isMobile,
+    showMainContentOnly,
   } = useAppLayoutInternals();
 
   const isUnfocusable = hasDrawerViewportOverlay && isNavigationOpen && !navigationHide;
 
-  if (!drawers || drawersTriggerCount === 0) {
+  if (!drawers || !showMainContentOnly || drawersTriggerCount === 0) {
     return null;
   }
 

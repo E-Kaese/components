@@ -11,7 +11,8 @@ import CollectionPreferences, { CollectionPreferencesProps } from '~components/c
 import { columnsConfig } from '../table/shared-configs';
 import { generateItems } from '../table/generate-data';
 import Box from '~components/box';
-import Link from '~components/link';
+// import Link from '~components/link';
+import { Button } from '~components';
 
 export default function () {
   const visibleContentOptions: ReadonlyArray<CollectionPreferencesProps.VisibleContentOptionsGroup> = [
@@ -57,6 +58,7 @@ export default function () {
       onNavigationChange={({ detail }) => setNavigationOpen(detail.open)}
       onToolsChange={({ detail }) => setToolsOpen(detail.open)}
       splitPanelOpen={true}
+      showMainContentOnly={true}
       splitPanel={
         <SplitPanel header="Split panel header" i18nStrings={splitPaneli18nStrings}>
           I need to be on top! Even on mobile!
@@ -69,7 +71,7 @@ export default function () {
           stickyHeader={true}
           footer={
             <Box textAlign="center">
-              <Link href="#">View all</Link>
+              <Button onClick={() => setToolsOpen(!toolsOpen)}>View all</Button>
             </Box>
           }
           stickyColumns={preferences.stickyColumns}

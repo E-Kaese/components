@@ -31,10 +31,11 @@ export default function Navigation() {
     navigationHide,
     navigationRefs,
     navigationWidth,
+    showMainContentOnly,
     toolsHide,
   } = useAppLayoutInternals();
 
-  if (navigationHide) {
+  if (navigationHide || !showMainContentOnly) {
     return null;
   }
 
@@ -73,14 +74,16 @@ export default function Navigation() {
               })}
               ref={state === 'exiting' ? transitionEventsRef : undefined}
             >
-              <TriggerButton
-                ariaLabel={ariaLabels?.navigationToggle}
-                ariaExpanded={isNavigationOpen ? undefined : false}
-                iconName="menu"
-                className={testutilStyles['navigation-toggle']}
-                onClick={() => handleNavigationClick(true)}
-                ref={navigationRefs.toggle}
-              />
+              {!showMainContentOnly && (
+                <TriggerButton
+                  ariaLabel={ariaLabels?.navigationToggle}
+                  ariaExpanded={isNavigationOpen ? undefined : false}
+                  iconName="menu"
+                  className={testutilStyles['navigation-toggle']}
+                  onClick={() => handleNavigationClick(true)}
+                  ref={navigationRefs.toggle}
+                />
+              )}
             </nav>
           )}
 

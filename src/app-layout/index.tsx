@@ -111,6 +111,7 @@ const OldAppLayout = React.forwardRef(
       onSplitPanelToggle,
       onNavigationChange,
       onToolsChange,
+      showMainContentOnly,
       ...props
     }: AppLayoutProps,
     ref: React.Ref<AppLayoutProps.Ref>
@@ -492,7 +493,7 @@ const OldAppLayout = React.forwardRef(
         ref={rootRef}
         style={contentHeightStyle}
       >
-        {isMobile && (!toolsHide || !navigationHide || breadcrumbs) && (
+        {isMobile && !showMainContentOnly && (!toolsHide || !navigationHide || breadcrumbs) && (
           <MobileToolbar
             anyPanelOpen={anyPanelOpen}
             toggleRefs={{ navigation: navigationRefs.toggle, tools: toolsRefs.toggle }}
@@ -528,7 +529,7 @@ const OldAppLayout = React.forwardRef(
           </MobileToolbar>
         )}
         <div className={clsx(styles.layout, disableBodyScroll && styles['layout-no-scroll'])}>
-          {!navigationHide && (
+          {!navigationHide && !showMainContentOnly && (
             <Drawer
               contentClassName={testutilStyles.navigation}
               toggleClassName={testutilStyles['navigation-toggle']}

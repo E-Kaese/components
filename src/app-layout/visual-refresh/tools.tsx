@@ -47,6 +47,7 @@ export default function Tools({ children }: ToolsProps) {
     toolsHide,
     toolsRefs,
     toolsWidth,
+    showMainContentOnly,
   } = useAppLayoutInternals();
 
   const hasSplitPanel = !!splitPanel && getSplitPanelStatus(splitPanelDisplayed, splitPanelPosition);
@@ -58,7 +59,7 @@ export default function Tools({ children }: ToolsProps) {
    * If the drawers property is defined the SplitPanel will be mounted and rendered
    * by the Drawers component.
    */
-  if ((toolsHide && !hasSplitPanel) || drawers) {
+  if ((toolsHide && !hasSplitPanel) || !showMainContentOnly || drawers) {
     return null;
   }
 
@@ -130,7 +131,7 @@ export default function Tools({ children }: ToolsProps) {
               ref={state === 'exiting' ? transitionEventsRef : undefined}
               data-testid="side-split-panel-drawer"
             >
-              {!toolsHide && (
+              {!toolsHide && !showMainContentOnly && (
                 <TriggerButton
                   ariaLabel={ariaLabels?.toolsToggle}
                   ariaControls={toolsControlId}

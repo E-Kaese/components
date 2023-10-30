@@ -134,6 +134,11 @@ export interface AppLayoutProps extends BaseComponentProps {
   content?: React.ReactNode;
 
   /**
+   * Show only main content. Useful for
+   */
+  showMainContentOnly?: boolean;
+
+  /**
    * Tools drawer.
    */
   tools?: React.ReactNode;

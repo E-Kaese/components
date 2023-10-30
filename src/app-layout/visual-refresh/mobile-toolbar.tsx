@@ -18,14 +18,20 @@ export default function MobileToolbar() {
     hasDrawerViewportOverlay,
     isMobile,
     isNavigationOpen,
+    showMainContentOnly,
     isToolsOpen,
     navigationHide,
     navigationRefs,
     toolsHide,
     toolsRefs,
   } = useAppLayoutInternals();
+  console.log({ showMainContentOnly });
 
-  if (!isMobile || (navigationHide && !breadcrumbs && toolsHide && (!drawers || drawers.length === 0))) {
+  if (
+    !isMobile ||
+    showMainContentOnly ||
+    (navigationHide && !breadcrumbs && toolsHide && (!drawers || drawers.length === 0))
+  ) {
     return null;
   }
 

@@ -40,6 +40,7 @@ export default function Layout({ children }: LayoutProps) {
     minContentWidth,
     navigationHide,
     notificationsHeight,
+    showMainContentOnly,
     splitPanelPosition,
     stickyNotifications,
     splitPanelDisplayed,
@@ -72,6 +73,7 @@ export default function Layout({ children }: LayoutProps) {
           [styles['has-sticky-background']]: hasStickyBackground,
           [styles['has-sticky-notifications']]: stickyNotifications && hasNotificationsContent,
           [styles['is-overlap-disabled']]: isBackgroundOverlapDisabled,
+          [styles['is-show-main-content-only']]: showMainContentOnly,
         },
         testutilStyles.root
       )}

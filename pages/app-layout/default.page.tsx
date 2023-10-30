@@ -13,6 +13,7 @@ export default function () {
     <ScreenshotArea gutters={false}>
       <AppLayout
         ariaLabels={labels}
+        showMainContentOnly={true}
         breadcrumbs={<Breadcrumbs />}
         navigation={<Navigation />}
         tools={<Tools>{toolsContent.long}</Tools>}

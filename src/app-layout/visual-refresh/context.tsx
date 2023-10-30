@@ -124,6 +124,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
       footerSelector = '#b #h',
       children,
       splitPanel,
+      showMainContentOnly,
       ...props
     }: AppLayoutProviderInternalsProps,
     forwardRef: React.Ref<AppLayoutProps.Ref>
@@ -195,6 +196,8 @@ export const AppLayoutInternalsProvider = React.forwardRef(
         handleNavigationClick(false);
       }
     }, [isMobile, handleNavigationClick]);
+
+    //useEffect(() => {}, [showMainContentOnly]);
 
     /**
      * The useControllable hook will set the default value and manage either
@@ -658,6 +661,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
           splitPanelReportedHeaderHeight,
           splitPanelSize,
           splitPanelToggle,
+          showMainContentOnly,
           setSplitPanelToggle,
           splitPanelRefs,
           toolsControlId,
