@@ -66,8 +66,6 @@ export default function Page() {
 
   const getTreeItem = (item: Instance) => instanceToItem.get(item)!;
 
-  const getItemLevel = (item: Instance) => getTreeItem(item).level;
-
   const getItemExpandable = (item: Instance) => getTreeItem(item).children.length > 0;
 
   const { items, collectionProps } = useCollection(visibleItems, { pagination: { pageSize: 999 }, sorting: {} });
@@ -128,7 +126,7 @@ export default function Page() {
           selectedItems={selectedItems}
           onSelectionChange={({ detail: { selectedItems } }) => setSelectedItems(selectedItems)}
           items={items}
-          getItemLevel={getItemLevel}
+          getItemChildren={() => []}
           getItemExpandable={getItemExpandable}
           onExpandableItemToggle={({ detail: { item } }) =>
             setExpanded(prev => {

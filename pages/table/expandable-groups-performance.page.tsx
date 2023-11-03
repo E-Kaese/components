@@ -99,7 +99,6 @@ export default function Page() {
             selectedItems={selectedItems}
             onSelectionChange={({ detail: { selectedItems } }) => setSelectedItems(selectedItems)}
             items={visibleItems}
-            // getItemLevel={item => item.level}
             getItemExpandable={item => item.children.length > 0}
             getItemChildren={item => item.children}
             getItemExpanded={() => true}
