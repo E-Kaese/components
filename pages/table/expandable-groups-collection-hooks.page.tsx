@@ -7,7 +7,7 @@ import ScreenshotArea from '../utils/screenshot-area';
 import { columnsConfig } from './shared-configs';
 import { Instance, generateItems } from './generate-data';
 import { useCollection } from '@cloudscape-design/collection-hooks';
-import { Box, Checkbox, FormField, Select } from '~components';
+import { Box, Checkbox, FormField, Header, Select, TextFilter } from '~components';
 import AppContext, { AppContextType } from '../app/app-context';
 import pseudoRandom from '../utils/pseudo-random';
 
@@ -43,9 +43,10 @@ export default function Page() {
   const { urlParams, setUrlParams } = useContext(AppContext as DemoContext);
   const [selectedItems, setSelectedItems] = useState<any>([]);
 
-  const { items, collectionProps } = useCollection(allItems, {
+  const { items, collectionProps, filterProps, filteredItemsCount } = useCollection(allItems, {
     pagination: { pageSize: 999 },
     sorting: {},
+    filtering: {},
     treeProps: {
       getId: item => item.id,
       getParentId: item => item.parentId,
@@ -105,6 +106,8 @@ export default function Page() {
         <Table
           {...collectionProps}
           {...urlParams}
+          header={<Header counter={`${allItems.length} (${filteredItemsCount})`}>Test data</Header>}
+          filter={<TextFilter {...filterProps} />}
           columnDefinitions={columnsConfig}
           selectedItems={selectedItems}
           onSelectionChange={({ detail: { selectedItems } }) => setSelectedItems(selectedItems)}
