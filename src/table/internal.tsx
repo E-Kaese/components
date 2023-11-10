@@ -483,8 +483,8 @@ const InternalTable = React.forwardRef(
                               {getItemExpandable?.(item) ? (
                                 <span style={{ marginLeft: '0px' }}>
                                   <InternalButton
-                                    variant="inline-icon"
-                                    iconName={isExpanded ? 'treeview-collapse' : 'treeview-expand'}
+                                    variant="icon"
+                                    iconName={isExpanded ? 'angle-down' : 'angle-right'}
                                     onClick={() => fireNonCancelableEvent(onExpandableItemToggle, { item })}
                                     ariaLabel="row expand"
                                   />
