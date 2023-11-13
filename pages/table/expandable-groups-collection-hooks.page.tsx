@@ -44,7 +44,8 @@ export default function Page() {
   const [selectedItems, setSelectedItems] = useState<any>([]);
 
   const { items, collectionProps, filterProps, filteredItemsCount } = useCollection(allItems, {
-    pagination: { pageSize: 999 },
+    pagination: { pageSize: 15 },
+    groupPagination: { pageSize: () => 5 },
     sorting: {},
     filtering: {},
     treeProps: {

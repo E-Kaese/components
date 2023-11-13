@@ -335,6 +335,16 @@ export interface TableProps<T = any> extends BaseComponentProps {
    * Experimental API
    */
   onExpandableItemToggle?: NonCancelableEventHandler<TableProps.ExpandableItemToggleDetail<T>>;
+
+  /**
+   * Experimental API
+   */
+  getGroupIncomplete?: (group: null | T) => boolean;
+
+  /**
+   * Experimental API
+   */
+  onGroupShowMore?: NonCancelableEventHandler<TableProps.GroupShowMoreDetail<T>>;
 }
 
 export namespace TableProps {
@@ -478,5 +488,9 @@ export namespace TableProps {
 
   export interface ExpandableItemToggleDetail<T> {
     item: T;
+  }
+
+  export interface GroupShowMoreDetail<T> {
+    item: null | T;
   }
 }

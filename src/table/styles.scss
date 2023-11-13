@@ -114,6 +114,23 @@
     /* stylelint-enable plugin/no-unsupported-browser-features */
   }
 }
+.cell-show-more {
+  padding: 0;
+  padding-left: awsui.$space-xl;
+  &-content {
+    box-sizing: border-box;
+    width: 100%;
+    padding-top: awsui.$space-xxs;
+    /* stylelint-disable plugin/no-unsupported-browser-features */
+    @supports (position: sticky) {
+      position: sticky;
+      left: 0;
+      // Offset table paddings to position centered when sticky
+      margin: 0 calc(-2 * #{awsui.$space-table-horizontal});
+    }
+    /* stylelint-enable plugin/no-unsupported-browser-features */
+  }
+}
 
 .empty {
   color: awsui.$color-text-empty;
