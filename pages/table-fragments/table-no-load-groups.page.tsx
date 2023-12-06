@@ -8,15 +8,11 @@ import {
   ContentLayout,
   Header,
   Icon,
-  SpaceBetween,
   StatusIndicator,
   Container,
   IconProps,
+  Tabs,
   AppLayout,
-  FormField,
-  Select,
-  SelectProps,
-  ColumnLayout,
 } from '~components';
 import styles from './styles.scss';
 import {
@@ -42,10 +38,6 @@ function formatAmount(size: number): string {
   return `${(size / M).toFixed(2)}M`;
 }
 
-function plural(count: number, word: string) {
-  return count === 1 ? word : word + 's';
-}
-
 function randomId() {
   function id4() {
     return (((1 + pseudoRandom()) * 0x10000) | 0).toString(16).substring(1);
@@ -64,7 +56,7 @@ interface Transaction {
   external: boolean;
   status: 'pending' | 'processing' | 'completed' | 'declined';
   accountId: string;
-  amount: number;
+  amount: number | undefined;
   date: Date;
 }
 
@@ -75,7 +67,7 @@ interface TransactionRow {
   external: boolean | number;
   status: Transaction['status'] | { pending: number; processing: number; completed: number; declined: number };
   accountId: string | number;
-  amount: number | { average: number; total: number };
+  amount: number | { average: number; total: number | undefined } | undefined;
   date: string;
   level: number;
   group: string;
@@ -101,6 +93,15 @@ const accounts = [
   'Chancellor Design',
   'Master Ally',
   'His Honour Customer',
+  'Mr Cloud Jr',
+  'Mrs Scape Jr',
+  'Dr Foundation Jr',
+  'Prof Color Jr',
+  'Sir Layout Jr',
+  'Herr Muster Jr',
+  'Frau Komponente Jr',
+  'Lord Motion Jr',
+  'Chancellor Design Jr',
 ];
 
 const transactions: readonly Transaction[] = range(0, 1000).map(() => ({
@@ -204,14 +205,10 @@ function useTreeSelection(rows: readonly TransactionRow[]) {
 
   return { selected, selection, toggleAll, toggleRow };
 }
-
 function ExpandableTable({
   collapsedIcon,
   expandedIcon,
-  stripedStyle,
-  indentLevel,
-  selected,
-  selection,
+  shadingLevel,
   tableRef,
   tableRole,
   getColumnDefinitions,
@@ -222,96 +219,71 @@ function ExpandableTable({
   transactionRows,
 }: any) {
   return (
-    <div>
-      <Box float="right">
-        <Button onClick={() => alert(`You deleted ${selected} items! Yay!`)} disabled={selected === 0}>
-          Delete {selected > 0 ? selected : ''} items
-        </Button>
-      </Box>
-      <table
-        ref={tableRef}
-        className={styles['custom-table-table']}
-        {...getTableRoleProps({
-          tableRole,
-          totalItemsCount: transactions.length,
-          totalColumnsCount: getColumnDefinitions(collapsedIcon, expandedIcon).length,
-        })}
-      >
-        <thead>
-          <tr {...getTableHeaderRowRoleProps({ tableRole })}>
+    <table
+      ref={tableRef}
+      className={styles['custom-table-table']}
+      {...getTableRoleProps({
+        tableRole,
+        totalItemsCount: transactions.length,
+        totalColumnsCount: getColumnDefinitions(collapsedIcon, expandedIcon).length,
+      })}
+    >
+      <thead>
+        <tr {...getTableHeaderRowRoleProps({ tableRole })}>
+          {getColumnDefinitions(collapsedIcon, expandedIcon).map((column: any, colIndex: number) => (
+            <th
+              key={column.key}
+              className={styles['custom-table-cell']}
+              {...getTableColHeaderRoleProps({ tableRole, colIndex })}
+            >
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap' }}>
+                {column.key === 'selection' || column.key === 'group' ? (
+                  column.label
+                ) : (
+                  <>
+                    <button
+                      className={styles['custom-table-sorting-header']}
+                      onClick={() => {
+                        if (sortingKey !== column.key) {
+                          setSortingKey(column.key);
+                          setSortingDirection(-1);
+                        } else {
+                          setSortingDirection((prev: any) => (prev === 1 ? -1 : 1));
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {column.label}
+                    </button>
+                    {sortingKey === column.key && sortingDirection === -1 && <Icon name="caret-down-filled" />}
+                    {sortingKey === column.key && sortingDirection === 1 && <Icon name="caret-up-filled" />}
+                  </>
+                )}
+              </div>
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {transactionRows.map((row: any, rowIndex: number) => (
+          <tr key={row.rowId} {...getTableRowRoleProps({ tableRole, rowIndex, firstIndex: 0 })}>
             {getColumnDefinitions(collapsedIcon, expandedIcon).map((column: any, colIndex: number) => (
-              <th
+              <td
                 key={column.key}
                 className={styles['custom-table-cell']}
-                {...getTableColHeaderRoleProps({ tableRole, colIndex })}
+                {...getTableCellRoleProps({ tableRole, colIndex })}
+                style={{
+                  paddingLeft: column.key === 'group' ? `${16 + (row.level - 1) * 24}px` : undefined,
+                  background: row.level <= shadingLevel ? undefined : tokens.colorBackgroundCellShaded,
+                }}
               >
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap' }}>
-                  {column.key === 'selection' || column.key === 'group' ? (
-                    column.label
-                  ) : (
-                    <>
-                      <button
-                        className={styles['custom-table-sorting-header']}
-                        onClick={() => {
-                          if (sortingKey !== column.key) {
-                            setSortingKey(column.key);
-                            setSortingDirection(-1);
-                          } else {
-                            setSortingDirection((prev: any) => (prev === 1 ? -1 : 1));
-                          }
-                        }}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        {column.label}
-                      </button>
-                      {sortingKey === column.key && sortingDirection === -1 && <Icon name="caret-down-filled" />}
-                      {sortingKey === column.key && sortingDirection === 1 && <Icon name="caret-up-filled" />}
-                    </>
-                  )}
-                </div>
-              </th>
+                {column.render(row)}
+              </td>
             ))}
           </tr>
-        </thead>
-        <tbody>
-          {transactionRows.map((row: any, rowIndex: number) => {
-            return (
-              <tr key={row.rowId} {...getTableRowRoleProps({ tableRole, rowIndex, firstIndex: 0 })}>
-                {getColumnDefinitions(collapsedIcon, expandedIcon).map((column: any, colIndex: number) => (
-                  <td
-                    key={column.key}
-                    className={styles['custom-table-cell']}
-                    {...getTableCellRoleProps({ tableRole, colIndex })}
-                    style={{
-                      paddingLeft:
-                        column.key === 'group'
-                          ? row.level === 3
-                            ? `${16 + row.level * indentLevel}px`
-                            : `${16 + (row.level - 1) * indentLevel}px`
-                          : undefined,
-                      background:
-                        selection[row.rowId] === 'on'
-                          ? tokens.colorBackgroundItemSelected
-                          : stripedStyle === 'row' && rowIndex % 2 === 0
-                          ? tokens.colorBackgroundCellShaded
-                          : stripedStyle === 'level' && row.level % 2 === 0
-                          ? tokens.colorBackgroundCellShaded
-                          : undefined,
-                      boxShadow:
-                        selection[row.rowId] === 'on'
-                          ? `inset 0px 1px ${tokens.colorBorderItemSelected}, inset 0px -1px ${tokens.colorBorderItemSelected}`
-                          : undefined,
-                    }}
-                  >
-                    {column.render(row)}
-                  </td>
-                ))}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -348,7 +320,7 @@ export default function Page() {
     }
 
     function aggregateAmount(transactions: Transaction[]) {
-      const total = transactions.reduce((acc, t) => acc + t.amount, 0);
+      const total = transactions.reduce((acc, t) => (t.amount ? acc + t.amount : acc), 0);
       return { average: total / transactions.length, total };
     }
 
@@ -452,15 +424,22 @@ export default function Page() {
           external: remTransactions.filter(t => t.external).length,
           status: aggregateStatus(remTransactions),
           accountId: new Set(remTransactions.map(t => t.accountId)).size,
-          amount: aggregateAmount(remTransactions),
-          date: aggregateDate(remTransactions),
+          amount: undefined,
+          date: '',
           level: 2,
-          group: `Load more ${format(new Date(month), 'MMMM')} transactions`,
+          group: `Load ${
+            transactionsByAmountEntries.length - expandedRows[month] < 10
+              ? transactionsByAmountEntries.length - expandedRows[month]
+              : 10
+          } / ${transactionsByAmountEntries.length - expandedRows[month]} more rows`,
           count: remTransactions.length,
         });
       }
     }
     if (expandedRows.ALL < transactionEntries.length) {
+      const totalEntries = Object.entries(groupBy(sortedItems, t => format(t.date, 'yyyy-MM'))).length;
+      const expandedEntries = totalEntries - expandedRows.ALL;
+
       const remTransactions = transactionEntries
         .map(([, v]) => v)
         .slice(expandedRows.ALL)
@@ -473,10 +452,10 @@ export default function Page() {
         external: remTransactions.filter(t => t.external).length,
         status: aggregateStatus(remTransactions),
         accountId: new Set(remTransactions.map(t => t.accountId)).size,
-        amount: aggregateAmount(remTransactions),
-        date: aggregateDate(remTransactions, 'MMM yyyy'),
+        amount: undefined,
+        date: '',
         level: 1,
-        group: 'Load more monthly transactions',
+        group: `Load ${expandedEntries < 10 ? expandedEntries : 10} / ${expandedEntries} more rows`,
         count: remTransactions.length,
       });
     }
@@ -552,26 +531,17 @@ export default function Page() {
       {
         key: 'accountId',
         label: 'Account',
-        render: (item: TransactionRow) =>
-          typeof item.accountId === 'string'
-            ? item.accountId
-            : `${item.accountId} ${plural(item.accountId, 'account')}`,
+        render: (item: TransactionRow) => (typeof item.accountId === 'string' ? item.accountId : ``),
       },
       {
         key: 'id',
         label: 'Transaction ID',
-        render: (item: TransactionRow) =>
-          typeof item.id === 'string' ? item.id : `${item.id} ${plural(item.id, 'transaction')}`,
+        render: (item: TransactionRow) => (typeof item.id === 'string' ? item.id : ``),
       },
       {
         key: 'external',
         label: 'External',
-        render: (item: TransactionRow) =>
-          typeof item.external === 'boolean'
-            ? item.external
-              ? 'Yes'
-              : 'No'
-            : `${item.external} ${plural(item.external, 'transaction')}`,
+        render: (item: TransactionRow) => (typeof item.external === 'boolean' ? (item.external ? 'Yes' : 'No') : ``),
       },
       {
         key: 'status',
@@ -587,11 +557,7 @@ export default function Page() {
             case 'declined':
               return <StatusIndicator type="error">Declined</StatusIndicator>;
             default:
-              return (
-                <StatusIndicator type={item.status.declined ? 'error' : 'success'}>
-                  {item.status.declined ?? 0} declined
-                </StatusIndicator>
-              );
+              return '';
           }
         },
       },
@@ -601,7 +567,9 @@ export default function Page() {
         render: (item: TransactionRow) =>
           typeof item.amount === 'number'
             ? '$' + item.amount.toFixed(2)
-            : `$${formatAmount(item.amount.total)} / $${item.amount.average.toFixed(0)}`,
+            : item.amount?.total
+            ? `$${formatAmount(item.amount?.total || 0)} / $${item.amount?.average.toFixed(0)}`
+            : '',
       },
       {
         key: 'date',
@@ -611,19 +579,7 @@ export default function Page() {
     ];
   };
 
-  const [icon, setIcon] = useState<SelectProps.Option>({ value: 'tree', label: 'Plus / minus' });
-  const [stripedStyle, setStripedStyle] = useState<SelectProps.Option>({ value: 'row', label: 'By row' });
-  const [indentLevel, setIndentLevel] = useState<SelectProps.Option>({ value: '24', label: 'M' });
-
-  const drawers = {
-    drawers: {
-      items: [],
-    },
-  };
-
   const sharedProps = {
-    selected,
-    selection,
     tableRef,
     tableRole,
     getColumnDefinitions,
@@ -638,7 +594,7 @@ export default function Page() {
     <AppLayout
       maxContentWidth={Number.MAX_VALUE}
       navigationHide={true}
-      {...drawers}
+      toolsHide={true}
       content={
         <ContentLayout
           header={
@@ -652,93 +608,51 @@ export default function Page() {
             </Box>
           }
         >
-          <SpaceBetween size="xl">
-            <Container header={<Header>Settings</Header>}>
-              <ColumnLayout columns={3}>
-                <FormField label="Icon type">
-                  <Select
-                    selectedOption={icon}
-                    onChange={({ detail }) => setIcon(detail.selectedOption)}
-                    options={[
-                      {
-                        value: 'tree',
-                        label: 'Plus / minus',
-                      },
-                      {
-                        value: 'angle',
-                        label: 'Angle brackets',
-                      },
-                      {
-                        value: 'caret',
-                        label: 'Carets',
-                      },
-                    ]}
-                  />
-                </FormField>
-                <FormField label="Stripes style">
-                  <Select
-                    selectedOption={stripedStyle}
-                    onChange={({ detail }) => setStripedStyle(detail.selectedOption)}
-                    options={[
-                      {
-                        value: 'row',
-                        label: 'By row',
-                      },
-                      {
-                        value: 'level',
-                        label: 'By level',
-                      },
-                      {
-                        value: 'none',
-                        label: 'No stripes',
-                      },
-                    ]}
-                  />
-                </FormField>
-                <FormField label="Indent level">
-                  <Select
-                    selectedOption={indentLevel}
-                    onChange={({ detail }) => setIndentLevel(detail.selectedOption)}
-                    options={[
-                      {
-                        value: '16',
-                        label: 'S',
-                      },
-                      {
-                        value: '24',
-                        label: 'M',
-                      },
-                      {
-                        value: '32',
-                        label: 'L',
-                      },
-                    ]}
-                  />
-                </FormField>
-              </ColumnLayout>
-            </Container>
-            <Container>
-              <ExpandableTable
-                {...sharedProps}
-                collapsedIcon={
-                  icon.value === 'tree'
-                    ? 'treeview-expand'
-                    : icon.value === 'angle'
-                    ? 'angle-right'
-                    : 'caret-right-filled'
-                }
-                expandedIcon={
-                  icon.value === 'tree'
-                    ? 'treeview-collapse'
-                    : icon.value === 'angle'
-                    ? 'angle-down'
-                    : 'caret-down-filled'
-                }
-                stripedStyle={stripedStyle.value}
-                indentLevel={indentLevel.value ? parseInt(indentLevel.value) : 24}
-              />
-            </Container>
-          </SpaceBetween>
+          <Container>
+            <Tabs
+              tabs={[
+                {
+                  label: 'Tree view icons',
+                  id: 'first',
+                  content: (
+                    <ExpandableTable
+                      {...sharedProps}
+                      header="Tree view icons"
+                      collapsedIcon="treeview-expand"
+                      expandedIcon="treeview-collapse"
+                      shadingLevel={2}
+                    />
+                  ),
+                },
+                {
+                  label: 'Angle icons',
+                  id: 'second',
+                  content: (
+                    <ExpandableTable
+                      {...sharedProps}
+                      header="Caret icons"
+                      collapsedIcon="angle-right"
+                      expandedIcon="angle-down"
+                      shadingLevel={1}
+                    />
+                  ),
+                },
+                {
+                  label: 'Caret icons',
+                  id: 'third',
+                  content: (
+                    <ExpandableTable
+                      {...sharedProps}
+                      header="Caret icons"
+                      collapsedIcon="caret-right-filled"
+                      expandedIcon="caret-down-filled"
+                      shadingLevel={4}
+                    />
+                  ),
+                },
+              ]}
+            />
+          </Container>
         </ContentLayout>
       }
     />
