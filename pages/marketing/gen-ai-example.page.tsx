@@ -52,7 +52,7 @@ export default function DemoPage() {
           <Breadcrumbs
             ariaLabel="Navigation"
             expandAriaLabel="Show path"
-            items={['Generative AI', 'Technology'].map((text, i) => ({ text, href: `#item-${i}` }))}
+            items={['Machine learning', 'Generative AI', 'Technology'].map((text, i) => ({ text, href: `#item-${i}` }))}
           />
         </div>
         <div className={styles['col-8']}>
@@ -67,7 +67,10 @@ export default function DemoPage() {
           </SpaceBetween>
         </div>
         <div className={styles['col-8']}>
-          <Button variant="primary">Sign up to get updates</Button>
+          <SpaceBetween direction="horizontal" size="s">
+            <Button variant="primary">Get started with generative AI</Button>
+            <Button>Connect with a specialist</Button>
+          </SpaceBetween>
         </div>
       </div>
 

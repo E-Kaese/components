@@ -12,8 +12,9 @@ type ButtonProps = CloudscapeButtonProps & {
 };
 
 export default function Button({ __showIcon = false, ...props }: ButtonProps): ReactElement {
+  const includeShadow = props.variant === 'primary' || props.variant === 'normal';
   return (
-    <span className={clsx(styles[`custom-shadow-${props.variant}`], props.disabled && styles.disabled)}>
+    <span className={clsx(includeShadow && styles['custom-shadow'], props.disabled && styles.disabled)}>
       <CloudscapeButton {...props}>
         <Box color="inherit">
           {props.children}

@@ -4,17 +4,10 @@
 */
 @use '~design-tokens' as awsui;
 
-.custom-shadow-primary {
+.custom-shadow {
   --shadow-hover: 0px 0px 12px 0px #ffc0ad, 0px 0px 16px 0px #f299ff, 0px 0px 20px 0px #b2a8ff;
   --shadow-active: 0px 0px 4px 0px #ffc0ad, 0px 0px 6px 0px #f299ff, 0px 0px 8px 0px #b2a8ff;
-}
-.custom-shadow-normal {
-  --shadow-hover: 0px 0px 12px 0px #3dff9e, 0px 0px 16px 0px #00f5e4, 0px 0px 20px 0px #94afff;
-  --shadow-active: 0px 0px 4px 0px #3dff9e, 0px 0px 6px 0px #00f5e4, 0px 0px 8px 0px #94afff;
-}
 
-.custom-shadow-primary,
-.custom-shadow-normal {
   /* stylelint-disable-next-line @cloudscape-design/no-motion-outside-of-mixin */
   transition: all awsui.$motion-duration-expressive awsui.$motion-easing-responsive;
 
