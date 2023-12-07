@@ -13,10 +13,9 @@ import {
   ContentLayout,
   FormField,
   Header,
-  HelpPanel,
   Select,
   TextFilter,
-  NonCancelableCustomEvent,
+  Drawer,
   PropertyFilter,
   ExpandableSection,
   Box,
@@ -64,7 +63,7 @@ const allItems = [...l1items, ...l2items, ...l3items];
 
 function Settings({ urlParams, setUrlParams }: any) {
   return (
-    <HelpPanel header={<h2>Settings</h2>}>
+    <Drawer header={<h2>Settings</h2>}>
       <SpaceBetween size="xl">
         <ExpandableSection headerText="Table properties" defaultExpanded={true}>
           <SpaceBetween size="l">
@@ -180,14 +179,14 @@ function Settings({ urlParams, setUrlParams }: any) {
           </SpaceBetween>
         </ExpandableSection>
       </SpaceBetween>
-    </HelpPanel>
+    </Drawer>
   );
 }
 
 const getAriaLabels = (title: string, badge: boolean) => {
   return {
     closeButton: `${title} close button`,
-    content: `${title}`,
+    drawerName: `${title}`,
     triggerButton: `${title} trigger button${badge ? ' (Unread notifications)' : ''}`,
     resizeHandle: `${title} resize handle`,
   };
@@ -234,36 +233,25 @@ export default function Page() {
     }
   );
 
-  const drawers = {
-    drawers: {
-      ariaLabel: 'Drawers',
-      overflowAriaLabel: 'Overflow drawers',
-      overflowWithBadgeAriaLabel: 'Overflow drawers (Unread notifications)',
-      activeDrawerId: activeDrawerId,
-      onChange: (event: NonCancelableCustomEvent<string>) => {
-        setActiveDrawerId(event.detail);
-      },
-      items: [
-        {
-          ariaLabels: getAriaLabels('Settings', false),
-          content: <Settings urlParams={urlParams} setUrlParams={setUrlParams} />,
-          id: 'settings',
-          resizable: true,
-          trigger: {
-            iconName: 'settings',
-          },
-        },
-      ],
-    },
-  };
-
   return (
     <ScreenshotArea gutters={false}>
       <AppLayout
         maxContentWidth={Number.MAX_VALUE}
         navigationHide={true}
         toolsHide={true}
-        {...drawers}
+        drawers={[
+          {
+            ariaLabels: getAriaLabels('Settings', false),
+            content: <Settings urlParams={urlParams} setUrlParams={setUrlParams} />,
+            id: 'settings',
+            resizable: true,
+            trigger: {
+              iconName: 'settings',
+            },
+          },
+        ]}
+        onDrawerChange={event => setActiveDrawerId(event.detail.activeDrawerId)}
+        activeDrawerId={activeDrawerId}
         content={
           <ContentLayout header={<Header variant="h1">Table with expandable groups</Header>}>
             <Table
