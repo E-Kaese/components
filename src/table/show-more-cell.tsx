@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import InternalStatusIndicator from '../status-indicator/internal';
 import { supportsStickyPosition } from '../internal/utils/dom';
 import styles from './styles.css.js';
+import cellStyles from './body-cell/styles.css.js';
 import LiveRegion from '../internal/components/live-region';
 import { TableProps } from './interfaces';
 
@@ -18,6 +19,9 @@ interface ShowMoreCellProps {
   empty?: React.ReactNode;
   tableRef: React.RefObject<HTMLTableElement>;
   level?: number;
+  isEvenRow?: boolean;
+  stripedRows?: boolean;
+  stripedLevels?: boolean;
 }
 
 export function ShowMoreCell({
@@ -29,6 +33,9 @@ export function ShowMoreCell({
   empty,
   tableRef,
   level = 1,
+  isEvenRow,
+  stripedRows,
+  stripedLevels,
 }: ShowMoreCellProps) {
   const [tablePaddings, setTablePaddings] = useState(containerWidth);
 
@@ -41,14 +48,22 @@ export function ShowMoreCell({
   }, [variant, tableRef]);
 
   containerWidth = containerWidth + tablePaddings;
+  const isEvenLevel = level && level % 2 === 0;
 
   return (
-    <td colSpan={totalColumnsCount} className={clsx(styles['cell-show-more'])}>
+    <td
+      colSpan={totalColumnsCount}
+      className={clsx(
+        styles['cell-show-more'],
+        !isEvenRow && stripedRows && cellStyles['body-cell-shaded'],
+        isEvenLevel && stripedLevels && cellStyles['body-cell-shaded']
+      )}
+    >
       <div
         className={styles['cell-show-more-content']}
         style={{
           width: (supportsStickyPosition() && containerWidth && Math.floor(containerWidth)) || undefined,
-          paddingLeft: `${24 + 20 * (level - 1)}px`,
+          paddingLeft: `${24 + 20 * level}px`,
         }}
       >
         {loading ? (

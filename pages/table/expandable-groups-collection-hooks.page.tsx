@@ -45,8 +45,8 @@ const iconTypeOptions = [{ value: 'tree' }, { value: 'angle' }, { value: 'caret'
 const filterOptions = [{ value: 'none' }, { value: 'text' }, { value: 'property' }];
 const showMoreStyle = [{ value: 'left' }, { value: 'centered' }];
 
-const l1items = generateItems(20) as (Instance & { parentId: null | string })[];
-const l2items = generateItems(100) as (Instance & { parentId: null | string })[];
+const l1items = generateItems(50) as (Instance & { parentId: null | string })[];
+const l2items = generateItems(200) as (Instance & { parentId: null | string })[];
 const l3items = generateItems(400) as (Instance & { parentId: null | string })[];
 
 for (const l3 of l3items) {
@@ -262,8 +262,20 @@ export default function Page() {
                   counter={`${allItems.length} (${filteredItemsCount})`}
                   actions={
                     <SpaceBetween size="s" direction="horizontal">
-                      <Button onClick={() => actions.setAllExpanded(true)}>Expand all</Button>
-                      <Button onClick={() => actions.setAllExpanded(false)}>Collapse all</Button>
+                      <Button
+                        onClick={() => {
+                          actions.setAllExpanded(true);
+                        }}
+                      >
+                        Expand all
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          actions.setAllExpanded(false);
+                        }}
+                      >
+                        Collapse all
+                      </Button>
                     </SpaceBetween>
                   }
                 >
@@ -315,13 +327,13 @@ const FILTERING_PROPERTIES = [
   },
   {
     propertyLabel: 'DNS name',
-    key: 'dns-name',
+    key: 'dnsName',
     groupValuesLabel: 'DNS name values',
     operators: [':', '!:', '=', '!=', '^'],
   },
   {
     propertyLabel: 'Image ID',
-    key: 'image-id',
+    key: 'imageId',
     groupValuesLabel: 'Image ID values',
     operators: [':', '!:', '=', '!=', '^'],
   },

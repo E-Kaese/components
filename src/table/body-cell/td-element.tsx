@@ -111,11 +111,7 @@ export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElem
         ref={mergedRef}
         {...nativeAttributes}
       >
-        {!level || (level === 1 && colIndex === 0 && !isExpandCell) ? (
-          children
-        ) : (
-          <div style={{ paddingLeft: `${20 * (level - 1)}px` }}>{children}</div>
-        )}
+        {!level || !isExpandCell ? children : <div style={{ paddingLeft: `${20 * (level - 1)}px` }}>{children}</div>}
       </Element>
     );
   }

@@ -305,7 +305,7 @@ const InternalTable = React.forwardRef(
     const hasDynamicHeight = computedVariant === 'full-page';
     const overlapElement = useDynamicOverlap({ disabled: !hasDynamicHeight });
     const toolsHeaderWrapper = useRef<HTMLDivElement>(null);
-    useTableFocusNavigation(selectionType, tableRefObject, visibleColumnDefinitions, allItems?.length);
+    useTableFocusNavigation(selectionType, tableRefObject, visibleColumnDefinitions, items?.length);
     // If is mobile, we take into consideration the AppLayout's mobile bar and we subtract the tools wrapper height so only the table header is sticky
     const toolsHeaderHeight =
       (toolsHeaderWrapper?.current as HTMLDivElement | null)?.getBoundingClientRect().height ?? 0;
@@ -343,7 +343,9 @@ const InternalTable = React.forwardRef(
       }
     };
 
-    const [rowLoading, setRowLoading] = React.useState(false);
+    const [rowLoading, setRowLoading] = React.useState<any>('');
+
+    console.log(rowLoading);
 
     return (
       <LinkDefaultVariantContext.Provider value={{ defaultVariant: 'primary' }}>
@@ -519,6 +521,7 @@ const InternalTable = React.forwardRef(
                                 columnId={selectionColumnId}
                                 colIndex={0}
                                 tableRole={tableRole}
+                                isExpandCell={false}
                               >
                                 <SelectionControl
                                   onFocusDown={moveFocusDown}
@@ -608,6 +611,7 @@ const InternalTable = React.forwardRef(
                                   isVisualRefresh={isVisualRefresh}
                                   tableRole={tableRole}
                                   level={getItemLevel ? getItemLevel(item) : 1}
+                                  isExpandCell={colIndex === 0}
                                 />
                               );
                             })}
@@ -622,15 +626,18 @@ const InternalTable = React.forwardRef(
                                 hasFooter={hasFooter}
                                 loading={loading}
                                 loadingText={loadingText}
+                                stripedRows={stripedRows}
+                                stripedLevels={stripedLevels}
+                                isEvenRow={isEven}
                                 empty={
                                   <InternalButton
                                     variant="inline-link"
-                                    loading={rowLoading}
+                                    loading={rowLoading === groupShowMore.parent}
                                     onClick={() => {
-                                      setRowLoading(true);
+                                      setRowLoading(groupShowMore.parent);
                                       setTimeout(() => {
                                         fireNonCancelableEvent(onGroupShowMore, { item: groupShowMore.parent });
-                                        setRowLoading(false);
+                                        setRowLoading('');
                                       }, 1000);
                                     }}
                                   >
@@ -656,15 +663,18 @@ const InternalTable = React.forwardRef(
                         hasFooter={hasFooter}
                         loading={loading}
                         loadingText={loadingText}
+                        stripedRows={stripedRows}
+                        stripedLevels={stripedLevels}
+                        isEvenRow={false}
                         empty={
                           <InternalButton
                             variant="inline-link"
-                            loading={rowLoading}
+                            loading={rowLoading === `${rootShowMore}`}
                             onClick={() => {
-                              setRowLoading(true);
+                              setRowLoading(`${rootShowMore}`);
                               setTimeout(() => {
                                 fireNonCancelableEvent(onGroupShowMore, { item: null });
-                                setRowLoading(false);
+                                setRowLoading('');
                               }, 1000);
                             }}
                           >
