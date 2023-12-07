@@ -22,6 +22,7 @@ interface ShowMoreCellProps {
   isEvenRow?: boolean;
   stripedRows?: boolean;
   stripedLevels?: boolean;
+  hasSelection?: boolean;
 }
 
 export function ShowMoreCell({
@@ -36,6 +37,7 @@ export function ShowMoreCell({
   isEvenRow,
   stripedRows,
   stripedLevels,
+  hasSelection,
 }: ShowMoreCellProps) {
   const [tablePaddings, setTablePaddings] = useState(containerWidth);
 
@@ -63,7 +65,7 @@ export function ShowMoreCell({
         className={styles['cell-show-more-content']}
         style={{
           width: (supportsStickyPosition() && containerWidth && Math.floor(containerWidth)) || undefined,
-          paddingLeft: `${24 + 20 * level}px`,
+          paddingLeft: hasSelection ? `${64 + 20 * level}px` : `${24 + 20 * level}px`,
         }}
       >
         {loading ? (

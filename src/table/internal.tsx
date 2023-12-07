@@ -521,7 +521,8 @@ const InternalTable = React.forwardRef(
                                 columnId={selectionColumnId}
                                 colIndex={0}
                                 tableRole={tableRole}
-                                isExpandCell={false}
+                                isExpandCell={true}
+                                level={getItemLevel ? getItemLevel(item) : 1}
                               >
                                 <SelectionControl
                                   onFocusDown={moveFocusDown}
@@ -646,6 +647,7 @@ const InternalTable = React.forwardRef(
                                 }
                                 tableRef={tableRefObject}
                                 level={getItemLevel(item)}
+                                hasSelection={selectionType !== undefined}
                               />
                             </tr>
                           ) : null}
