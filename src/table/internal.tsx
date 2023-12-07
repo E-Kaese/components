@@ -42,6 +42,8 @@ import { CollectionLabelContext } from '../internal/context/collection-label-con
 import { useFunnelSubStep } from '../internal/analytics/hooks/use-funnel';
 import { NoDataCell } from './node-data-cell';
 import { usePerformanceMarks } from '../internal/hooks/use-performance-marks';
+import InternalButton from '../button/internal';
+import { ShowMoreCell } from './show-more-cell';
 
 const SELECTION_COLUMN_WIDTH = 54;
 const selectionColumnId = Symbol('selection-column-id');
@@ -94,6 +96,7 @@ const InternalTable = React.forwardRef(
       onRowContextMenu,
       wrapLines,
       stripedRows,
+      stripedLevels,
       contentDensity,
       submitEdit,
       onEditCancel,
@@ -107,6 +110,13 @@ const InternalTable = React.forwardRef(
       stickyColumns,
       columnDisplay,
       __funnelSubStepProps,
+      getItemExpandable,
+      getItemChildren,
+      getItemExpanded,
+      onExpandableItemToggle,
+      getGroupIncomplete,
+      onGroupShowMore,
+      expandIconType,
       ...rest
     }: InternalTableProps<T>,
     ref: React.Ref<TableProps.Ref>
@@ -114,6 +124,33 @@ const InternalTable = React.forwardRef(
     const baseProps = getBaseProps(rest);
     stickyHeader = stickyHeader && supportsStickyPosition();
     const isMobile = useMobile();
+
+    let allItems = items;
+    const itemToLevel = new Map<T, number>();
+    const itemToStatus = new Map<T, { parent: T }>();
+
+    if (getItemChildren) {
+      const visibleItems = new Array<T>();
+
+      const traverse = (item: T, level = 1) => {
+        itemToLevel.set(item, level);
+        visibleItems.push(item);
+        if (!getItemExpanded || getItemExpanded(item)) {
+          const children = getItemChildren(item);
+          children.forEach(child => traverse(child, level + 1));
+
+          if (getGroupIncomplete && getGroupIncomplete(item)) {
+            itemToStatus.set(children[children.length - 1], { parent: item });
+          }
+        }
+      };
+
+      items.forEach(item => traverse(item));
+
+      allItems = visibleItems;
+    }
+
+    const getItemLevel = getItemChildren ? (item: T) => itemToLevel.get(item) ?? 1 : undefined;
 
     const [containerWidth, wrapperMeasureRef] = useContainerQuery<number>(rect => rect.contentBoxWidth);
     const wrapperRefObject = useRef(null);
@@ -155,7 +192,7 @@ const InternalTable = React.forwardRef(
 
     const handleScroll = useScrollSync([wrapperRefObject, scrollbarRef, secondaryWrapperRef]);
 
-    const { moveFocusDown, moveFocusUp, moveFocus } = useSelectionFocusMove(selectionType, items.length);
+    const { moveFocusDown, moveFocusUp, moveFocus } = useSelectionFocusMove(selectionType, allItems.length);
     const { onRowClickHandler, onRowContextMenuHandler } = useRowEvents({ onRowClick, onRowContextMenu });
 
     const visibleColumnDefinitions = getVisibleColumnDefinitions({
@@ -165,7 +202,7 @@ const InternalTable = React.forwardRef(
     });
 
     const { isItemSelected, getSelectAllProps, getItemSelectionProps, updateShiftToggle } = useSelection({
-      items,
+      items: allItems,
       trackBy,
       selectedItems,
       selectionType,
@@ -251,6 +288,7 @@ const InternalTable = React.forwardRef(
       stickyState,
       selectionColumnId,
       tableRole,
+      getItemLevel,
     };
 
     const wrapperRef = useMergeRefs(wrapperRefObject, stickyState.refs.wrapper);
@@ -266,13 +304,46 @@ const InternalTable = React.forwardRef(
 
     const hasDynamicHeight = computedVariant === 'full-page';
     const overlapElement = useDynamicOverlap({ disabled: !hasDynamicHeight });
-    useTableFocusNavigation(selectionType, tableRefObject, visibleColumnDefinitions, items?.length);
     const toolsHeaderWrapper = useRef<HTMLDivElement>(null);
+    useTableFocusNavigation(selectionType, tableRefObject, visibleColumnDefinitions, allItems?.length);
     // If is mobile, we take into consideration the AppLayout's mobile bar and we subtract the tools wrapper height so only the table header is sticky
     const toolsHeaderHeight =
       (toolsHeaderWrapper?.current as HTMLDivElement | null)?.getBoundingClientRect().height ?? 0;
 
-    const totalColumnsCount = selectionType ? visibleColumnDefinitions.length + 1 : visibleColumnDefinitions.length;
+    let totalColumnsCount = selectionType ? visibleColumnDefinitions.length + 1 : visibleColumnDefinitions.length;
+    totalColumnsCount = getItemLevel ? totalColumnsCount + 1 : totalColumnsCount;
+
+    const rootShowMore = getGroupIncomplete ? getGroupIncomplete(null) : false;
+
+    const getCollapsedIconName = () => {
+      switch (expandIconType) {
+        case 'tree':
+          return 'treeview-expand';
+        case 'angle':
+          return 'angle-right';
+        case 'caret':
+          return 'caret-right-filled';
+
+        default:
+          return 'treeview-expand';
+      }
+    };
+
+    const getExpandedIconName = () => {
+      switch (expandIconType) {
+        case 'tree':
+          return 'treeview-collapse';
+        case 'angle':
+          return 'angle-down';
+        case 'caret':
+          return 'caret-down-filled';
+
+        default:
+          return 'treeview-collapse';
+      }
+    };
+
+    const [rowLoading, setRowLoading] = React.useState(false);
 
     return (
       <LinkDefaultVariantContext.Provider value={{ defaultVariant: 'primary' }}>
@@ -382,7 +453,7 @@ const InternalTable = React.forwardRef(
                   {...theadProps}
                 />
                 <tbody>
-                  {loading || items.length === 0 ? (
+                  {loading || allItems.length === 0 ? (
                     <tr>
                       <NoDataCell
                         variant={variant}
@@ -396,106 +467,214 @@ const InternalTable = React.forwardRef(
                       />
                     </tr>
                   ) : (
-                    items.map((item, rowIndex) => {
+                    allItems.map((item, rowIndex) => {
                       const firstVisible = rowIndex === 0;
-                      const lastVisible = rowIndex === items.length - 1;
+                      const lastVisible = rowIndex === allItems.length - 1;
                       const isEven = rowIndex % 2 === 0;
                       const isSelected = !!selectionType && isItemSelected(item);
-                      const isPrevSelected = !!selectionType && !firstVisible && isItemSelected(items[rowIndex - 1]);
-                      const isNextSelected = !!selectionType && !lastVisible && isItemSelected(items[rowIndex + 1]);
+                      const isPrevSelected = !!selectionType && !firstVisible && isItemSelected(allItems[rowIndex - 1]);
+                      const isNextSelected = !!selectionType && !lastVisible && isItemSelected(allItems[rowIndex + 1]);
+                      const isExpanded = getItemExpanded
+                        ? getItemExpanded(item)
+                        : getItemLevel &&
+                          allItems[rowIndex + 1] &&
+                          getItemLevel(item) < getItemLevel(allItems[rowIndex + 1]);
+                      const groupShowMore = itemToStatus.get(item);
                       return (
-                        <tr
-                          key={getItemKey(trackBy, item, rowIndex)}
-                          className={clsx(styles.row, isSelected && styles['row-selected'])}
-                          onFocus={({ currentTarget }) => {
-                            // When an element inside table row receives focus we want to adjust the scroll.
-                            // However, that behaviour is unwanted when the focus is received as result of a click
-                            // as it causes the click to never reach the target element.
-                            if (!currentTarget.contains(getMouseDownTarget())) {
-                              stickyHeaderRef.current?.scrollToRow(currentTarget);
+                        <>
+                          <tr
+                            key={getItemKey(trackBy, item, rowIndex)}
+                            className={clsx(styles.row, isSelected && styles['row-selected'])}
+                            onFocus={({ currentTarget }) => {
+                              // When an element inside table row receives focus we want to adjust the scroll.
+                              // However, that behaviour is unwanted when the focus is received as result of a click
+                              // as it causes the click to never reach the target element.
+                              if (!currentTarget.contains(getMouseDownTarget())) {
+                                stickyHeaderRef.current?.scrollToRow(currentTarget);
+                              }
+                            }}
+                            {...focusMarkers.item}
+                            onClick={onRowClickHandler && onRowClickHandler.bind(null, rowIndex, item)}
+                            onContextMenu={
+                              onRowContextMenuHandler && onRowContextMenuHandler.bind(null, rowIndex, item)
                             }
-                          }}
-                          {...focusMarkers.item}
-                          onClick={onRowClickHandler && onRowClickHandler.bind(null, rowIndex, item)}
-                          onContextMenu={onRowContextMenuHandler && onRowContextMenuHandler.bind(null, rowIndex, item)}
-                          {...getTableRowRoleProps({ tableRole, firstIndex, rowIndex })}
-                        >
-                          {selectionType !== undefined && (
-                            <TableTdElement
-                              className={clsx(styles['selection-control'])}
-                              isVisualRefresh={isVisualRefresh}
-                              isFirstRow={firstVisible}
-                              isLastRow={lastVisible}
-                              isSelected={isSelected}
-                              isNextSelected={isNextSelected}
-                              isPrevSelected={isPrevSelected}
-                              wrapLines={false}
-                              isEvenRow={isEven}
-                              stripedRows={stripedRows}
-                              hasSelection={hasSelection}
-                              hasFooter={hasFooter}
-                              stickyState={stickyState}
-                              columnId={selectionColumnId}
-                              colIndex={0}
-                              tableRole={tableRole}
-                            >
-                              <SelectionControl
-                                onFocusDown={moveFocusDown}
-                                onFocusUp={moveFocusUp}
-                                onShiftToggle={updateShiftToggle}
-                                {...getItemSelectionProps(item)}
-                              />
-                            </TableTdElement>
-                          )}
-                          {visibleColumnDefinitions.map((column, colIndex) => {
-                            const isEditing = cellEditing.checkEditing({ rowIndex, colIndex });
-                            const successfulEdit = cellEditing.checkLastSuccessfulEdit({ rowIndex, colIndex });
-                            const isEditable = !!column.editConfig && !cellEditing.isLoading;
-                            return (
-                              <TableBodyCell
-                                key={getColumnKey(column, colIndex)}
-                                style={
-                                  resizableColumns
-                                    ? {}
-                                    : {
-                                        width: column.width,
-                                        minWidth: column.minWidth,
-                                        maxWidth: column.maxWidth,
-                                      }
-                                }
-                                ariaLabels={ariaLabels}
-                                column={column}
-                                item={item}
-                                wrapLines={wrapLines}
-                                isEditable={isEditable}
-                                isEditing={isEditing}
-                                isRowHeader={column.isRowHeader}
+                            {...getTableRowRoleProps({ tableRole, firstIndex, rowIndex })}
+                          >
+                            {selectionType !== undefined && (
+                              <TableTdElement
+                                className={clsx(styles['selection-control'])}
+                                isVisualRefresh={isVisualRefresh}
                                 isFirstRow={firstVisible}
                                 isLastRow={lastVisible}
                                 isSelected={isSelected}
                                 isNextSelected={isNextSelected}
                                 isPrevSelected={isPrevSelected}
-                                successfulEdit={successfulEdit}
-                                onEditStart={() => cellEditing.startEdit({ rowIndex, colIndex })}
-                                onEditEnd={editCancelled =>
-                                  cellEditing.completeEdit({ rowIndex, colIndex }, editCancelled)
-                                }
-                                submitEdit={cellEditing.submitEdit}
-                                hasFooter={hasFooter}
-                                stripedRows={stripedRows}
+                                wrapLines={false}
                                 isEvenRow={isEven}
-                                columnId={column.id ?? colIndex}
-                                colIndex={selectionType !== undefined ? colIndex + 1 : colIndex}
+                                stripedRows={stripedRows}
+                                stripedLevels={stripedLevels}
+                                hasSelection={hasSelection}
+                                hasFooter={hasFooter}
                                 stickyState={stickyState}
-                                isVisualRefresh={isVisualRefresh}
+                                columnId={selectionColumnId}
+                                colIndex={0}
                                 tableRole={tableRole}
+                              >
+                                <SelectionControl
+                                  onFocusDown={moveFocusDown}
+                                  onFocusUp={moveFocusUp}
+                                  onShiftToggle={updateShiftToggle}
+                                  {...getItemSelectionProps(item)}
+                                />
+                              </TableTdElement>
+                            )}
+
+                            {getItemLevel && (
+                              <TableTdElement
+                                className={clsx(styles['expand-cell'])}
+                                isVisualRefresh={isVisualRefresh}
+                                isFirstRow={firstVisible}
+                                isLastRow={lastVisible}
+                                isSelected={isSelected}
+                                isNextSelected={isNextSelected}
+                                isPrevSelected={isPrevSelected}
+                                wrapLines={true}
+                                isEvenRow={isEven}
+                                stripedRows={stripedRows}
+                                stripedLevels={stripedLevels}
+                                hasSelection={hasSelection}
+                                hasFooter={hasFooter}
+                                stickyState={stickyState}
+                                columnId="expand-column-id"
+                                colIndex={-1}
+                                tableRole={tableRole}
+                                level={getItemLevel(item)}
+                                isExpandCell={true}
+                              >
+                                {getItemExpandable?.(item) ? (
+                                  <span style={{ marginLeft: '0px' }}>
+                                    <InternalButton
+                                      variant="icon"
+                                      iconName={isExpanded ? getExpandedIconName() : getCollapsedIconName()}
+                                      onClick={() => fireNonCancelableEvent(onExpandableItemToggle, { item })}
+                                      ariaLabel="row expand"
+                                    />
+                                  </span>
+                                ) : null}
+                              </TableTdElement>
+                            )}
+
+                            {visibleColumnDefinitions.map((column, colIndex) => {
+                              const isEditing = cellEditing.checkEditing({ rowIndex, colIndex });
+                              const successfulEdit = cellEditing.checkLastSuccessfulEdit({ rowIndex, colIndex });
+                              const isEditable = !!column.editConfig && !cellEditing.isLoading;
+                              return (
+                                <TableBodyCell
+                                  key={getColumnKey(column, colIndex)}
+                                  style={
+                                    resizableColumns
+                                      ? {}
+                                      : {
+                                          width: column.width,
+                                          minWidth: column.minWidth,
+                                          maxWidth: column.maxWidth,
+                                        }
+                                  }
+                                  ariaLabels={ariaLabels}
+                                  column={column}
+                                  item={item}
+                                  wrapLines={wrapLines}
+                                  isEditable={isEditable}
+                                  isEditing={isEditing}
+                                  isRowHeader={column.isRowHeader}
+                                  isFirstRow={firstVisible}
+                                  isLastRow={lastVisible}
+                                  isSelected={isSelected}
+                                  isNextSelected={isNextSelected}
+                                  isPrevSelected={isPrevSelected}
+                                  successfulEdit={successfulEdit}
+                                  onEditStart={() => cellEditing.startEdit({ rowIndex, colIndex })}
+                                  onEditEnd={editCancelled =>
+                                    cellEditing.completeEdit({ rowIndex, colIndex }, editCancelled)
+                                  }
+                                  submitEdit={cellEditing.submitEdit}
+                                  hasFooter={hasFooter}
+                                  stripedRows={stripedRows}
+                                  stripedLevels={stripedLevels}
+                                  isEvenRow={isEven}
+                                  columnId={column.id ?? colIndex}
+                                  colIndex={selectionType !== undefined ? colIndex + 1 : colIndex}
+                                  stickyState={stickyState}
+                                  isVisualRefresh={isVisualRefresh}
+                                  tableRole={tableRole}
+                                  level={getItemLevel ? getItemLevel(item) : 1}
+                                />
+                              );
+                            })}
+                          </tr>
+
+                          {groupShowMore && getItemLevel ? (
+                            <tr key={getItemKey(trackBy, item, rowIndex) + '-loader'}>
+                              <ShowMoreCell
+                                variant={variant}
+                                containerWidth={containerWidth ?? 0}
+                                totalColumnsCount={totalColumnsCount}
+                                hasFooter={hasFooter}
+                                loading={loading}
+                                loadingText={loadingText}
+                                empty={
+                                  <InternalButton
+                                    variant="inline-link"
+                                    loading={rowLoading}
+                                    onClick={() => {
+                                      setRowLoading(true);
+                                      setTimeout(() => {
+                                        fireNonCancelableEvent(onGroupShowMore, { item: groupShowMore.parent });
+                                        setRowLoading(false);
+                                      }, 1000);
+                                    }}
+                                  >
+                                    Show more
+                                  </InternalButton>
+                                }
+                                tableRef={tableRefObject}
+                                level={getItemLevel(item)}
                               />
-                            );
-                          })}
-                        </tr>
+                            </tr>
+                          ) : null}
+                        </>
                       );
                     })
                   )}
+
+                  {rootShowMore ? (
+                    <tr key="root-loader">
+                      <ShowMoreCell
+                        variant={variant}
+                        containerWidth={containerWidth ?? 0}
+                        totalColumnsCount={totalColumnsCount}
+                        hasFooter={hasFooter}
+                        loading={loading}
+                        loadingText={loadingText}
+                        empty={
+                          <InternalButton
+                            variant="inline-link"
+                            loading={rowLoading}
+                            onClick={() => {
+                              setRowLoading(true);
+                              setTimeout(() => {
+                                fireNonCancelableEvent(onGroupShowMore, { item: null });
+                                setRowLoading(false);
+                              }, 1000);
+                            }}
+                          >
+                            Show more
+                          </InternalButton>
+                        }
+                        tableRef={tableRefObject}
+                      />
+                    </tr>
+                  ) : null}
                 </tbody>
               </table>
               {resizableColumns && <ResizeTracker />}

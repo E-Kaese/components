@@ -144,6 +144,15 @@ export interface TableProps<T = any> extends BaseComponentProps {
    * Specifies if table rows alternate being shaded and unshaded. If set to `true`, every other row will be shaded.
    */
   stripedRows?: boolean;
+  /**
+   * Specifies if table rows alternate being shaded and unshaded. If set to `true`, every other row will be shaded.
+   */
+  stripedLevels?: boolean;
+
+  /**
+   * Expand icon type
+   */
+  expandIconType?: 'tree' | 'angle' | 'caret';
 
   /**
    * Toggles the content density of the table. Defaults to `'comfortable'`.
@@ -318,6 +327,36 @@ export interface TableProps<T = any> extends BaseComponentProps {
    * validation states, or show warning for unsaved changes.
    */
   onEditCancel?: CancelableEventHandler;
+
+  /**
+   * Experimental API
+   */
+  getItemChildren?: (item: T) => readonly T[];
+
+  /**
+   * Experimental API
+   */
+  getItemExpandable?: (item: T) => boolean;
+
+  /**
+   * Experimental API
+   */
+  getItemExpanded?: (item: T) => boolean;
+
+  /**
+   * Experimental API
+   */
+  onExpandableItemToggle?: NonCancelableEventHandler<TableProps.ExpandableItemToggleDetail<T>>;
+
+  /**
+   * Experimental API
+   */
+  getGroupIncomplete?: (group: null | T) => boolean;
+
+  /**
+   * Experimental API
+   */
+  onGroupShowMore?: NonCancelableEventHandler<TableProps.GroupShowMoreDetail<T>>;
 }
 
 export namespace TableProps {
@@ -458,5 +497,13 @@ export namespace TableProps {
   export interface ColumnDisplayProperties {
     id: string;
     visible: boolean;
+  }
+
+  export interface ExpandableItemToggleDetail<T> {
+    item: T;
+  }
+
+  export interface GroupShowMoreDetail<T> {
+    item: null | T;
   }
 }

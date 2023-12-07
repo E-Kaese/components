@@ -28,6 +28,7 @@ export interface TableTdElementProps {
   children?: React.ReactNode;
   isEvenRow?: boolean;
   stripedRows?: boolean;
+  stripedLevels?: boolean;
   hasSelection?: boolean;
   hasFooter?: boolean;
   columnId: PropertyKey;
@@ -35,6 +36,8 @@ export interface TableTdElementProps {
   stickyState: StickyColumnsModel;
   isVisualRefresh?: boolean;
   tableRole: TableRole;
+  level?: number;
+  isExpandCell?: boolean;
 }
 
 export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElementProps>(
@@ -56,6 +59,7 @@ export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElem
       onMouseLeave,
       isEvenRow,
       stripedRows,
+      stripedLevels,
       isVisualRefresh,
       hasSelection,
       hasFooter,
@@ -63,6 +67,8 @@ export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElem
       colIndex,
       stickyState,
       tableRole,
+      level,
+      isExpandCell,
     },
     ref
   ) => {
@@ -77,6 +83,7 @@ export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElem
     });
 
     const mergedRef = useMergeRefs(stickyStyles.ref, ref);
+    const isEvenLevel = level && level % 2 === 0;
 
     return (
       <Element
@@ -91,6 +98,7 @@ export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElem
           isNextSelected && styles['body-cell-next-selected'],
           isPrevSelected && styles['body-cell-prev-selected'],
           !isEvenRow && stripedRows && styles['body-cell-shaded'],
+          isEvenLevel && stripedLevels && styles['body-cell-shaded'],
           stripedRows && styles['has-striped-rows'],
           isVisualRefresh && styles['is-visual-refresh'],
           hasSelection && styles['has-selection'],
@@ -103,7 +111,11 @@ export const TableTdElement = React.forwardRef<HTMLTableCellElement, TableTdElem
         ref={mergedRef}
         {...nativeAttributes}
       >
-        {children}
+        {!level || (level === 1 && colIndex === 0 && !isExpandCell) ? (
+          children
+        ) : (
+          <div style={{ paddingLeft: `${20 * (level - 1)}px` }}>{children}</div>
+        )}
       </Element>
     );
   }

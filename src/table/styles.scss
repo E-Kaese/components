@@ -114,6 +114,23 @@
     /* stylelint-enable plugin/no-unsupported-browser-features */
   }
 }
+.cell-show-more {
+  padding: awsui.$space-scaled-xs awsui.$space-scaled-l
+    calc(awsui.$space-scaled-xs + (awsui.$border-item-width - awsui.$border-divider-list-width));
+  &-content {
+    box-sizing: border-box;
+    width: 100%;
+    padding-top: awsui.$space-xxs;
+    /* stylelint-disable plugin/no-unsupported-browser-features */
+    @supports (position: sticky) {
+      position: sticky;
+      left: 0;
+      // Offset table paddings to position centered when sticky
+      margin: 0 calc(-2 * #{awsui.$space-table-horizontal});
+    }
+    /* stylelint-enable plugin/no-unsupported-browser-features */
+  }
+}
 
 .empty {
   color: awsui.$color-text-empty;
@@ -139,6 +156,13 @@ filter search icon.
     padding: awsui.$space-scaled-xs awsui.$space-scaled-l;
     border-left: awsui.$border-item-width solid transparent;
   }
+}
+
+.expand-cell {
+  max-width: 10px;
+  min-width: 10px;
+  width: 10px;
+  padding: 0px !important;
 }
 
 /*
@@ -223,3 +247,9 @@ the default white background of the container component.
 .row-selected {
   /* used in test-utils */
 }
+
+/* stylelint-disable */
+body[data-related-table-test-show-more='centered'] .cell-show-more-content {
+  text-align: center;
+}
+/* stylelint-enable */
