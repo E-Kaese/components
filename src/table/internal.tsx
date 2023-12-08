@@ -127,7 +127,7 @@ const InternalTable = React.forwardRef(
 
     let allItems = items;
     const itemToLevel = new Map<T, number>();
-    const indexToStatus = new Map<number, { item: T; status: 'empty' | 'has-more' | 'has-no-more' }>();
+    const indexToStatus = new Map<number, { item: T; status: 'empty' | 'has-more' | 'has-no-more' }[]>();
 
     if (getItemChildren) {
       const visibleItems = new Array<T>();
@@ -157,7 +157,9 @@ const InternalTable = React.forwardRef(
           }
           insertionIndex--;
 
-          indexToStatus.set(insertionIndex, { item, status });
+          const current = indexToStatus.get(insertionIndex) ?? [];
+          current.unshift({ item, status });
+          indexToStatus.set(insertionIndex, current);
         }
       }
 
@@ -493,7 +495,7 @@ const InternalTable = React.forwardRef(
                         : getItemLevel &&
                           allItems[rowIndex + 1] &&
                           getItemLevel(item) < getItemLevel(allItems[rowIndex + 1]);
-                      const groupShowMore = indexToStatus.get(rowIndex);
+                      const groupShowMore = indexToStatus.get(rowIndex) ?? [];
                       return (
                         <>
                           <tr
@@ -630,60 +632,68 @@ const InternalTable = React.forwardRef(
                             })}
                           </tr>
 
-                          {groupShowMore?.status === 'has-more' && getItemLevel ? (
-                            <tr key={getItemKey(trackBy, item, rowIndex) + '-loader'}>
-                              <ShowMoreCell
-                                variant={variant}
-                                containerWidth={containerWidth ?? 0}
-                                totalColumnsCount={totalColumnsCount}
-                                hasFooter={hasFooter}
-                                loading={loading}
-                                loadingText={loadingText}
-                                stripedRows={stripedRows}
-                                stripedLevels={stripedLevels}
-                                isEvenRow={isEven}
-                                empty={
-                                  <InternalButton
-                                    variant="inline-link"
-                                    loading={rowLoading === groupShowMore.item}
-                                    onClick={() => {
-                                      setRowLoading(groupShowMore.item);
-                                      setTimeout(() => {
-                                        fireNonCancelableEvent(onGroupShowMore, { item: groupShowMore.item });
-                                        setRowLoading('');
-                                      }, 1000);
-                                    }}
-                                  >
-                                    Show more
-                                  </InternalButton>
-                                }
-                                tableRef={tableRefObject}
-                                level={getItemLevel(item)}
-                                hasSelection={selectionType !== undefined}
-                              />
-                            </tr>
-                          ) : null}
+                          {getItemLevel &&
+                            groupShowMore.map(({ item, status }) => {
+                              if (status === 'has-more') {
+                                return (
+                                  <tr key={getItemKey(trackBy, item, rowIndex) + '-loader'}>
+                                    <ShowMoreCell
+                                      variant={variant}
+                                      containerWidth={containerWidth ?? 0}
+                                      totalColumnsCount={totalColumnsCount}
+                                      hasFooter={hasFooter}
+                                      loading={loading}
+                                      loadingText={loadingText}
+                                      stripedRows={stripedRows}
+                                      stripedLevels={stripedLevels}
+                                      isEvenRow={isEven}
+                                      empty={
+                                        <InternalButton
+                                          variant="inline-link"
+                                          loading={rowLoading === item}
+                                          onClick={() => {
+                                            setRowLoading(item);
+                                            setTimeout(() => {
+                                              fireNonCancelableEvent(onGroupShowMore, { item });
+                                              setRowLoading('');
+                                            }, 1000);
+                                          }}
+                                        >
+                                          Show more
+                                        </InternalButton>
+                                      }
+                                      tableRef={tableRefObject}
+                                      level={getItemLevel(item)}
+                                      hasSelection={selectionType !== undefined}
+                                    />
+                                  </tr>
+                                );
+                              }
 
-                          {(groupShowMore?.status === 'empty' || groupShowMore?.status === 'has-no-more') &&
-                          getItemLevel ? (
-                            <tr key={getItemKey(trackBy, item, rowIndex) + '-empty'}>
-                              <ShowMoreCell
-                                variant={variant}
-                                containerWidth={containerWidth ?? 0}
-                                totalColumnsCount={totalColumnsCount}
-                                hasFooter={hasFooter}
-                                loading={loading}
-                                loadingText={loadingText}
-                                stripedRows={stripedRows}
-                                stripedLevels={stripedLevels}
-                                isEvenRow={isEven}
-                                empty="No more data to load"
-                                tableRef={tableRefObject}
-                                level={getItemLevel(item)}
-                                hasSelection={selectionType !== undefined}
-                              />
-                            </tr>
-                          ) : null}
+                              if (status === 'empty' || status === 'has-no-more') {
+                                return (
+                                  <tr key={getItemKey(trackBy, item, rowIndex) + '-empty'}>
+                                    <ShowMoreCell
+                                      variant={variant}
+                                      containerWidth={containerWidth ?? 0}
+                                      totalColumnsCount={totalColumnsCount}
+                                      hasFooter={hasFooter}
+                                      loading={loading}
+                                      loadingText={loadingText}
+                                      stripedRows={stripedRows}
+                                      stripedLevels={stripedLevels}
+                                      isEvenRow={isEven}
+                                      empty={status === 'empty' ? 'Group is empty' : 'No more data to load'}
+                                      tableRef={tableRefObject}
+                                      level={getItemLevel(item)}
+                                      hasSelection={selectionType !== undefined}
+                                    />
+                                  </tr>
+                                );
+                              }
+
+                              return null;
+                            })}
                         </>
                       );
                     })
@@ -721,7 +731,7 @@ const InternalTable = React.forwardRef(
                     </tr>
                   ) : null}
 
-                  {rootStatus === 'empty' || rootStatus === 'has-no-more' ? (
+                  {rootStatus === 'has-no-more' ? (
                     <tr key="root-loader">
                       <ShowMoreCell
                         variant={variant}

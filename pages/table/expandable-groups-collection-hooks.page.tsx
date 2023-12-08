@@ -20,9 +20,11 @@ import {
   ExpandableSection,
   Box,
   Button,
+  Link,
 } from '~components';
 import AppContext, { AppContextType } from '../app/app-context';
 import pseudoRandom from '../utils/pseudo-random';
+import { cloneDeep } from 'lodash';
 
 type DemoContext = React.Context<
   AppContextType<{
@@ -233,6 +235,16 @@ export default function Page() {
     }
   );
 
+  const columnDefinitions = cloneDeep(columnsConfig);
+  columnDefinitions[0].cell = (item: Instance) => (
+    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+      <Link href={`#${item.id}`}>{item.id}</Link>
+      <Box color="text-body-secondary" fontSize="body-s">
+        ({collectionProps.getItemChildren?.(item as any).length ?? 0})
+      </Box>
+    </div>
+  );
+
   return (
     <ScreenshotArea gutters={false}>
       <AppLayout
@@ -257,6 +269,9 @@ export default function Page() {
             <Table
               {...collectionProps}
               {...urlParams}
+              // Override getItemExpandable from collection hooks to ensure l1 and l2 items are always expandable
+              // no matter if they have children.
+              getItemExpandable={item => !l3items.includes(item)}
               header={
                 <Header
                   counter={`${allItems.length} (${filteredItemsCount})`}
@@ -297,7 +312,7 @@ export default function Page() {
                   <TextFilter {...filterProps} />
                 ) : undefined
               }
-              columnDefinitions={columnsConfig}
+              columnDefinitions={columnDefinitions}
               selectedItems={selectedItems}
               onSelectionChange={({ detail: { selectedItems } }) => setSelectedItems(selectedItems)}
               items={items}
