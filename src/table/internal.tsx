@@ -117,6 +117,7 @@ const InternalTable = React.forwardRef(
       getGroupStatus,
       onGroupShowMore,
       expandIconType,
+      hasShowMoreEmptyState,
       ...rest
     }: InternalTableProps<T>,
     ref: React.Ref<TableProps.Ref>
@@ -670,7 +671,7 @@ const InternalTable = React.forwardRef(
                                 );
                               }
 
-                              if (status === 'empty' || status === 'has-no-more') {
+                              if (status === 'has-no-more' && hasShowMoreEmptyState) {
                                 return (
                                   <tr key={getItemKey(trackBy, item, rowIndex) + '-empty'}>
                                     <ShowMoreCell
@@ -683,7 +684,7 @@ const InternalTable = React.forwardRef(
                                       stripedRows={stripedRows}
                                       stripedLevels={stripedLevels}
                                       isEvenRow={isEven}
-                                      empty={status === 'empty' ? 'Group is empty' : 'No more data to load'}
+                                      empty={'No more data to load'}
                                       tableRef={tableRefObject}
                                       level={getItemLevel(item)}
                                       hasSelection={selectionType !== undefined}
@@ -731,7 +732,7 @@ const InternalTable = React.forwardRef(
                     </tr>
                   ) : null}
 
-                  {rootStatus === 'has-no-more' ? (
+                  {rootStatus === 'has-no-more' && hasShowMoreEmptyState ? (
                     <tr key="root-loader">
                       <ShowMoreCell
                         variant={variant}

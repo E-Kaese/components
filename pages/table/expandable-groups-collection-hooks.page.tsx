@@ -21,6 +21,7 @@ import {
   Box,
   Button,
   Link,
+  ButtonDropdown,
 } from '~components';
 import AppContext, { AppContextType } from '../app/app-context';
 import pseudoRandom from '../utils/pseudo-random';
@@ -33,6 +34,7 @@ type DemoContext = React.Context<
     stickyHeader: boolean;
     sortingDisabled: boolean;
     keepAllChildrenWhenParentMatched: boolean;
+    hasShowMoreEmptyState: boolean;
     selectionType: undefined | 'single' | 'multi';
     stripedStyle: undefined | 'row' | 'level';
     iconType: 'tree' | 'angle' | 'caret';
@@ -132,6 +134,12 @@ function Settings({ urlParams, setUrlParams }: any) {
               >
                 Keep all children when parent matches
               </Checkbox>
+              <Checkbox
+                checked={urlParams.hasShowMoreEmptyState}
+                onChange={event => setUrlParams({ hasShowMoreEmptyState: event.detail.checked })}
+              >
+                Show empty state when no more data to load
+              </Checkbox>
             </FormField>
           </SpaceBetween>
         </ExpandableSection>
@@ -197,7 +205,7 @@ const getAriaLabels = (title: string, badge: boolean) => {
 export default function Page() {
   const { urlParams, setUrlParams } = useContext(AppContext as DemoContext);
   const [selectedItems, setSelectedItems] = useState<any>([]);
-  const [activeDrawerId, setActiveDrawerId] = useState<string | null>('settings');
+  const [activeDrawerId, setActiveDrawerId] = useState<string | null>(null);
 
   const { items, collectionProps, filterProps, filteredItemsCount, actions, propertyFilterProps } = useCollection(
     allItems,
@@ -276,26 +284,33 @@ export default function Page() {
               {...urlParams}
               // Override getItemExpandable from collection hooks to ensure l1 and l2 items are always expandable
               // no matter if they have children.
-              getItemExpandable={item => !l3items.includes(item)}
+              //getItemExpandable={item => !l3items.includes(item)}
               header={
                 <Header
                   counter={`${allItems.length} (${filteredItemsCount})`}
                   actions={
                     <SpaceBetween size="s" direction="horizontal">
-                      <Button
-                        onClick={() => {
-                          actions.setAllExpanded(true);
+                      <ButtonDropdown
+                        variant="icon"
+                        ariaLabel="Table rows dropdown"
+                        items={[
+                          {
+                            id: 'expand-all',
+                            text: 'Expand all',
+                          },
+                          {
+                            id: 'collapse-all',
+                            text: 'Collapse all',
+                          },
+                        ]}
+                        onItemClick={event => {
+                          if (event.detail.id === 'expand-all') {
+                            actions.setAllExpanded(true);
+                          } else if (event.detail.id === 'collapse-all') {
+                            actions.setAllExpanded(false);
+                          }
                         }}
-                      >
-                        Expand all
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          actions.setAllExpanded(false);
-                        }}
-                      >
-                        Collapse all
-                      </Button>
+                      />
                     </SpaceBetween>
                   }
                 >
@@ -323,6 +338,7 @@ export default function Page() {
               items={items}
               stripedRows={urlParams.stripedStyle === 'row'}
               stripedLevels={urlParams.stripedStyle === 'level'}
+              hasShowMoreEmptyState={urlParams.hasShowMoreEmptyState}
               expandIconType={urlParams.iconType}
             />
           </ContentLayout>

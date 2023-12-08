@@ -148,6 +148,10 @@ export interface TableProps<T = any> extends BaseComponentProps {
    * Specifies if table rows alternate being shaded and unshaded. If set to `true`, every other row will be shaded.
    */
   stripedLevels?: boolean;
+  /**
+   * Specifies if table rows alternate being shaded and unshaded. If set to `true`, every other row will be shaded.
+   */
+  hasShowMoreEmptyState?: boolean;
 
   /**
    * Expand icon type
