@@ -114,7 +114,7 @@ const InternalTable = React.forwardRef(
       getItemChildren,
       getItemExpanded,
       onExpandableItemToggle,
-      getGroupIncomplete,
+      getGroupStatus,
       onGroupShowMore,
       expandIconType,
       ...rest
@@ -127,7 +127,7 @@ const InternalTable = React.forwardRef(
 
     let allItems = items;
     const itemToLevel = new Map<T, number>();
-    const itemToStatus = new Map<T, { parent: T }>();
+    const indexToStatus = new Map<number, { item: T; status: 'empty' | 'has-more' | 'has-no-more' }>();
 
     if (getItemChildren) {
       const visibleItems = new Array<T>();
@@ -138,14 +138,28 @@ const InternalTable = React.forwardRef(
         if (!getItemExpanded || getItemExpanded(item)) {
           const children = getItemChildren(item);
           children.forEach(child => traverse(child, level + 1));
-
-          if (getGroupIncomplete && getGroupIncomplete(item)) {
-            itemToStatus.set(children[children.length - 1], { parent: item });
-          }
         }
       };
 
       items.forEach(item => traverse(item));
+
+      for (let index = 0; index < visibleItems.length; index++) {
+        const item = visibleItems[index];
+        const isExpanded = getItemExpanded && getItemExpanded(item);
+        const status = getGroupStatus && getGroupStatus(item);
+        if (isExpanded && status && status !== 'null') {
+          let insertionIndex = index + 1;
+          for (insertionIndex; insertionIndex < visibleItems.length; insertionIndex++) {
+            const insertionItem = visibleItems[insertionIndex];
+            if ((itemToLevel.get(item) ?? 0) >= (itemToLevel.get(insertionItem) ?? 0)) {
+              break;
+            }
+          }
+          insertionIndex--;
+
+          indexToStatus.set(insertionIndex, { item, status });
+        }
+      }
 
       allItems = visibleItems;
     }
@@ -313,7 +327,7 @@ const InternalTable = React.forwardRef(
     let totalColumnsCount = selectionType ? visibleColumnDefinitions.length + 1 : visibleColumnDefinitions.length;
     totalColumnsCount = getItemLevel ? totalColumnsCount + 1 : totalColumnsCount;
 
-    const rootShowMore = getGroupIncomplete ? getGroupIncomplete(null) : false;
+    const rootStatus = getGroupStatus ? getGroupStatus(null) : null;
 
     const getCollapsedIconName = () => {
       switch (expandIconType) {
@@ -344,8 +358,6 @@ const InternalTable = React.forwardRef(
     };
 
     const [rowLoading, setRowLoading] = React.useState<any>('');
-
-    console.log(rowLoading);
 
     return (
       <LinkDefaultVariantContext.Provider value={{ defaultVariant: 'primary' }}>
@@ -481,7 +493,7 @@ const InternalTable = React.forwardRef(
                         : getItemLevel &&
                           allItems[rowIndex + 1] &&
                           getItemLevel(item) < getItemLevel(allItems[rowIndex + 1]);
-                      const groupShowMore = itemToStatus.get(item);
+                      const groupShowMore = indexToStatus.get(rowIndex);
                       return (
                         <>
                           <tr
@@ -618,7 +630,7 @@ const InternalTable = React.forwardRef(
                             })}
                           </tr>
 
-                          {groupShowMore && getItemLevel ? (
+                          {groupShowMore?.status === 'has-more' && getItemLevel ? (
                             <tr key={getItemKey(trackBy, item, rowIndex) + '-loader'}>
                               <ShowMoreCell
                                 variant={variant}
@@ -633,11 +645,11 @@ const InternalTable = React.forwardRef(
                                 empty={
                                   <InternalButton
                                     variant="inline-link"
-                                    loading={rowLoading === groupShowMore.parent}
+                                    loading={rowLoading === groupShowMore.item}
                                     onClick={() => {
-                                      setRowLoading(groupShowMore.parent);
+                                      setRowLoading(groupShowMore.item);
                                       setTimeout(() => {
-                                        fireNonCancelableEvent(onGroupShowMore, { item: groupShowMore.parent });
+                                        fireNonCancelableEvent(onGroupShowMore, { item: groupShowMore.item });
                                         setRowLoading('');
                                       }, 1000);
                                     }}
@@ -651,12 +663,33 @@ const InternalTable = React.forwardRef(
                               />
                             </tr>
                           ) : null}
+
+                          {(groupShowMore?.status === 'empty' || groupShowMore?.status === 'has-no-more') &&
+                          getItemLevel ? (
+                            <tr key={getItemKey(trackBy, item, rowIndex) + '-empty'}>
+                              <ShowMoreCell
+                                variant={variant}
+                                containerWidth={containerWidth ?? 0}
+                                totalColumnsCount={totalColumnsCount}
+                                hasFooter={hasFooter}
+                                loading={loading}
+                                loadingText={loadingText}
+                                stripedRows={stripedRows}
+                                stripedLevels={stripedLevels}
+                                isEvenRow={isEven}
+                                empty="No more data to load"
+                                tableRef={tableRefObject}
+                                level={getItemLevel(item)}
+                                hasSelection={selectionType !== undefined}
+                              />
+                            </tr>
+                          ) : null}
                         </>
                       );
                     })
                   )}
 
-                  {rootShowMore ? (
+                  {rootStatus === 'has-more' ? (
                     <tr key="root-loader">
                       <ShowMoreCell
                         variant={variant}
@@ -671,9 +704,9 @@ const InternalTable = React.forwardRef(
                         empty={
                           <InternalButton
                             variant="inline-link"
-                            loading={rowLoading === `${rootShowMore}`}
+                            loading={rowLoading === `${rootStatus}`}
                             onClick={() => {
-                              setRowLoading(`${rootShowMore}`);
+                              setRowLoading(`${rootStatus}`);
                               setTimeout(() => {
                                 fireNonCancelableEvent(onGroupShowMore, { item: null });
                                 setRowLoading('');
@@ -683,6 +716,24 @@ const InternalTable = React.forwardRef(
                             Show more
                           </InternalButton>
                         }
+                        tableRef={tableRefObject}
+                      />
+                    </tr>
+                  ) : null}
+
+                  {rootStatus === 'empty' || rootStatus === 'has-no-more' ? (
+                    <tr key="root-loader">
+                      <ShowMoreCell
+                        variant={variant}
+                        containerWidth={containerWidth ?? 0}
+                        totalColumnsCount={totalColumnsCount}
+                        hasFooter={hasFooter}
+                        loading={loading}
+                        loadingText={loadingText}
+                        stripedRows={stripedRows}
+                        stripedLevels={stripedLevels}
+                        isEvenRow={false}
+                        empty="No more data to load"
                         tableRef={tableRefObject}
                       />
                     </tr>

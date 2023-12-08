@@ -351,7 +351,7 @@ export interface TableProps<T = any> extends BaseComponentProps {
   /**
    * Experimental API
    */
-  getGroupIncomplete?: (group: null | T) => boolean;
+  getGroupStatus?: (group: null | T) => 'null' | 'empty' | 'has-more' | 'has-no-more';
 
   /**
    * Experimental API
