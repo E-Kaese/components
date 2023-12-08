@@ -236,14 +236,19 @@ export default function Page() {
   );
 
   const columnDefinitions = cloneDeep(columnsConfig);
-  columnDefinitions[0].cell = (item: Instance) => (
-    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-      <Link href={`#${item.id}`}>{item.id}</Link>
-      <Box color="text-body-secondary" fontSize="body-s">
-        ({collectionProps.getItemChildren?.(item as any).length ?? 0})
-      </Box>
-    </div>
-  );
+  columnDefinitions[0].cell = (item: Instance & { parentId: string }) => {
+    const isL3 = l3items.includes(item);
+    return (
+      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+        <Link href={`#${item.id}`}>{item.id}</Link>
+        {!isL3 ? (
+          <Box color="text-body-secondary" fontSize="body-s">
+            ({collectionProps.getItemChildren?.(item as any).length ?? 0})
+          </Box>
+        ) : null}
+      </div>
+    );
+  };
 
   return (
     <ScreenshotArea gutters={false}>
