@@ -35,6 +35,7 @@ type DemoContext = React.Context<
     sortingDisabled: boolean;
     keepAllChildrenWhenParentMatched: boolean;
     hasShowMoreEmptyState: boolean;
+    groupSelection: boolean;
     selectionType: undefined | 'single' | 'multi';
     stripedStyle: undefined | 'row' | 'level';
     iconType: 'tree' | 'angle' | 'caret';
@@ -139,6 +140,12 @@ function Settings({ urlParams, setUrlParams }: any) {
                 onChange={event => setUrlParams({ hasShowMoreEmptyState: event.detail.checked })}
               >
                 Show empty state when no more data to load
+              </Checkbox>
+              <Checkbox
+                checked={urlParams.groupSelection}
+                onChange={event => setUrlParams({ groupSelection: event.detail.checked })}
+              >
+                Use group selection (only applicable for multi-selection)
               </Checkbox>
             </FormField>
           </SpaceBetween>
@@ -340,6 +347,7 @@ export default function Page() {
               stripedLevels={urlParams.stripedStyle === 'level'}
               hasShowMoreEmptyState={urlParams.hasShowMoreEmptyState}
               expandIconType={urlParams.iconType}
+              groupSelection={urlParams.groupSelection}
             />
           </ContentLayout>
         }

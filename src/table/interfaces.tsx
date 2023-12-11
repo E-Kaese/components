@@ -361,6 +361,11 @@ export interface TableProps<T = any> extends BaseComponentProps {
    * Experimental API
    */
   onGroupShowMore?: NonCancelableEventHandler<TableProps.GroupShowMoreDetail<T>>;
+
+  /**
+   * Experimental API
+   */
+  groupSelection?: boolean;
 }
 
 export namespace TableProps {

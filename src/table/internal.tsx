@@ -44,6 +44,7 @@ import { NoDataCell } from './node-data-cell';
 import { usePerformanceMarks } from '../internal/hooks/use-performance-marks';
 import InternalButton from '../button/internal';
 import { ShowMoreCell } from './show-more-cell';
+import { useTreeSelection } from './selection/use-tree-selection';
 
 const SELECTION_COLUMN_WIDTH = 54;
 const selectionColumnId = Symbol('selection-column-id');
@@ -116,6 +117,7 @@ const InternalTable = React.forwardRef(
       onExpandableItemToggle,
       getGroupStatus,
       onGroupShowMore,
+      groupSelection,
       expandIconType,
       hasShowMoreEmptyState,
       ...rest
@@ -218,7 +220,7 @@ const InternalTable = React.forwardRef(
       visibleColumns,
     });
 
-    const { isItemSelected, getSelectAllProps, getItemSelectionProps, updateShiftToggle } = useSelection({
+    const selectionPropsNormal = useSelection({
       items: allItems,
       trackBy,
       selectedItems,
@@ -228,6 +230,19 @@ const InternalTable = React.forwardRef(
       ariaLabels,
       loading,
     });
+    const selectionPropsTree = useTreeSelection({
+      items: allItems,
+      trackBy,
+      selectedItems,
+      selectionType,
+      isItemDisabled,
+      onSelectionChange,
+      ariaLabels,
+      loading,
+      getItemChildren,
+    });
+    const selectionProps = getItemChildren && groupSelection ? selectionPropsTree : selectionPropsNormal;
+    const { isItemSelected, getSelectAllProps, getItemSelectionProps, updateShiftToggle } = selectionProps;
 
     if (isDevelopment) {
       if (resizableColumns) {
