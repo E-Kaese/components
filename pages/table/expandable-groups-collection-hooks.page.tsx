@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useContext, useState } from 'react';
-import Table from '~components/table';
+import React, { useContext, useEffect, useState } from 'react';
+import Table, { TableProps } from '~components/table';
 import SpaceBetween from '~components/space-between';
 import AppLayout from '~components/app-layout';
 import ScreenshotArea from '../utils/screenshot-area';
@@ -10,6 +10,7 @@ import { Instance, generateItems } from './generate-data';
 import { useCollection } from '@cloudscape-design/collection-hooks';
 import {
   Checkbox,
+  Toggle,
   ContentLayout,
   FormField,
   Header,
@@ -26,6 +27,7 @@ import {
 import AppContext, { AppContextType } from '../app/app-context';
 import pseudoRandom from '../utils/pseudo-random';
 import { cloneDeep } from 'lodash';
+import { PropertyFilterProps } from '~components';
 
 type DemoContext = React.Context<
   AppContextType<{
@@ -71,6 +73,80 @@ function Settings({ urlParams, setUrlParams }: any) {
     <Drawer header={<h2>Settings</h2>}>
       <SpaceBetween size="xl">
         <ExpandableSection headerText="Table properties" defaultExpanded={true}>
+          <SpaceBetween size="l">
+            <FormField
+              label="Keep all children when filtering"
+              description="When filtering, all children of the search result should appear as part of the result."
+            >
+              <Toggle
+                checked={urlParams.keepAllChildrenWhenParentMatched}
+                onChange={event => setUrlParams({ keepAllChildrenWhenParentMatched: event.detail.checked })}
+              />
+            </FormField>
+            <FormField label="Lazy loading empty state" description="After loading more rows, show an empty state.">
+              <Toggle
+                checked={urlParams.hasShowMoreEmptyState}
+                onChange={event => setUrlParams({ hasShowMoreEmptyState: event.detail.checked })}
+              />
+            </FormField>
+            <FormField
+              label="Select children along with parent"
+              description="When selecting a parent row, child rows are also selected."
+            >
+              <Toggle
+                checked={urlParams.groupSelection}
+                onChange={event => setUrlParams({ groupSelection: event.detail.checked })}
+              />
+            </FormField>
+          </SpaceBetween>
+        </ExpandableSection>
+
+        <ExpandableSection headerText="Visual styles" defaultExpanded={true}>
+          <SpaceBetween size="l">
+            <FormField label="Striped rows">
+              <Select
+                selectedOption={
+                  stripedStyleOptions.find(option => option.value === urlParams.stripedStyle) ?? stripedStyleOptions[0]
+                }
+                options={stripedStyleOptions}
+                onChange={event =>
+                  setUrlParams({
+                    stripedStyle:
+                      event.detail.selectedOption.value === 'row' || event.detail.selectedOption.value === 'level'
+                        ? event.detail.selectedOption.value
+                        : undefined,
+                  })
+                }
+              />
+            </FormField>
+            <FormField label="Icon type">
+              <Select
+                selectedOption={
+                  iconTypeOptions.find(option => option.value === urlParams.iconType) ?? iconTypeOptions[0]
+                }
+                options={iconTypeOptions}
+                onChange={event => setUrlParams({ iconType: event.detail.selectedOption.value })}
+              />
+            </FormField>
+            <FormField label="Show more style">
+              <Select
+                selectedOption={
+                  showMoreStyle.find(option => option.value === urlParams.showMoreType) ?? showMoreStyle[0]
+                }
+                options={showMoreStyle}
+                onChange={event => {
+                  setUrlParams({ showMoreType: event.detail.selectedOption.value });
+                  document.body.setAttribute(
+                    'data-related-table-test-show-more',
+                    event.detail.selectedOption.value ?? showMoreStyle[0].value
+                  );
+                }}
+              />
+            </FormField>
+          </SpaceBetween>
+        </ExpandableSection>
+
+        <ExpandableSection headerText="Table features">
           <SpaceBetween size="l">
             <FormField label="Selection type">
               <Select
@@ -128,70 +204,6 @@ function Settings({ urlParams, setUrlParams }: any) {
               >
                 Sorting disabled
               </Checkbox>
-
-              <Checkbox
-                checked={urlParams.keepAllChildrenWhenParentMatched}
-                onChange={event => setUrlParams({ keepAllChildrenWhenParentMatched: event.detail.checked })}
-              >
-                Keep all children when parent matches
-              </Checkbox>
-              <Checkbox
-                checked={urlParams.hasShowMoreEmptyState}
-                onChange={event => setUrlParams({ hasShowMoreEmptyState: event.detail.checked })}
-              >
-                Show empty state when no more data to load
-              </Checkbox>
-              <Checkbox
-                checked={urlParams.groupSelection}
-                onChange={event => setUrlParams({ groupSelection: event.detail.checked })}
-              >
-                Use group selection (only applicable for multi-selection)
-              </Checkbox>
-            </FormField>
-          </SpaceBetween>
-        </ExpandableSection>
-
-        <ExpandableSection headerText="Visual styles" defaultExpanded={true}>
-          <SpaceBetween size="l">
-            <FormField label="Striped rows">
-              <Select
-                selectedOption={
-                  stripedStyleOptions.find(option => option.value === urlParams.stripedStyle) ?? stripedStyleOptions[0]
-                }
-                options={stripedStyleOptions}
-                onChange={event =>
-                  setUrlParams({
-                    stripedStyle:
-                      event.detail.selectedOption.value === 'row' || event.detail.selectedOption.value === 'level'
-                        ? event.detail.selectedOption.value
-                        : undefined,
-                  })
-                }
-              />
-            </FormField>
-            <FormField label="Icon type">
-              <Select
-                selectedOption={
-                  iconTypeOptions.find(option => option.value === urlParams.iconType) ?? iconTypeOptions[0]
-                }
-                options={iconTypeOptions}
-                onChange={event => setUrlParams({ iconType: event.detail.selectedOption.value })}
-              />
-            </FormField>
-            <FormField label="Show more style">
-              <Select
-                selectedOption={
-                  showMoreStyle.find(option => option.value === urlParams.showMoreType) ?? showMoreStyle[0]
-                }
-                options={showMoreStyle}
-                onChange={event => {
-                  setUrlParams({ showMoreType: event.detail.selectedOption.value });
-                  document.body.setAttribute(
-                    'data-related-table-test-show-more',
-                    event.detail.selectedOption.value ?? showMoreStyle[0].value
-                  );
-                }}
-              />
             </FormField>
           </SpaceBetween>
         </ExpandableSection>
@@ -214,41 +226,40 @@ export default function Page() {
   const [selectedItems, setSelectedItems] = useState<any>([]);
   const [activeDrawerId, setActiveDrawerId] = useState<string | null>(null);
 
-  const { items, collectionProps, filterProps, filteredItemsCount, actions, propertyFilterProps } = useCollection(
-    allItems,
-    {
-      pagination: { pageSize: 15 },
-      groupPagination: { pageSize: () => 5 },
-      sorting: {},
-      filtering: {},
-      propertyFiltering: {
-        filteringProperties: FILTERING_PROPERTIES,
-        empty: 'empty',
-        noMatch: (
-          <Box textAlign="center" color="inherit">
-            <Box variant="strong" textAlign="center" color="inherit">
-              No matches
-            </Box>
-            <Box variant="p" padding={{ bottom: 's' }} color="inherit">
-              We can’t find a match.
-            </Box>
-            <Button
-              onClick={() =>
-                actions.setPropertyFiltering({ tokens: [], operation: propertyFilterProps.query.operation })
-              }
-            >
-              Clear filter
-            </Button>
+  useEffect(() => {
+    document.body.setAttribute('data-related-table-test-show-more', urlParams.showMoreType);
+  }, [urlParams.showMoreType]);
+
+  const { items, collectionProps, filterProps, actions, propertyFilterProps } = useCollection(allItems, {
+    pagination: { pageSize: 15 },
+    groupPagination: { pageSize: () => 5 },
+    sorting: {},
+    filtering: {},
+    propertyFiltering: {
+      filteringProperties: FILTERING_PROPERTIES,
+      empty: 'empty',
+      noMatch: (
+        <Box textAlign="center" color="inherit">
+          <Box variant="strong" textAlign="center" color="inherit">
+            No matches
           </Box>
-        ),
-      },
-      treeProps: {
-        getId: item => item.id,
-        getParentId: item => item.parentId,
-        keepAllChildrenWhenParentMatched: urlParams.keepAllChildrenWhenParentMatched,
-      },
-    }
-  );
+          <Box variant="p" padding={{ bottom: 's' }} color="inherit">
+            We can’t find a match.
+          </Box>
+          <Button
+            onClick={() => actions.setPropertyFiltering({ tokens: [], operation: propertyFilterProps.query.operation })}
+          >
+            Clear filter
+          </Button>
+        </Box>
+      ),
+    },
+    treeProps: {
+      getId: item => item.id,
+      getParentId: item => item.parentId,
+      keepAllChildrenWhenParentMatched: urlParams.keepAllChildrenWhenParentMatched,
+    },
+  });
 
   const columnDefinitions = cloneDeep(columnsConfig);
   columnDefinitions[0].cell = (item: Instance & { parentId: string }) => {
@@ -294,7 +305,13 @@ export default function Page() {
               //getItemExpandable={item => !l3items.includes(item)}
               header={
                 <Header
-                  counter={`${allItems.length} (${filteredItemsCount})`}
+                  counter={
+                    !urlParams.groupSelection
+                      ? selectedItems.length
+                        ? `(${selectedItems.length} / ${allItems.length})`
+                        : `(${allItems.length})`
+                      : undefined
+                  }
                   actions={
                     <SpaceBetween size="s" direction="horizontal">
                       <ButtonDropdown
@@ -328,11 +345,8 @@ export default function Page() {
                 urlParams.filterType === 'property' ? (
                   <PropertyFilter
                     {...propertyFilterProps}
-                    i18nStrings={{
-                      filteringAriaLabel: 'Find values',
-                      filteringPlaceholder: 'Find values',
-                    }}
-                    countText={`${items.length} matches`}
+                    i18nStrings={i18nStrings}
+                    //countText={`${filteredItemsCount} matches`}
                     expandToViewport={true}
                   />
                 ) : urlParams.filterType === 'text' ? (
@@ -348,6 +362,7 @@ export default function Page() {
               hasShowMoreEmptyState={urlParams.hasShowMoreEmptyState}
               expandIconType={urlParams.iconType}
               groupSelection={urlParams.groupSelection}
+              ariaLabels={distributionTableAriaLabels}
             />
           </ContentLayout>
         }
@@ -383,3 +398,73 @@ const FILTERING_PROPERTIES = [
   },
   { propertyLabel: 'State', key: 'state', groupValuesLabel: 'State values', operators: [':', '!:', '=', '!=', '^'] },
 ];
+
+export const baseTableAriaLabels: TableProps.AriaLabels<unknown> = {
+  allItemsSelectionLabel: () => 'select all',
+};
+
+const baseEditableLabels: TableProps.AriaLabels<{ id: string }> = {
+  activateEditLabel: (column, item) => `Edit ${item.id} ${column.header}`,
+  cancelEditLabel: column => `Cancel editing ${column.header}`,
+  submitEditLabel: column => `Submit edit ${column.header}`,
+};
+
+export const distributionTableAriaLabels: TableProps.AriaLabels<{ id: string }> = {
+  ...baseTableAriaLabels,
+  itemSelectionLabel: (data, row) => `select ${row.id}`,
+  selectionGroupLabel: 'Distribution selection',
+};
+
+export const distributionEditableTableAriaLabels: TableProps.AriaLabels<{ id: string }> = {
+  ...distributionTableAriaLabels,
+  ...baseEditableLabels,
+};
+
+export function createTableSortLabelFn(
+  column: TableProps.ColumnDefinition<unknown>
+): TableProps.ColumnDefinition<unknown>['ariaLabel'] {
+  if (!column.sortingField && !column.sortingComparator && !column.ariaLabel) {
+    return;
+  }
+  return ({ sorted, descending }) => {
+    return `${column.header}, ${sorted ? `sorted ${descending ? 'descending' : 'ascending'}` : 'not sorted'}.`;
+  };
+}
+
+export const i18nStrings: PropertyFilterProps.I18nStrings = {
+  filteringAriaLabel: 'your choice',
+  dismissAriaLabel: 'Dismiss',
+
+  filteringPlaceholder: 'Search',
+  groupValuesText: 'Values',
+  groupPropertiesText: 'Properties',
+  operatorsText: 'Operators',
+
+  operationAndText: 'and',
+  operationOrText: 'or',
+
+  operatorLessText: 'Less than',
+  operatorLessOrEqualText: 'Less than or equal',
+  operatorGreaterText: 'Greater than',
+  operatorGreaterOrEqualText: 'Greater than or equal',
+  operatorContainsText: 'Contains',
+  operatorDoesNotContainText: 'Does not contain',
+  operatorEqualsText: 'Equal',
+  operatorDoesNotEqualText: 'Does not equal',
+
+  editTokenHeader: 'Edit filter',
+  propertyText: 'Property',
+  operatorText: 'Operator',
+  valueText: 'Value',
+  cancelActionText: 'Cancel',
+  applyActionText: 'Apply',
+  allPropertiesLabel: 'All properties',
+  clearAriaLabel: 'Clear',
+
+  tokenLimitShowMore: 'Show more',
+  tokenLimitShowFewer: 'Show fewer',
+  clearFiltersText: 'Clear filters',
+  tokenOperatorAriaLabel: 'Boolean Operator',
+  removeTokenButtonAriaLabel: () => 'Remove token',
+  enteredTextLabel: (text: string) => `Use: "${text}"`,
+};
