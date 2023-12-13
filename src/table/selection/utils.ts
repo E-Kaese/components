@@ -18,6 +18,8 @@ export class ItemSet<T> {
   put = (item: T) => this.map.set.call(this.map, getTrackableValue(this.trackBy, item), item);
   has = (item: T) => this.map.has.call(this.map, getTrackableValue(this.trackBy, item));
   forEach = this.map.forEach.bind(this.map);
+  size = () => this.map.size;
+  delete = (item: T) => this.map.delete(item);
 }
 
 export const focusMarkers = {

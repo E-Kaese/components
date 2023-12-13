@@ -1,6 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fireNonCancelableEvent } from '../../internal/events';
 import { useUniqueId } from '../../internal/hooks/use-unique-id';
 import { TableProps } from '../interfaces';
@@ -50,6 +50,47 @@ export function useTreeSelection<T>({
     }
   }
   items.forEach(makeItemToParent);
+
+  useEffect(() => {
+    const itemToParentMap = new Map<T, T>();
+
+    function makeItemToParent(item: T) {
+      if (getItemChildren) {
+        for (const child of getItemChildren(item)) {
+          itemToParentMap.set(child, item);
+          makeItemToParent(child);
+        }
+      }
+    }
+    items.forEach(makeItemToParent);
+
+    const selectedSet = new ItemSet(trackBy, selectedItems);
+
+    function traverse(item: T) {
+      const children = getItemChildren?.(item) ?? [];
+      let selected = children.length > 0;
+      for (const child of children) {
+        traverse(child);
+        selected = selected && selectedSet.has(child);
+      }
+      if (selected) {
+        for (const child of children) {
+          selectedSet.delete(child);
+        }
+        selectedSet.put(item);
+      }
+    }
+
+    items.forEach(traverse);
+
+    if (selectedSet.size() !== selectedItems.length) {
+      const newSelected: T[] = [];
+      selectedSet.forEach(item => newSelected.push(item));
+      fireNonCancelableEvent(onSelectionChange, { selectedItems: newSelected });
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItems, items]);
 
   const getParentSelected = (item: T): boolean => {
     const parent = itemToParentMap.get(item);
