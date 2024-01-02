@@ -22,7 +22,7 @@ import {
   Box,
   Button,
   Link,
-  ButtonDropdown,
+  Flashbar,
 } from '~components';
 import AppContext, { AppContextType } from '../app/app-context';
 import pseudoRandom from '../utils/pseudo-random';
@@ -225,6 +225,7 @@ export default function Page() {
   const { urlParams, setUrlParams } = useContext(AppContext as DemoContext);
   const [selectedItems, setSelectedItems] = useState<any>([]);
   const [activeDrawerId, setActiveDrawerId] = useState<string | null>(null);
+  const [flashbarItems, setFlashbarItems] = useState<any>([]);
 
   useEffect(() => {
     document.body.setAttribute('data-related-table-test-show-more', urlParams.showMoreType);
@@ -263,15 +264,14 @@ export default function Page() {
 
   const columnDefinitions = cloneDeep(columnsConfig);
   columnDefinitions[0].cell = (item: Instance & { parentId: string }) => {
-    const isL3 = l3items.includes(item);
     return (
       <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
         <Link href={`#${item.id}`}>{item.id}</Link>
-        {!isL3 ? (
+        {/* {!isL3 ? (
           <Box color="text-body-secondary" fontSize="body-s">
             ({collectionProps.getItemChildren?.(item as any).length ?? 0})
           </Box>
-        ) : null}
+        ) : null} */}
       </div>
     );
   };
@@ -297,73 +297,89 @@ export default function Page() {
         activeDrawerId={activeDrawerId}
         content={
           <ContentLayout header={<Header variant="h1">Table with expandable groups</Header>}>
-            <Table
-              {...collectionProps}
-              {...urlParams}
-              // Override getItemExpandable from collection hooks to ensure l1 and l2 items are always expandable
-              // no matter if they have children.
-              //getItemExpandable={item => !l3items.includes(item)}
-              header={
-                <Header
-                  counter={
-                    !urlParams.groupSelection
-                      ? selectedItems.length
-                        ? `(${selectedItems.length} / ${allItems.length})`
-                        : `(${allItems.length})`
-                      : undefined
-                  }
-                  actions={
-                    <SpaceBetween size="s" direction="horizontal">
-                      <ButtonDropdown
-                        variant="icon"
-                        ariaLabel="Table rows dropdown"
-                        items={[
-                          {
-                            id: 'expand-all',
-                            text: 'Expand all',
-                          },
-                          {
-                            id: 'collapse-all',
-                            text: 'Collapse all',
-                          },
-                        ]}
-                        onItemClick={event => {
-                          if (event.detail.id === 'expand-all') {
-                            actions.setAllExpanded(true);
-                          } else if (event.detail.id === 'collapse-all') {
-                            actions.setAllExpanded(false);
-                          }
-                        }}
-                      />
-                    </SpaceBetween>
-                  }
-                >
-                  Test data
-                </Header>
-              }
-              filter={
-                urlParams.filterType === 'property' ? (
-                  <PropertyFilter
-                    {...propertyFilterProps}
-                    i18nStrings={i18nStrings}
-                    //countText={`${filteredItemsCount} matches`}
-                    expandToViewport={true}
-                  />
-                ) : urlParams.filterType === 'text' ? (
-                  <TextFilter {...filterProps} />
-                ) : undefined
-              }
-              columnDefinitions={columnDefinitions}
-              selectedItems={selectedItems}
-              onSelectionChange={({ detail: { selectedItems } }) => setSelectedItems(selectedItems)}
-              items={items}
-              stripedRows={urlParams.stripedStyle === 'row'}
-              stripedLevels={urlParams.stripedStyle === 'level'}
-              hasShowMoreEmptyState={urlParams.hasShowMoreEmptyState}
-              expandIconType={urlParams.iconType}
-              groupSelection={urlParams.groupSelection}
-              ariaLabels={distributionTableAriaLabels}
-            />
+            <SpaceBetween size="l">
+              <Flashbar items={flashbarItems} />
+              <Table
+                {...collectionProps}
+                {...urlParams}
+                // Override getItemExpandable from collection hooks to ensure l1 and l2 items are always expandable
+                // no matter if they have children.
+                //getItemExpandable={item => !l3items.includes(item)}
+                header={
+                  <Header
+                    counter={
+                      !urlParams.groupSelection
+                        ? selectedItems.length
+                          ? `(${selectedItems.length} / ${allItems.length})`
+                          : `(${allItems.length})`
+                        : undefined
+                    }
+                    actions={
+                      <SpaceBetween size="s" direction="horizontal">
+                        <Button
+                          variant="primary"
+                          disabled={!selectedItems.length}
+                          onClick={() => {
+                            setFlashbarItems([
+                              {
+                                type: 'success',
+                                dismissible: true,
+                                dismissLabel: 'Dismiss message',
+                                onDismiss: () => setFlashbarItems([]),
+                                header: 'Instances started',
+                                content: (
+                                  <>
+                                    The following instances have been started:{' '}
+                                    <ul>
+                                      {selectedItems.map((item: any) => (
+                                        <li key={item.id}>{item.id}</li>
+                                      ))}
+                                    </ul>
+                                  </>
+                                ),
+                                id: 'message_1',
+                              },
+                            ]);
+                          }}
+                        >
+                          Start instance(s)
+                        </Button>
+                        <Button iconName="expand" onClick={() => actions.setAllExpanded(true)}>
+                          Expand all
+                        </Button>
+                        <Button iconName="shrink" onClick={() => actions.setAllExpanded(false)}>
+                          Collapse all
+                        </Button>
+                      </SpaceBetween>
+                    }
+                  >
+                    Test data
+                  </Header>
+                }
+                filter={
+                  urlParams.filterType === 'property' ? (
+                    <PropertyFilter
+                      {...propertyFilterProps}
+                      i18nStrings={i18nStrings}
+                      //countText={`${filteredItemsCount} matches`}
+                      expandToViewport={true}
+                    />
+                  ) : urlParams.filterType === 'text' ? (
+                    <TextFilter {...filterProps} />
+                  ) : undefined
+                }
+                columnDefinitions={columnDefinitions}
+                selectedItems={selectedItems}
+                onSelectionChange={({ detail: { selectedItems } }) => setSelectedItems(selectedItems)}
+                items={items}
+                stripedRows={urlParams.stripedStyle === 'row'}
+                stripedLevels={urlParams.stripedStyle === 'level'}
+                hasShowMoreEmptyState={urlParams.hasShowMoreEmptyState}
+                expandIconType={urlParams.iconType}
+                groupSelection={urlParams.groupSelection}
+                ariaLabels={distributionTableAriaLabels}
+              />
+            </SpaceBetween>
           </ContentLayout>
         }
       />
