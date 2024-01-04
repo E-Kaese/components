@@ -52,5 +52,7 @@ const customCssPropertiesList = [
   // Style extensions (to be moved to their own file later, and thus can be renamed)
   'containerBorderColor',
   'containerBorderWidth',
+  'containerBorderTopWidth',
+  'containerBorderTopColor',
 ];
 module.exports = customCssPropertiesList;

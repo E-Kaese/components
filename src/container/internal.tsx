@@ -140,6 +140,8 @@ export default function InternalContainer({
         styleExtensions && {
           [customCssProps.containerBorderColor]: `${styleExtensions['container-border-color']}`,
           [customCssProps.containerBorderWidth]: `${styleExtensions['container-border-width']}`,
+          [customCssProps.containerBorderTopColor]: `${styleExtensions['container-border-top-color']}`,
+          [customCssProps.containerBorderTopWidth]: `${styleExtensions['container-border-top-width']}`,
         }
       }
       ref={mergedRef}

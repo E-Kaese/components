@@ -15,7 +15,13 @@ export default function SimpleContainers() {
       <ScreenshotArea>
         <SpaceBetween size="l">
           <Container
-            styleExtensions={{ 'container-border-color': '#7638fa', 'container-border-width': '2px' }}
+            styleExtensions={{
+              'container-border-color': '#7638fa',
+              'container-border-width': '2px',
+              // need to add override here too, otherwise the default design token will be applied
+              'container-border-top-color': '#7638fa',
+              'container-border-top-width': '2px',
+            }}
             header={
               <Header
                 variant="h2"
@@ -39,7 +45,15 @@ export default function SimpleContainers() {
             tortor, mollis vitae molestie sed, malesuada.Lorem ipsum dolor sit amet, consectetur adipiscing. Nullam dui
             tortor, mollis vitae molestie sed. Phasellus tincidunt suscipit varius.
           </Container>
-          <Container header="Container plain text in header">
+          <Container
+            header="Container plain text in header"
+            styleExtensions={{
+              'container-border-color': '#7638fa',
+              'container-border-width': '2px',
+              'container-border-top-color': '#7638fa',
+              'container-border-top-width': '4px',
+            }}
+          >
             Lorem ipsum dolor sit amet, consectetur adipisicing elit. Phasellus tincidunt suscipit varius. Nullam dui
             tortor, mollis vitae molestie sed, malesuada.Lorem ipsum dolor sit amet, consectetur adipiscing. Nullam dui
             tortor, mollis vitae molestie sed. Phasellus tincidunt suscipit varius.
