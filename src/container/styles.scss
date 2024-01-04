@@ -6,8 +6,11 @@
 @use '../internal/styles/tokens' as awsui;
 @use '../internal/styles' as styles;
 @use './shared' as shared;
+@use '../internal/generated/custom-css-properties/index.scss' as style-extensions;
 
 .root {
+  #{style-extensions.$containerBorderColor}: #{awsui.$color-border-container};
+  #{style-extensions.$containerBorderWidth}: #{awsui.$border-container-width};
   @include styles.styles-reset;
   word-wrap: break-word;
   position: relative;
@@ -27,6 +30,7 @@
       background-color: awsui.$color-background-container-content;
       // Border and shadows are applied with ::before and ::after elements (respectively)
       @include styles.container-style;
+      border: var(#{style-extensions.$containerBorderWidth}) solid var(#{style-extensions.$containerBorderColor});
     }
     // Meld container bottom corners into next adjoining container
     &-stacked:not(:last-child),

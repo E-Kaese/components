@@ -15,6 +15,7 @@ export default function SimpleContainers() {
       <ScreenshotArea>
         <SpaceBetween size="l">
           <Container
+            styleExtensions={{ 'container-border-color': '#7638fa', 'container-border-width': '2px' }}
             header={
               <Header
                 variant="h2"

@@ -9,6 +9,7 @@
 @use '../foundation' as foundation;
 @use '../utils' as utils;
 @use './constants' as constants;
+@use '../../generated/custom-css-properties/index.scss' as style-extensions;
 
 @mixin link-focus {
   // For classic
@@ -134,14 +135,11 @@
   border-radius: awsui.$border-radius-container;
   box-sizing: border-box;
 
-  &.refresh {
-    border: solid awsui.$border-divider-section-width awsui.$color-border-divider-default;
-  }
-
   &:not(.refresh)::before {
     @include utils.base-pseudo-element;
     // Reset border color to prevent it from flashing black during card selection animation
     border-color: transparent;
+    border: var(#{style-extensions.$containerBorderWidth}) solid var(#{style-extensions.$containerBorderColor});
     border-top: awsui.$border-container-top-width solid awsui.$color-border-container-top;
     border-radius: awsui.$border-radius-container;
     z-index: 1;

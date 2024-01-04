@@ -67,6 +67,8 @@ export interface ContainerProps extends BaseComponentProps {
    * @visualrefresh `stacked` variant
    */
   variant?: 'default' | 'stacked';
+
+  styleExtensions?: Record<string, string | number>;
 }
 
 export namespace ContainerProps {

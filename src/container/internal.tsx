@@ -15,6 +15,7 @@ import styles from './styles.css.js';
 import { useFunnelSubStep } from '../internal/analytics/hooks/use-funnel';
 import { useModalContext } from '../internal/context/modal-context';
 import { useUniqueId } from '../internal/hooks/use-unique-id';
+import customCssProps from '../internal/generated/custom-css-properties';
 
 export interface InternalContainerProps extends Omit<ContainerProps, 'variant'>, InternalBaseComponentProps {
   __stickyHeader?: boolean;
@@ -72,6 +73,7 @@ export default function InternalContainer({
   __disableStickyMobile = true,
   __funnelSubStepProps,
   __subStepRef,
+  styleExtensions,
   ...restProps
 }: InternalContainerProps) {
   const isMobile = useMobile();
@@ -134,6 +136,12 @@ export default function InternalContainer({
         shouldHaveStickyStyles && [styles['sticky-enabled']],
         isRefresh && styles.refresh
       )}
+      style={
+        styleExtensions && {
+          [customCssProps.containerBorderColor]: `${styleExtensions['container-border-color']}`,
+          [customCssProps.containerBorderWidth]: `${styleExtensions['container-border-width']}`,
+        }
+      }
       ref={mergedRef}
     >
       {hasMedia && (

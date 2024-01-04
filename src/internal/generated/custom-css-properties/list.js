@@ -49,5 +49,8 @@ const customCssPropertiesList = [
   'stackedNotificationsDefaultBottomMargin',
   // Dropdown
   'dropdownDefaultMaxWidth',
+  // Style extensions (to be moved to their own file later, and thus can be renamed)
+  'containerBorderColor',
+  'containerBorderWidth',
 ];
 module.exports = customCssPropertiesList;
