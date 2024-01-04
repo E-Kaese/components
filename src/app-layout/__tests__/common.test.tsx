@@ -10,6 +10,7 @@ import {
   renderComponent,
   singleDrawer,
   singleDrawerOpen,
+  singleDrawerPublic,
 } from './utils';
 import AppLayout from '../../../lib/components/app-layout';
 
@@ -31,7 +32,7 @@ describeEachAppLayout(size => {
     expect(wrapper.findContentRegion()).toBeTruthy();
     expect(wrapper.findNotifications()).toBeFalsy();
     expect(wrapper.findBreadcrumbs()).toBeFalsy();
-    expect(wrapper.findDrawersTriggers()![0]).toBeFalsy();
+    expect(wrapper.findDrawersTriggers()).toHaveLength(0);
     expect(wrapper.findActiveDrawer()).toBeFalsy();
   });
 
@@ -253,9 +254,9 @@ describeEachAppLayout(size => {
           items: singleDrawer.drawers.items,
         },
       };
-      const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawersClosed} />);
+      const { wrapper } = renderComponent(<AppLayout contentType="form" {...(drawersClosed as any)} />);
 
-      wrapper.findDrawersTriggers()![0].click();
+      wrapper.findDrawerTriggerById('security')!.click();
 
       expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ detail: 'security' }));
     });
@@ -268,10 +269,10 @@ describeEachAppLayout(size => {
           items: singleDrawer.drawers.items,
         },
       };
-      const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawersClosed} />);
+      const { wrapper } = renderComponent(<AppLayout contentType="form" {...(drawersClosed as any)} />);
 
       // Chrome bubbles up events from specific elements inside <button>s.
-      wrapper.findDrawersTriggers()![0]!.find('span')!.click();
+      wrapper.findDrawerTriggerById('security')!.find('span')!.click();
       expect(onChange).toHaveBeenCalledTimes(1);
       expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ detail: 'security' }));
     });
@@ -286,7 +287,7 @@ describeEachAppLayout(size => {
         },
       };
 
-      const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawersOpen} />);
+      const { wrapper } = renderComponent(<AppLayout contentType="form" {...(drawersOpen as any)} />);
 
       wrapper.findActiveDrawerCloseButton()!.click();
       expect(onChange).toHaveBeenCalledTimes(1);
@@ -294,18 +295,20 @@ describeEachAppLayout(size => {
     });
 
     test('Renders aria-expanded only on toggle', () => {
-      const { wrapper } = renderComponent(<AppLayout contentType="form" {...singleDrawer} />);
+      const { wrapper } = renderComponent(<AppLayout drawers={singleDrawerPublic} />);
 
-      expect(wrapper.findDrawersTriggers()![0].getElement()).toHaveAttribute('aria-expanded', 'false');
-      expect(wrapper.findDrawersTriggers()![0].getElement()).toHaveAttribute('aria-haspopup', 'true');
-      wrapper.findDrawersTriggers()![0].click();
-      expect(wrapper.findDrawersTriggers()![0].getElement()).toHaveAttribute('aria-expanded', 'true');
+      const drawerTrigger = wrapper.findDrawerTriggerById('security')!;
+      expect(drawerTrigger.getElement()).toHaveAttribute('aria-expanded', 'false');
+      expect(drawerTrigger.getElement()).toHaveAttribute('aria-haspopup', 'true');
+
+      drawerTrigger.click();
+      expect(drawerTrigger.getElement()).toHaveAttribute('aria-expanded', 'true');
       expect(wrapper.findActiveDrawerCloseButton()!.getElement()).not.toHaveAttribute('aria-expanded');
       expect(wrapper.findActiveDrawerCloseButton()!.getElement()).not.toHaveAttribute('aria-haspopup');
     });
 
     test('Close button does have a label if it is defined', () => {
-      const { wrapper } = renderComponent(<AppLayout contentType="form" {...singleDrawerOpen} />);
+      const { wrapper } = renderComponent(<AppLayout contentType="form" {...(singleDrawerOpen as any)} />);
 
       expect(wrapper.findActiveDrawerCloseButton()!.getElement()).toHaveAttribute(
         'aria-label',
@@ -321,17 +324,17 @@ describeEachAppLayout(size => {
         },
       };
 
-      const { wrapper } = renderComponent(<AppLayout contentType="form" {...drawersOpen} />);
+      const { wrapper } = renderComponent(<AppLayout contentType="form" {...(drawersOpen as any)} />);
 
       expect(wrapper.findActiveDrawerCloseButton()!.getElement()).not.toHaveAttribute('aria-label');
     });
 
     test('Opens and closes drawer in uncontrolled mode', () => {
       // use content type with initial closed state for all drawers
-      const { wrapper } = renderComponent(<AppLayout contentType="form" {...singleDrawer} />);
+      const { wrapper } = renderComponent(<AppLayout drawers={singleDrawerPublic} />);
       expect(wrapper.findActiveDrawer()).toBeNull();
 
-      act(() => wrapper.findDrawersTriggers()![0].click());
+      wrapper.findDrawerTriggerById('security')!.find('span')!.click();
       expect(wrapper.findActiveDrawer()).not.toBeNull();
 
       act(() => wrapper.findActiveDrawerCloseButton()!.click());

@@ -6,6 +6,7 @@
     "i18nStrings.filterLabel": "Filtra i dati visualizzati",
     "i18nStrings.filterPlaceholder": "Filtra i dati",
     "i18nStrings.legendAriaLabel": "Legenda",
+    "i18nStrings.chartAriaRoleDescription": "Grafico",
     "i18nStrings.xAxisAriaRoleDescription": "asse x",
     "i18nStrings.yAxisAriaRoleDescription": "asse y"
   },
@@ -22,6 +23,9 @@
     "i18nStrings.labelHotspot": "{openState, select, true {Chiudi l'annotazione per la fase {stepNumber} di {totalStepCount}} false {Apri l'annotazione per la fase {stepNumber} di {totalStepCount}} other {}}"
   },
   "app-layout": {
+    "ariaLabels.drawers": "Cassetti",
+    "ariaLabels.drawersOverflow": "Overflow dei cassetti",
+    "ariaLabels.drawersOverflowWithBadge": "Overflow dei cassetti con badge",
     "ariaLabels.navigation": "Navigazione laterale",
     "ariaLabels.navigationClose": "Chiudi navigazione laterale",
     "ariaLabels.navigationToggle": "Apri navigazione laterale",
@@ -92,6 +96,9 @@
     "contentDisplayPreference.liveAnnouncementDndItemReordered": "{isInitialPosition, select, true {Spostamento dell'elemento di nuovo nella posizione {currentPosition} di {total}} false {Spostamento dell'elemento nella posizione {currentPosition} di {total}} other {}}",
     "contentDisplayPreference.liveAnnouncementDndItemCommitted": "{isInitialPosition, select, true {L'elemento è stato spostato di nuovo nella posizione originale {initialPosition} di {total}} false {Elemento spostato da una posizione {initialPosition} alla posizione {finalPosition} di {total}} other {}}"
   },
+  "copy-to-clipboard": {
+    "i18nStrings.copyButtonText": "Copia"
+  },
   "date-range-picker": {
     "i18nStrings.relativeModeTitle": "Modalità relativa",
     "i18nStrings.absoluteModeTitle": "Modalità assoluta",
@@ -111,8 +118,11 @@
     "i18nStrings.dateTimeConstraintText": "Per la data, utilizza il formato GG/MM/AAAA. Per l'ora, usa il formato 24 ore.",
     "i18nStrings.errorIconAriaLabel": "Errore",
     "i18nStrings.renderSelectedAbsoluteRangeAriaLive": "Intervallo selezionato da {startDate} a {endDate}",
-    "i18nStrings.formatRelativeRange": "{amount, plural, one {Ultimo {amount} {unit}} other {Ultimi {amount} {unit}}}",
-    "i18nStrings.formatUnit": "{amount, plural, one {{unit}} other {{unit}}}"
+    "i18nStrings.formatRelativeRange": "{unit, select, second {{amount, plural, zero {Ultimi {amount} secondi} one {Ultimo secondo} other {Ultimi {amount} secondi}}} minute {{amount, plural, zero {Ultimi {amount} minuti} one {Ultimo minuto} other {Ultimi {amount} minuti}}} hour {{amount, plural, zero {Ultime {amount} ore} one {Ultima ora} other {Ultime {amount} ore}}} day {{amount, plural, zero {Ultimi {amount} giorni} one {Ultimo giorno} other {Ultimi {amount} giorni}}} week {{amount, plural, zero {Ultime {amount} settimane} one {Ultima settimana} other {Ultime {amount} settimane}}} month {{amount, plural, zero {Ultimi {amount} mesi} one {Ultimo mese} other {Ultimi {amount} mesi}}} year {{amount, plural, zero {Ultimi {amount} anni} one {Ultimo anno} other {Ultimi {amount} anni}}} other {}}",
+    "i18nStrings.formatUnit": "{unit, select, second {{amount, plural, zero {secondi} one {secondo} other {secondi}}} minute {{amount, plural, zero {minuti} one {minuto} other {minuti}}} hour {{amount, plural, zero {ore} one {ora} other {ore}}} day {{amount, plural, zero {giorni} one {giorno} other {giorni}}} week {{amount, plural, zero {settimane} one {settimana} other {settimane}}} month {{amount, plural, zero {mesi} one {mese} other {mesi}}} year {{amount, plural, zero {anni} one {anno} other {anni}}} other {}}"
+  },
+  "drawer": {
+    "i18nStrings.loadingText": "Caricamento dei contenuti"
   },
   "flashbar": {
     "i18nStrings.ariaLabel": "Notifiche",
@@ -177,13 +187,14 @@
     "i18nStrings.operatorGreaterText": "Maggiore di",
     "i18nStrings.operatorLessOrEqualText": "Minore o uguale a",
     "i18nStrings.operatorLessText": "Minore di",
+    "i18nStrings.operatorStartsWithText": "Inizia con",
     "i18nStrings.operatorText": "Operatore",
     "i18nStrings.operatorsText": "Operatori",
     "i18nStrings.propertyText": "Proprietà",
     "i18nStrings.tokenLimitShowFewer": "Mostra meno",
     "i18nStrings.tokenLimitShowMore": "Mostra altro",
     "i18nStrings.valueText": "Valore",
-    "i18nStrings.removeTokenButtonAriaLabel": "{token__operator, select, equals {Rimuovi filtro, {token__propertyKey} uguale a {token__value}} not_equals {Rimuovi filtro, {token__propertyKey} non è uguale a {token__value}} greater_than {Rimuovi filtro, {token__propertyKey} è maggiore di {token__value}} greater_than_equal {Rimuovi filtro, {token__propertyKey} è maggiore o uguale a {token__value}} less_than {Rimuovi filtro, {token__propertyKey} è inferiore a {token__value}} less_than_equal {Rimuovi filtro, {token__propertyKey} è minore o uguale a {token__value}} contains {Rimuovi filtro, {token__propertyKey} contiene {token__value}} not_contains {Rimuovi filtro, {token__propertyKey} non contiene {token__value}} other {}}"
+    "i18nStrings.removeTokenButtonAriaLabel": "{token__operator, select, equals {Rimuovi filtro, {token__propertyKey} uguale a {token__value}} not_equals {Rimuovi filtro, {token__propertyKey} non è uguale a {token__value}} greater_than {Rimuovi filtro, {token__propertyKey} è maggiore di {token__value}} greater_than_equal {Rimuovi filtro, {token__propertyKey} è maggiore o uguale a {token__value}} less_than {Rimuovi filtro, {token__propertyKey} è inferiore a {token__value}} less_than_equal {Rimuovi filtro, {token__propertyKey} è minore o uguale a {token__value}} contains {Rimuovi filtro, {token__propertyKey} contiene {token__value}} not_contains {Rimuovi filtro, {token__propertyKey} non contiene {token__value}} starts_with {Rimuovi filtro, {token__propertyKey} inizia con {token__value}} other {}}"
   },
   "s3-resource-selector": {
     "i18nStrings.inContextSelectPlaceholder": "Scegli una versione",
@@ -222,7 +233,7 @@
     "i18nStrings.columnVersionID": "ID Versione",
     "i18nStrings.columnVersionLastModified": "Ultima modifica",
     "i18nStrings.columnVersionSize": "Dimensione",
-    "i18nStrings.validationPathMustBegin": "Il percorso deve iniziare con s3://",
+    "i18nStrings.validationPathMustBegin": "Il percorso deve iniziare con s3:// per essere valido.",
     "i18nStrings.validationBucketLowerCase": "Il nome del bucket deve iniziare con un carattere minuscolo o un numero.",
     "i18nStrings.validationBucketMustNotContain": "Il nome del bucket non deve contenere caratteri maiuscoli.",
     "i18nStrings.validationBucketLength": "Il nome del bucket deve contenere da 3 a 63 caratteri.",
@@ -259,6 +270,7 @@
     "i18nStrings.resizeHandleAriaLabel": "Ridimensiona il pannello diviso"
   },
   "table": {
+    "ariaLabels.resizerRoleDescription": "pulsante di ridimensionamento",
     "ariaLabels.submittingEditText": "Invio della modifica in corso",
     "ariaLabels.successfulEditLabel": "Modifica eseguita correttamente",
     "columnDefinitions.editConfig.errorIconAriaLabel": "Errore",

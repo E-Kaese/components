@@ -8,7 +8,7 @@ import Dropdown from '../dropdown';
 import { FormFieldValidationControlProps, useFormFieldContext } from '../../context/form-field-context';
 import { BaseComponentProps, getBaseProps } from '../../base-component';
 import { BaseKeyDetail, fireCancelableEvent, fireNonCancelableEvent, NonCancelableEventHandler } from '../../events';
-import InternalInput from '../../../input/internal';
+import InternalInput, { InternalInputProps } from '../../../input/internal';
 import {
   BaseChangeDetail,
   BaseInputProps,
@@ -171,8 +171,10 @@ const AutosuggestInput = React.forwardRef(
         }
         case KeyCode.escape: {
           if (open) {
+            event.stopPropagation();
             closeDropdown();
           } else if (value) {
+            event.stopPropagation();
             fireNonCancelableEvent(onChange, { value: '' });
           }
           event.preventDefault();
@@ -209,7 +211,7 @@ const AutosuggestInput = React.forwardRef(
     };
 
     const expanded = open && dropdownExpanded;
-    const nativeAttributes = {
+    const nativeAttributes: InternalInputProps['__nativeAttributes'] = {
       name,
       placeholder,
       autoFocus,
@@ -279,7 +281,7 @@ const AutosuggestInput = React.forwardRef(
             />
           }
           onMouseDown={handleDropdownMouseDown}
-          open={open && !!dropdownContent}
+          open={open && (!!dropdownContent || !!dropdownFooter)}
           footer={
             dropdownFooterRef && (
               <div ref={dropdownFooterRef} className={styles['dropdown-footer']}>

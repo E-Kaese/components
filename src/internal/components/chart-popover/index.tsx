@@ -44,6 +44,8 @@ export interface ChartPopoverProps extends PopoverProps {
   /** Fired when the pointer leaves the hoverable area around the popover */
   onMouseLeave?: (event: React.MouseEvent) => void;
 
+  onBlur?: (event: React.FocusEvent) => void;
+
   /** Popover content */
   children?: React.ReactNode;
 }
@@ -68,6 +70,7 @@ function ChartPopover(
 
     onMouseEnter,
     onMouseLeave,
+    onBlur,
 
     ...restProps
   }: ChartPopoverProps,
@@ -102,6 +105,10 @@ function ChartPopover(
       ref={popoverRef}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onBlur={onBlur}
+      // The tabIndex makes it so that clicking inside popover assigns this element as blur target.
+      // That is necessary in charts to ensure the blur target is within the chart and no cleanup is needed.
+      tabIndex={-1}
     >
       <PopoverContainer
         size={size}
@@ -115,6 +122,7 @@ function ChartPopover(
             <div className={popoverStyles['arrow-inner']} />
           </div>
         )}
+        keepPosition={true}
       >
         <div className={styles['hover-area']}>
           <PopoverBody

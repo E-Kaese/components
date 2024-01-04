@@ -8,19 +8,19 @@ import ResizeHandler from '../../split-panel/icons/resize-handler';
 import { getLimitedValue } from '../../split-panel/utils/size-utils';
 import { usePointerEvents } from './use-pointer-events';
 import { useKeyboardEvents } from './use-keyboard-events';
-import { DrawerItem } from '../drawer/interfaces';
+import { AppLayoutProps } from '../interfaces';
 
 import splitPanelStyles from '../../split-panel/styles.css.js';
 import testutilStyles from '../test-classes/styles.css.js';
 import styles from '../visual-refresh/styles.css.js';
-import { DrawerFocusControlRefs } from './use-drawer-focus-control';
+import { FocusControlRefs } from './use-focus-control';
 import { SizeControlProps } from './interfaces';
 
 export interface DrawerResizeProps {
-  activeDrawer: DrawerItem | undefined;
+  activeDrawer: AppLayoutProps.Drawer | undefined;
   activeDrawerSize: number;
   onActiveDrawerResize: (detail: { id: string; size: number }) => void;
-  drawersRefs: DrawerFocusControlRefs;
+  drawersRefs: FocusControlRefs;
   isToolsOpen: boolean;
   drawersMaxWidth: number;
 }
@@ -55,15 +55,11 @@ function useResize(
     }
   };
 
-  const position = 'side';
-  const setBottomPanelHeight = () => {};
-
   const sizeControlProps: SizeControlProps = {
-    position,
+    position: 'side',
     panelRef: drawerRefObject,
     handleRef: drawersRefs.slider,
-    setSidePanelWidth,
-    setBottomPanelHeight,
+    onResize: setSidePanelWidth,
     hasTransitions: true,
   };
 

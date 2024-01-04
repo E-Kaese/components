@@ -6,6 +6,12 @@ import createWrapper from '../../../lib/components/test-utils/selectors';
 import styles from '../../../lib/components/table/styles.selectors.js';
 import scrollbarStyles from '../../../lib/components/table/sticky-scrollbar/styles.selectors.js';
 
+declare global {
+  interface Window {
+    __columnWidths: readonly number[];
+  }
+}
+
 const scrollbarSelector = `.${scrollbarStyles['sticky-scrollbar-visible']}`;
 const wrapper = createWrapper();
 const tableWrapper = wrapper.findTable();
@@ -43,10 +49,29 @@ class TablePage extends BasePageObject {
     return size.width;
   }
 
+  // Returns column width communicated with onColumnWidthsChange
+  readTableWidth(columnIndex: number) {
+    return this.browser.execute(columnIndex => window.__columnWidths[columnIndex - 1], columnIndex);
+  }
+
   async getColumnStyle(columnIndex: number) {
     const columnSelector = tableWrapper.findColumnHeaders().get(columnIndex).toSelector();
     const element = await this.browser.$(columnSelector);
     return element.getAttribute('style');
+  }
+
+  getFirstTableHeaderWidths() {
+    return this.browser.execute(() => {
+      const tables = document.querySelectorAll('table');
+      return Array.from(tables[0].querySelectorAll('th')).map(el => el.offsetWidth);
+    });
+  }
+
+  getLastTableHeaderWidths() {
+    return this.browser.execute(() => {
+      const tables = document.querySelectorAll('table');
+      return Array.from(tables[tables.length - 1].querySelectorAll('th')).map(el => el.offsetWidth);
+    });
   }
 
   async getColumnMinWidth(columnIndex: number) {
@@ -98,17 +123,29 @@ class TablePage extends BasePageObject {
   }
 }
 
-const setupTest = (testFn: (page: TablePage) => Promise<void>) => {
+interface PageConfig {
+  stickyHeader?: boolean;
+  withColumnIds?: boolean;
+  withSelection?: boolean;
+}
+
+const setupTest = (testFn: (page: TablePage) => Promise<void>, config?: PageConfig) => {
   return useBrowser({ ...defaultScreen }, async browser => {
     const page = new TablePage(browser);
-    await browser.url('#/light/table/resizable-columns?visualRefresh=false');
+    const params = new URLSearchParams({
+      visualRefresh: 'false',
+      stickyHeader: config?.stickyHeader !== undefined ? String(config.stickyHeader) : 'false',
+      withColumnIds: config?.withColumnIds !== undefined ? String(config.withColumnIds) : 'true',
+      withSelection: config?.withSelection !== undefined ? String(config.withSelection) : 'false',
+    }).toString();
+    await browser.url(`#/light/table/resizable-columns?${params}`);
     await page.waitForVisible(tableWrapper.findBodyCell(2, 1).toSelector());
     await testFn(page);
   });
 };
 
 describe.each([true, false])('StickyHeader=%s', sticky => {
-  function setupStickyTest(testFn: (page: TablePage) => Promise<void>) {
+  function setupStickyTest(testFn: (page: TablePage) => Promise<void>, config?: PageConfig) {
     return setupTest(async page => {
       if (sticky) {
         await page.toggleStickyHeader();
@@ -116,7 +153,7 @@ describe.each([true, false])('StickyHeader=%s', sticky => {
         await expect(page.getHeaderTopOffset()).resolves.toEqual(0);
       }
       await testFn(page);
-    });
+    }, config);
   }
 
   test(
@@ -166,11 +203,27 @@ describe.each([true, false])('StickyHeader=%s', sticky => {
     })
   );
 
+  // The page width of 620px is an empirical value defined for the respective test page in VR
+  // so that the container width is slightly less than the table width (a sum of the column widths).
+  // In that case we expect the container to be scrollable and no auto-width set for the last column.
   test(
-    'should render "width: auto" for the last on big screens and explicit value on small',
-    setupStickyTest(async page => {
-      await expect(page.getColumnStyle(4)).resolves.toContain('width: auto;');
-      await page.setWindowSize({ ...defaultScreen, width: 620 });
+    'should set explicit width for the last column when table width exceeds container width',
+    useBrowser({ width: 620, height: 1000 }, async browser => {
+      const page = new TablePage(browser);
+      await browser.url('#/light/table/resizable-columns?visualRefresh=true');
+      await page.waitForVisible(tableWrapper.findBodyCell(2, 1).toSelector());
+
+      await expect(page.getColumnStyle(4)).resolves.toContain('width: 120px;');
+    })
+  );
+
+  test(
+    'should set explicit width for the last column when full-page table width exceeds container width',
+    useBrowser({ width: 600, height: 1000 }, async browser => {
+      const page = new TablePage(browser);
+      await browser.url('#/light/table/resizable-columns?visualRefresh=true&fullPage=true');
+      await page.waitForVisible(tableWrapper.findBodyCell(2, 1).toSelector());
+
       await expect(page.getColumnStyle(4)).resolves.toContain('width: 120px;');
     })
   );
@@ -216,6 +269,46 @@ describe.each([true, false])('StickyHeader=%s', sticky => {
   );
 });
 
+describe('sticky header sync', () => {
+  test.each([1680, 620])('sticky and real column headers must have identical widths for screen width %s', width =>
+    setupTest(
+      async page => {
+        await page.setWindowSize({ ...defaultScreen, width });
+        const stickyHeaderWidths = await page.getFirstTableHeaderWidths();
+        const realHeaderWidths = await page.getLastTableHeaderWidths();
+        expect(stickyHeaderWidths).toEqual(realHeaderWidths);
+      },
+      { stickyHeader: true }
+    )()
+  );
+
+  test.each([false, true])(
+    'sticky and real column headers must have identical widths when column ids = %s',
+    withColumnIds =>
+      setupTest(
+        async page => {
+          const stickyHeaderWidths = await page.getFirstTableHeaderWidths();
+          const realHeaderWidths = await page.getLastTableHeaderWidths();
+          expect(stickyHeaderWidths).toEqual(realHeaderWidths);
+        },
+        { stickyHeader: true, withColumnIds }
+      )()
+  );
+
+  test.each([false, true])(
+    'sticky and real column headers must have identical widths when selection = %s',
+    withSelection =>
+      setupTest(
+        async page => {
+          const stickyHeaderWidths = await page.getFirstTableHeaderWidths();
+          const realHeaderWidths = await page.getLastTableHeaderWidths();
+          expect(stickyHeaderWidths).toEqual(realHeaderWidths);
+        },
+        { stickyHeader: true, withSelection }
+      )()
+  );
+});
+
 test(
   'should show and hide scrollbar',
   setupTest(async page => {
@@ -239,7 +332,7 @@ test(
 );
 
 test(
-  'should recover column withs when the inner state is reset',
+  'should recover column widths when the inner state is reset',
   setupTest(async page => {
     await page.resizeColumn(2, 100);
     const oldWidth = await page.getColumnWidth(2);
@@ -253,17 +346,20 @@ test(
   'should resize column to grow by keyboard',
   setupTest(async page => {
     await page.click('#reset-state');
-    const oldWidth = await page.getColumnWidth(1);
+    const originalWidth = await page.getColumnWidth(1);
     await page.keys(['Tab']);
     // wait for the resizer to attach handler
 
     await page.keys(['Enter', 'ArrowRight', 'ArrowRight', 'Enter']);
-    await page.assertColumnWidth(1, oldWidth + 10 + 10);
+    await page.assertColumnWidth(1, originalWidth + 20);
+    await expect(page.readTableWidth(1)).resolves.toEqual(originalWidth + 20);
 
     await page.keys(['Space', 'ArrowLeft', 'Space']);
-    await page.assertColumnWidth(1, oldWidth + 10);
+    await page.assertColumnWidth(1, originalWidth + 10);
+    await expect(page.readTableWidth(1)).resolves.toEqual(originalWidth + 10);
 
     await page.keys(['Enter', 'ArrowRight', 'Escape']);
-    await page.assertColumnWidth(1, oldWidth + 10);
+    await page.assertColumnWidth(1, originalWidth + 20);
+    await expect(page.readTableWidth(1)).resolves.toEqual(originalWidth + 20);
   })
 );

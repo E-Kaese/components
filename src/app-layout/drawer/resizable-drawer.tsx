@@ -12,19 +12,21 @@ import testutilStyles from '../test-classes/styles.css.js';
 
 import ResizeHandler from '../../split-panel/icons/resize-handler';
 import splitPanelStyles from '../../split-panel/styles.css.js';
+import styles from './styles.css.js';
 import { ResizableDrawerProps } from './interfaces';
+import { TOOLS_DRAWER_ID } from '../utils/use-drawers';
 
 export const ResizableDrawer = ({
   onResize,
   size,
+  minSize,
   getMaxWidth,
   refs,
   activeDrawer,
+  toolsContent,
   ...props
 }: ResizableDrawerProps) => {
   const { isOpen, children, isMobile } = props;
-
-  const MIN_WIDTH = activeDrawer?.defaultSize && activeDrawer.defaultSize < 280 ? activeDrawer?.defaultSize : 280;
   const [relativeSize, setRelativeSize] = useState(0);
 
   useEffect(() => {
@@ -39,24 +41,21 @@ export const ResizableDrawer = ({
 
   const setSidePanelWidth = (width: number) => {
     const maxWidth = getMaxWidth();
-    const size = getLimitedValue(MIN_WIDTH, width, maxWidth);
+    const size = getLimitedValue(minSize, width, maxWidth);
     const id = activeDrawer?.id;
 
-    if (isOpen && id && maxWidth >= MIN_WIDTH) {
+    if (isOpen && id && maxWidth >= minSize) {
       onResize({ size, id });
     }
   };
 
-  const position = 'side';
-  const setBottomPanelHeight = () => {};
   const drawerRefObject = useRef<HTMLDivElement>(null);
 
   const sizeControlProps: SizeControlProps = {
-    position,
+    position: 'side',
     panelRef: drawerRefObject,
     handleRef: refs.slider,
-    setSidePanelWidth,
-    setBottomPanelHeight,
+    onResize: setSidePanelWidth,
   };
 
   const onSliderPointerDown = usePointerEvents(sizeControlProps);
@@ -82,18 +81,21 @@ export const ResizableDrawer = ({
   return (
     <Drawer
       {...props}
+      id={activeDrawer?.id}
       ref={drawerRefObject}
+      isHidden={!activeDrawer}
       resizeHandle={
         !isMobile &&
         activeDrawer?.resizable && <div className={splitPanelStyles['slider-wrapper-side']}>{resizeHandle}</div>
       }
-      drawersAriaLabels={{
+      ariaLabels={{
         openLabel: activeDrawer?.ariaLabels?.triggerButton,
-        mainLabel: activeDrawer?.ariaLabels?.content,
+        mainLabel: activeDrawer?.ariaLabels?.drawerName,
         closeLabel: activeDrawer?.ariaLabels?.closeButton,
       }}
     >
-      {children}
+      {toolsContent && <div className={clsx(activeDrawer?.id !== TOOLS_DRAWER_ID && styles.hide)}>{toolsContent}</div>}
+      {activeDrawer?.id !== TOOLS_DRAWER_ID ? children : null}
     </Drawer>
   );
 };

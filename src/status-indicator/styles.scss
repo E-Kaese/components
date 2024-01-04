@@ -25,6 +25,7 @@ $_color-overrides: (
   'grey': awsui.$color-text-status-inactive,
   'blue': awsui.$color-text-status-info,
   'green': awsui.$color-text-status-success,
+  'yellow': awsui.$color-text-status-warning,
 );
 
 .root {
@@ -41,20 +42,24 @@ $_color-overrides: (
   }
 }
 
-.icon {
-  padding-right: awsui.$space-xxs;
-}
-
 .container {
-  word-break: break-all;
-  word-wrap: break-word;
-
   &.display-inline {
+    @include styles.text-wrapping;
     display: inline;
+
+    > .icon {
+      white-space: nowrap;
+    }
   }
 
   &.display-inline-block {
     display: inline-block;
+    word-wrap: break-word;
+    word-break: break-all;
+
+    > .icon {
+      padding-right: awsui.$space-xxs;
+    }
   }
 }
 

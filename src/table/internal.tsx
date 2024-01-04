@@ -4,12 +4,11 @@ import clsx from 'clsx';
 import React, { useCallback, useImperativeHandle, useRef } from 'react';
 import { TableForwardRefType, TableProps } from './interfaces';
 import { getVisualContextClassname } from '../internal/components/visual-context';
-import InternalContainer from '../container/internal';
+import InternalContainer, { InternalContainerProps } from '../container/internal';
 import { getBaseProps } from '../internal/base-component';
 import ToolsHeader from './tools-header';
 import Thead, { TheadProps } from './thead';
 import { TableBodyCell } from './body-cell';
-import InternalStatusIndicator from '../status-indicator/internal';
 import { supportsStickyPosition } from '../internal/utils/dom';
 import { checkSortingState, getColumnKey, getItemKey, getVisibleColumnDefinitions, toContainerVariant } from './utils';
 import { useRowEvents } from './use-row-events';
@@ -20,6 +19,7 @@ import { ColumnWidthDefinition, ColumnWidthsProvider, DEFAULT_COLUMN_WIDTH } fro
 import { useScrollSync } from '../internal/hooks/use-scroll-sync';
 import { ResizeTracker } from './resizer';
 import styles from './styles.css.js';
+import headerStyles from '../header/styles.css.js';
 import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
 import { useVisualRefresh } from '../internal/hooks/use-visual-mode';
 import StickyHeader, { StickyHeaderRef } from './sticky-header';
@@ -39,12 +39,30 @@ import { getTableRoleProps, getTableRowRoleProps, getTableWrapperRoleProps } fro
 import { useCellEditing } from './use-cell-editing';
 import { LinkDefaultVariantContext } from '../internal/context/link-default-variant-context';
 import { CollectionLabelContext } from '../internal/context/collection-label-context';
+import { useFunnelSubStep } from '../internal/analytics/hooks/use-funnel';
+import { NoDataCell } from './no-data-cell';
+import { usePerformanceMarks } from '../internal/hooks/use-performance-marks';
 
 const SELECTION_COLUMN_WIDTH = 54;
 const selectionColumnId = Symbol('selection-column-id');
 
 type InternalTableProps<T> = SomeRequired<TableProps<T>, 'items' | 'selectedItems' | 'variant'> &
-  InternalBaseComponentProps;
+  InternalBaseComponentProps & {
+    __funnelSubStepProps?: InternalContainerProps['__funnelSubStepProps'];
+  };
+
+export const InternalTableAsSubstep = React.forwardRef(
+  <T,>(props: InternalTableProps<T>, ref: React.Ref<TableProps.Ref>) => {
+    const { funnelSubStepProps } = useFunnelSubStep();
+
+    const tableProps: InternalTableProps<T> = {
+      ...props,
+      __funnelSubStepProps: funnelSubStepProps,
+    };
+
+    return <InternalTable {...tableProps} ref={ref} />;
+  }
+) as TableForwardRefType;
 
 const InternalTable = React.forwardRef(
   <T,>(
@@ -88,6 +106,7 @@ const InternalTable = React.forwardRef(
       renderAriaLive,
       stickyColumns,
       columnDisplay,
+      __funnelSubStepProps,
       ...rest
     }: InternalTableProps<T>,
     ref: React.Ref<TableProps.Ref>
@@ -97,7 +116,8 @@ const InternalTable = React.forwardRef(
     const isMobile = useMobile();
 
     const [containerWidth, wrapperMeasureRef] = useContainerQuery<number>(rect => rect.contentBoxWidth);
-    const wrapperRefObject = useRef(null);
+    const wrapperMeasureRefObject = useRef(null);
+    const wrapperMeasureMergedRef = useMergeRefs(wrapperMeasureRef, wrapperMeasureRefObject);
 
     const [tableWidth, tableMeasureRef] = useContainerQuery<number>(rect => rect.contentBoxWidth);
     const tableRefObject = useRef(null);
@@ -108,6 +128,23 @@ const InternalTable = React.forwardRef(
     const scrollbarRef = React.useRef<HTMLDivElement>(null);
     const { cancelEdit, ...cellEditing } = useCellEditing({ onCancel: onEditCancel, onSubmit: submitEdit });
 
+    usePerformanceMarks(
+      'table',
+      true,
+      tableRefObject,
+      () => {
+        const headerText =
+          toolsHeaderWrapper.current?.querySelector<HTMLElement>(`.${headerStyles['heading-text']}`)?.innerText ??
+          toolsHeaderWrapper.current?.innerText;
+
+        return {
+          loading: loading ?? false,
+          header: headerText,
+        };
+      },
+      [loading]
+    );
+
     useImperativeHandle(
       ref,
       () => ({
@@ -117,6 +154,7 @@ const InternalTable = React.forwardRef(
       [cancelEdit]
     );
 
+    const wrapperRefObject = useRef(null);
     const handleScroll = useScrollSync([wrapperRefObject, scrollbarRef, secondaryWrapperRef]);
 
     const { moveFocusDown, moveFocusUp, moveFocus } = useSelectionFocusMove(selectionType, items.length);
@@ -188,7 +226,6 @@ const InternalTable = React.forwardRef(
     const tableRole = hasEditableCells ? 'grid-default' : 'table';
 
     const theadProps: TheadProps = {
-      containerWidth,
       selectionType,
       getSelectAllProps,
       columnDefinitions: visibleColumnDefinitions,
@@ -202,7 +239,8 @@ const InternalTable = React.forwardRef(
       onFocusMove: moveFocus,
       onResizeFinish(newWidth) {
         const widthsDetail = columnDefinitions.map(
-          (column, index) => newWidth[getColumnKey(column, index)] || (column.width as number) || DEFAULT_COLUMN_WIDTH
+          (column, index) =>
+            newWidth.get(getColumnKey(column, index)) || (column.width as number) || DEFAULT_COLUMN_WIDTH
         );
         const widthsChanged = widthsDetail.some((width, index) => columnDefinitions[index].width !== width);
         if (widthsChanged) {
@@ -210,13 +248,14 @@ const InternalTable = React.forwardRef(
         }
       },
       singleSelectionHeaderAriaLabel: ariaLabels?.selectionGroupLabel,
+      resizerRoleDescription: ariaLabels?.resizerRoleDescription,
       stripedRows,
       stickyState,
       selectionColumnId,
       tableRole,
     };
 
-    const wrapperRef = useMergeRefs(wrapperMeasureRef, wrapperRefObject, stickyState.refs.wrapper);
+    const wrapperRef = useMergeRefs(wrapperRefObject, stickyState.refs.wrapper);
     const tableRef = useMergeRefs(tableMeasureRef, tableRefObject, stickyState.refs.table);
 
     const wrapperProps = getTableWrapperRoleProps({
@@ -230,7 +269,7 @@ const InternalTable = React.forwardRef(
     const hasDynamicHeight = computedVariant === 'full-page';
     const overlapElement = useDynamicOverlap({ disabled: !hasDynamicHeight });
     useTableFocusNavigation(selectionType, tableRefObject, visibleColumnDefinitions, items?.length);
-    const toolsHeaderWrapper = useRef(null);
+    const toolsHeaderWrapper = useRef<HTMLDivElement>(null);
     // If is mobile, we take into consideration the AppLayout's mobile bar and we subtract the tools wrapper height so only the table header is sticky
     const toolsHeaderHeight =
       (toolsHeaderWrapper?.current as HTMLDivElement | null)?.getBoundingClientRect().height ?? 0;
@@ -239,11 +278,16 @@ const InternalTable = React.forwardRef(
 
     return (
       <LinkDefaultVariantContext.Provider value={{ defaultVariant: 'primary' }}>
-        <ColumnWidthsProvider visibleColumns={visibleColumnWidthsWithSelection} resizableColumns={resizableColumns}>
+        <ColumnWidthsProvider
+          visibleColumns={visibleColumnWidthsWithSelection}
+          resizableColumns={resizableColumns}
+          containerRef={wrapperMeasureRefObject}
+        >
           <InternalContainer
             {...baseProps}
             __internalRootRef={__internalRootRef}
             className={clsx(baseProps.className, styles.root)}
+            __funnelSubStepProps={__funnelSubStepProps}
             header={
               <>
                 {hasHeader && (
@@ -314,6 +358,7 @@ const InternalTable = React.forwardRef(
               onScroll={handleScroll}
               {...wrapperProps}
             >
+              <div className={styles['wrapper-content-measure']} ref={wrapperMeasureMergedRef}></div>
               {!!renderAriaLive && !!firstIndex && (
                 <LiveRegion>
                   <span>
@@ -345,26 +390,15 @@ const InternalTable = React.forwardRef(
                 <tbody>
                   {loading || items.length === 0 ? (
                     <tr>
-                      <td
-                        colSpan={totalColumnsCount}
-                        className={clsx(styles['cell-merged'], hasFooter && styles['has-footer'])}
-                      >
-                        <div
-                          className={styles['cell-merged-content']}
-                          style={{
-                            width:
-                              (supportsStickyPosition() && containerWidth && Math.floor(containerWidth)) || undefined,
-                          }}
-                        >
-                          {loading ? (
-                            <InternalStatusIndicator type="loading" className={styles.loading} wrapText={true}>
-                              <LiveRegion visible={true}>{loadingText}</LiveRegion>
-                            </InternalStatusIndicator>
-                          ) : (
-                            <div className={styles.empty}>{empty}</div>
-                          )}
-                        </div>
-                      </td>
+                      <NoDataCell
+                        totalColumnsCount={totalColumnsCount}
+                        hasFooter={hasFooter}
+                        loading={loading}
+                        loadingText={loadingText}
+                        empty={empty}
+                        tableRef={tableRefObject}
+                        containerRef={wrapperMeasureRefObject}
+                      />
                     </tr>
                   ) : (
                     items.map((item, rowIndex) => {
@@ -471,6 +505,7 @@ const InternalTable = React.forwardRef(
               </table>
               {resizableColumns && <ResizeTracker />}
             </div>
+
             <StickyScrollbar
               ref={scrollbarRef}
               wrapperRef={wrapperRefObject}

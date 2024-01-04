@@ -40,6 +40,7 @@ export default function Layout({ children }: LayoutProps) {
     minContentWidth,
     navigationHide,
     notificationsHeight,
+    __embeddedViewMode,
     splitPanelPosition,
     stickyNotifications,
     splitPanelDisplayed,
@@ -50,7 +51,7 @@ export default function Layout({ children }: LayoutProps) {
 
   // Content gaps on the left and right are used with the minmax function in the CSS grid column definition
   const hasContentGapLeft = isNavigationOpen || navigationHide;
-  const hasContentGapRight = drawersTriggerCount <= 0 || hasOpenDrawer;
+  const hasContentGapRight = drawersTriggerCount === 0 || hasOpenDrawer;
 
   return (
     <main
@@ -72,6 +73,7 @@ export default function Layout({ children }: LayoutProps) {
           [styles['has-sticky-background']]: hasStickyBackground,
           [styles['has-sticky-notifications']]: stickyNotifications && hasNotificationsContent,
           [styles['is-overlap-disabled']]: isBackgroundOverlapDisabled,
+          [styles['is-hide-mobile-toolbar']]: __embeddedViewMode,
         },
         testutilStyles.root
       )}

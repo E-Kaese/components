@@ -19,12 +19,13 @@ import { FunnelMetrics } from '../internal/analytics';
 import { useFunnel } from '../internal/analytics/hooks/use-funnel';
 import { getNameFromSelector, getSubStepAllSelector } from '../internal/analytics/selectors';
 
-import WizardForm from './wizard-form';
+import WizardForm, { STEP_NAME_SELECTOR } from './wizard-form';
 import WizardNavigation from './wizard-navigation';
 
 import { WizardProps } from './interfaces';
 
 import styles from './styles.css.js';
+import { useFunnelChangeEvent } from './analytics';
 
 type InternalWizardProps = WizardProps & InternalBaseComponentProps;
 
@@ -64,15 +65,14 @@ export default function InternalWizard({
 
   const navigationEvent = (requestedStepIndex: number, reason: WizardProps.NavigationReason) => {
     if (funnelInteractionId) {
-      const stepNameSelector = `.${styles['form-header-component-wrapper']}`;
-      const stepName = getNameFromSelector(stepNameSelector);
+      const stepName = getNameFromSelector(STEP_NAME_SELECTOR);
 
       FunnelMetrics.funnelStepNavigation({
         navigationType: reason,
         funnelInteractionId,
         stepNumber: actualActiveStepIndex + 1,
         stepName,
-        stepNameSelector,
+        stepNameSelector: STEP_NAME_SELECTOR,
         destinationStepNumber: requestedStepIndex + 1,
         subStepAllSelector: getSubStepAllSelector(),
       });
@@ -98,6 +98,8 @@ export default function InternalWizard({
       navigationEvent(actualActiveStepIndex + 1, 'next');
     }
   };
+
+  useFunnelChangeEvent(funnelInteractionId, steps);
 
   const i18n = useInternalI18n('wizard');
   const skipToButtonLabel = i18n(

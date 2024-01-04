@@ -23,6 +23,8 @@ import { nodeBelongs } from '../internal/utils/node-belongs';
 import clsx from 'clsx';
 import { useVisualRefresh } from '../internal/hooks/use-visual-mode';
 import { useHeightMeasure } from '../internal/hooks/container-queries/use-height-measure';
+import ChartPopoverFooter from '../internal/components/chart-popover-footer';
+import LiveRegion from '../internal/components/live-region';
 
 export interface InternalChartDatum<T> {
   index: number;
@@ -47,7 +49,7 @@ interface InternalPieChartProps<T extends PieChartProps.Datum>
   dataSum: number;
 }
 
-export interface TooltipData<T> {
+export interface PopoverData<T> {
   datum: T;
   trackRef: React.RefObject<SVGElement>;
   series: SeriesInfo;
@@ -101,8 +103,8 @@ export default <T extends PieChartProps.Datum>({
 
   const innerMetricId = useUniqueId('awsui-pie-chart__inner');
 
-  const [isTooltipOpen, setTooltipOpen] = useState<boolean>(false);
-  const [tooltipData, setTooltipData] = useState<TooltipData<T>>();
+  const [isPopoverOpen, setPopoverOpen] = useState<boolean>(false);
+  const [popoverData, setPopoverData] = useState<PopoverData<T>>();
 
   const highlightedSegmentIndex = useMemo(() => {
     for (let index = 0; index < pieData.length; index++) {
@@ -120,8 +122,9 @@ export default <T extends PieChartProps.Datum>({
 
   const i18n = useInternalI18n('pie-chart');
   const detailFunction = detailPopoverContent || defaultDetails(i18n, i18nStrings);
-  const details = tooltipData ? detailFunction(tooltipData.datum, dataSum) : [];
-  const tooltipContent = tooltipData && <SeriesDetails details={details} />;
+  const details = popoverData ? detailFunction(popoverData.datum, dataSum) : [];
+  const popoverContentRef = useRef<HTMLDivElement | null>(null);
+  const popoverContent = popoverData && <SeriesDetails details={details} ref={popoverContentRef} />;
 
   const popoverDismissedRecently = useRef(false);
   const escapePressed = useRef(false);
@@ -134,7 +137,7 @@ export default <T extends PieChartProps.Datum>({
       }
 
       if (popoverTrackRef.current) {
-        setTooltipData({
+        setPopoverData({
           datum: internalDatum.datum,
           series: {
             color: internalDatum.color,
@@ -144,16 +147,16 @@ export default <T extends PieChartProps.Datum>({
           },
           trackRef: popoverTrackRef,
         });
-        setTooltipOpen(true);
+        setPopoverOpen(true);
       }
     },
-    [highlightedSegment, setTooltipOpen, onHighlightChange]
+    [highlightedSegment, setPopoverOpen, onHighlightChange]
   );
 
   const clearHighlightedSegment = useCallback(() => {
-    setTooltipOpen(false);
+    setPopoverOpen(false);
     onHighlightChange(null);
-  }, [onHighlightChange, setTooltipOpen]);
+  }, [onHighlightChange, setPopoverOpen]);
 
   const checkMouseLeave = (event: React.MouseEvent) => {
     if (pinnedSegment !== null) {
@@ -261,17 +264,17 @@ export default <T extends PieChartProps.Datum>({
     (event: React.FocusEvent) => {
       const blurTarget = event.relatedTarget || event.target;
       if (blurTarget === null || !(blurTarget instanceof Element) || !nodeBelongs(containerRef.current, blurTarget)) {
-        // We only need to close the tooltip and remove the pinned segment so that we keep track of the current
+        // We only need to close the popover and remove the pinned segment so that we keep track of the current
         // highlighted legendSeries. using clearHighlightedSegment() would set the legendSeries to null, in that case
         // using Keyboard Tab will always highlight the first legend item in the legend component.
-        setTooltipOpen(false);
+        setPopoverOpen(false);
         setPinnedSegment(null);
       }
     },
     [setPinnedSegment]
   );
   const onPopoverDismiss = (outsideClick?: boolean) => {
-    setTooltipOpen(false);
+    setPopoverOpen(false);
     setPinnedSegment(null);
 
     if (!outsideClick) {
@@ -303,13 +306,12 @@ export default <T extends PieChartProps.Datum>({
           height={fitHeight ? '100%' : height}
           transform={`translate(${width / 2} ${height / 2})`}
           isPrecise={true}
-          isClickable={!isTooltipOpen}
+          isClickable={!isPopoverOpen}
           ariaLabel={ariaLabel}
           ariaLabelledby={ariaLabelledby}
           ariaDescription={ariaDescription}
           ariaDescribedby={hasInnerContent ? innerMetricId : undefined}
           ariaRoleDescription={i18nStrings?.chartAriaRoleDescription}
-          ariaLiveRegion={tooltipContent}
           activeElementRef={focusedSegmentRef}
           activeElementKey={highlightedSegmentIndex?.toString()}
           onFocus={onFocus}
@@ -362,30 +364,32 @@ export default <T extends PieChartProps.Datum>({
           )}
         </div>
       )}
-      {isTooltipOpen && tooltipData && (
+      {isPopoverOpen && popoverData && (
         <ChartPopover
           ref={popoverRef}
           title={
-            tooltipData.series && (
+            popoverData.series && (
               <InternalBox className={styles['popover-header']} variant="strong">
-                <SeriesMarker color={tooltipData.series.color} type={tooltipData.series.markerType} />{' '}
-                {tooltipData.series.label}
+                <SeriesMarker color={popoverData.series.color} type={popoverData.series.markerType} />{' '}
+                {popoverData.series.label}
               </InternalBox>
             )
           }
-          trackRef={tooltipData.trackRef}
-          trackKey={tooltipData.series.index}
+          trackRef={popoverData.trackRef}
+          trackKey={popoverData.series.index}
           dismissButton={pinnedSegment !== null}
           dismissAriaLabel={i18nStrings.detailPopoverDismissAriaLabel}
           onDismiss={onPopoverDismiss}
           container={plotRef.current?.svg || null}
           size={detailPopoverSize}
           onMouseLeave={checkMouseLeave}
+          onBlur={onBlur}
         >
-          {tooltipContent}
-          {detailPopoverFooterContent && <InternalBox margin={{ top: 's' }}>{detailPopoverFooterContent}</InternalBox>}
+          {popoverContent}
+          {detailPopoverFooterContent && <ChartPopoverFooter>{detailPopoverFooterContent}</ChartPopoverFooter>}
         </ChartPopover>
       )}
+      <LiveRegion source={[popoverContentRef]} />
     </div>
   );
 };

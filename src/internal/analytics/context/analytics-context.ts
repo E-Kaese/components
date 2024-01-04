@@ -1,13 +1,15 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import { MutableRefObject, RefObject, createContext } from 'react';
-import { FunnelType } from '../interfaces';
+import { FunnelType, SubStepConfiguration } from '../interfaces';
+import { getFunnelNameSelector } from '../selectors';
 
 export type FunnelState = 'default' | 'validating' | 'complete' | 'cancelled';
 
 export interface FunnelContextValue {
   funnelInteractionId: string | undefined;
   funnelType: FunnelType;
+  funnelNameSelector: string;
   optionalStepNumbers: number[];
   totalFunnelSteps: number;
   funnelSubmit: () => void;
@@ -32,6 +34,7 @@ export interface FunnelStepContextValue {
   funnelInteractionId: string | undefined;
   /** This function is called when the list of substeps in this step changes.  */
   onStepChange: () => void;
+  subStepConfiguration: MutableRefObject<Map<number, SubStepConfiguration[] | undefined> | undefined>;
 }
 
 export interface FunnelSubStepContextValue {
@@ -59,6 +62,7 @@ export interface FunnelSubStepContextValue {
 /* istanbul ignore next */
 export const FunnelContext = createContext<FunnelContextValue>({
   funnelInteractionId: undefined,
+  funnelNameSelector: getFunnelNameSelector(),
   setFunnelInteractionId: () => {},
   funnelType: 'single-page',
   optionalStepNumbers: [],
@@ -82,6 +86,7 @@ export const FunnelStepContext = createContext<FunnelStepContextValue>({
   isInStep: false,
   funnelInteractionId: undefined,
   onStepChange: () => {},
+  subStepConfiguration: { current: new Map() },
 });
 
 export const FunnelSubStepContext = createContext<FunnelSubStepContextValue>({
@@ -94,3 +99,5 @@ export const FunnelSubStepContext = createContext<FunnelSubStepContextValue>({
   isFocusedSubStep: { current: false },
   focusCleanupFunction: { current: undefined },
 });
+
+export const FunnelNameSelectorContext = createContext<string | undefined>(undefined);

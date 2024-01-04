@@ -1,13 +1,15 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import * as React from 'react';
+import React, { useLayoutEffect } from 'react';
 import times from 'lodash/times';
-import { render } from '@testing-library/react';
+import { useResizeObserver } from '@cloudscape-design/component-toolkit/internal';
+import { render, screen } from '@testing-library/react';
 import createWrapper, { TableWrapper } from '../../../lib/components/test-utils/dom';
 import Table, { TableProps } from '../../../lib/components/table';
 import resizerStyles from '../../../lib/components/table/resizer/styles.css.js';
 import { fireMousedown, fireMouseup, fireMouseMove, fakeBoundingClientRect } from './utils/resize-actions';
 import { KeyCode } from '@cloudscape-design/test-utils-core/dist/utils';
+import { ContainerQueryEntry } from '@cloudscape-design/component-toolkit/lib/internal/container-queries/interfaces';
 
 jest.mock('../../../lib/components/internal/utils/scrollable-containers', () => ({
   browserScrollbarSize: () => ({ width: 20, height: 20 }),
@@ -17,6 +19,11 @@ jest.mock('../../../lib/components/internal/utils/scrollable-containers', () => 
     overflowParent.getBoundingClientRect = fakeBoundingClientRect;
     return [overflowParent];
   }),
+}));
+
+jest.mock('@cloudscape-design/component-toolkit/internal', () => ({
+  ...jest.requireActual('@cloudscape-design/component-toolkit/internal'),
+  useResizeObserver: jest.fn(),
 }));
 
 interface Item {
@@ -31,6 +38,9 @@ const defaultProps: TableProps<Item> = {
     { id: 'description', header: 'Description', cell: item => item.description, width: 300 },
   ],
   items: times(20, index => ({ id: index + 1, description: 'Description' })),
+  ariaLabels: {
+    resizerRoleDescription: 'resize button',
+  },
 };
 
 function renderTable(jsx: React.ReactElement) {
@@ -43,8 +53,8 @@ function hasGlobalResizeClass() {
   return document.body.classList.contains(resizerStyles['resize-active']);
 }
 
-function findActiveResizer(wrapper: TableWrapper) {
-  return wrapper.findByClassName(resizerStyles['resizer-active']);
+function findActiveDivider(wrapper: TableWrapper) {
+  return wrapper.findByClassName(resizerStyles['divider-active']);
 }
 
 afterEach(() => {
@@ -101,15 +111,15 @@ test('should use the default width if it is not provided to a column and the col
 
 test('should show the tracking line and activate resizer onMouseDown', () => {
   const { wrapper } = renderTable(<Table {...defaultProps} />);
-  expect(findActiveResizer(wrapper)).toBeNull();
+  expect(findActiveDivider(wrapper)).toBeNull();
   expect(hasGlobalResizeClass()).toEqual(false);
 
   fireMousedown(wrapper.findColumnResizer(1)!);
-  expect(findActiveResizer(wrapper)).not.toBeNull();
+  expect(findActiveDivider(wrapper)).not.toBeNull();
   expect(hasGlobalResizeClass()).toEqual(true);
 
   fireMouseup(150);
-  expect(findActiveResizer(wrapper)).toBeNull();
+  expect(findActiveDivider(wrapper)).toBeNull();
   expect(hasGlobalResizeClass()).toEqual(false);
 });
 
@@ -295,18 +305,21 @@ test('should not trigger if the previous and the current widths are the same', (
 });
 
 describe('resize with keyboard', () => {
+  let mockWidth = 150;
+
   const originalBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
   beforeEach(() => {
     HTMLElement.prototype.getBoundingClientRect = function () {
       const rect = originalBoundingClientRect.apply(this);
       if (this.tagName === 'TH') {
-        rect.width = 150;
+        rect.width = mockWidth;
       }
       return rect;
     };
   });
 
   afterEach(() => {
+    mockWidth = 150;
     HTMLElement.prototype.getBoundingClientRect = originalBoundingClientRect;
   });
 
@@ -322,7 +335,7 @@ describe('resize with keyboard', () => {
     expect(onChange).toHaveBeenCalledTimes(0);
   });
 
-  test.each([KeyCode.space, KeyCode.enter])('activates and commits resize with [%s] key code', keyCode => {
+  test.each([KeyCode.space, KeyCode.enter])('activates and commits keyboard resize with keyCode="%s"', keyCode => {
     const onChange = jest.fn();
     const { wrapper } = renderTable(<Table {...defaultProps} onColumnWidthsChange={event => onChange(event.detail)} />);
     const columnResizerWrapper = wrapper.findColumnResizer(1)!;
@@ -336,7 +349,21 @@ describe('resize with keyboard', () => {
     expect(onChange).toHaveBeenCalledWith({ widths: [140, 300] });
   });
 
-  test.each([KeyCode.escape])('discards resize with [%s] key code', keyCode => {
+  test('activates keyboard resize with click', () => {
+    const onChange = jest.fn();
+    const { wrapper } = renderTable(<Table {...defaultProps} onColumnWidthsChange={event => onChange(event.detail)} />);
+    const columnResizerWrapper = wrapper.findColumnResizer(1)!;
+
+    columnResizerWrapper.focus();
+    columnResizerWrapper.click();
+    columnResizerWrapper.keydown(KeyCode.right);
+    columnResizerWrapper.keydown(KeyCode.enter);
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith({ widths: [160, 300] });
+  });
+
+  test('submits resize with escape', () => {
     const onChange = jest.fn();
     const { wrapper } = renderTable(<Table {...defaultProps} onColumnWidthsChange={event => onChange(event.detail)} />);
     const columnResizerWrapper = wrapper.findColumnResizer(1)!;
@@ -344,13 +371,13 @@ describe('resize with keyboard', () => {
     columnResizerWrapper.focus();
     columnResizerWrapper.keydown(KeyCode.enter);
     columnResizerWrapper.keydown(KeyCode.right);
-    columnResizerWrapper.keydown(keyCode);
-    columnResizerWrapper.keydown(KeyCode.enter);
+    columnResizerWrapper.keydown(KeyCode.escape);
 
-    expect(onChange).toHaveBeenCalledTimes(0);
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith({ widths: [160, 300] });
   });
 
-  test('discards resize on blur', () => {
+  test('submits resize on blur', () => {
     const onChange = jest.fn();
     const { wrapper } = renderTable(<Table {...defaultProps} onColumnWidthsChange={event => onChange(event.detail)} />);
     const columnResizerWrapper = wrapper.findColumnResizer(1)!;
@@ -359,9 +386,81 @@ describe('resize with keyboard', () => {
     columnResizerWrapper.keydown(KeyCode.enter);
     columnResizerWrapper.keydown(KeyCode.right);
     wrapper.findColumnResizer(2)!.focus();
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith({ widths: [160, 300] });
+  });
+
+  test('prevents resizing to below the min-width', () => {
+    mockWidth = 80;
+    const { wrapper } = renderTable(<Table {...defaultProps} />);
+    const columnResizerWrapper = wrapper.findColumnResizer(1)!;
+    const columnResizerSeparatorWrapper = wrapper.findColumnHeaders()[0].find('[role="separator"]')!;
+
     columnResizerWrapper.focus();
     columnResizerWrapper.keydown(KeyCode.enter);
+    columnResizerWrapper.keydown(KeyCode.left);
 
-    expect(onChange).toHaveBeenCalledTimes(0);
+    expect(columnResizerSeparatorWrapper.getElement()).toHaveAttribute('aria-valuenow', '80');
   });
+});
+
+describe('column header content', () => {
+  test('resizable columns headers have expected text content', () => {
+    const { wrapper } = renderTable(<Table {...defaultProps} />);
+
+    expect(wrapper.findColumnHeaders()[0].getElement()!.textContent).toEqual('Id');
+    expect(wrapper.findColumnHeaders()[1].getElement()!.textContent).toEqual('Description');
+  });
+
+  test('resizable columns can be queries with columnheader role', () => {
+    renderTable(<Table {...defaultProps} />);
+
+    expect(screen.getByRole('columnheader', { name: 'Id' }));
+    expect(screen.getByRole('columnheader', { name: 'Description' }));
+  });
+
+  test('resize handles have expected accessible names', () => {
+    const { wrapper } = renderTable(<Table {...defaultProps} />);
+    const getResizeHandle = (columnIndex: number) =>
+      wrapper.findColumnHeaders()[columnIndex].findByClassName(resizerStyles.resizer)!.getElement();
+
+    expect(getResizeHandle(0)).toHaveAccessibleName('Id');
+    expect(getResizeHandle(1)).toHaveAccessibleName('Description');
+  });
+
+  test('resize handles have aria-roledescription', () => {
+    const { wrapper } = renderTable(<Table {...defaultProps} />);
+    const getResizeHandle = (columnIndex: number) =>
+      wrapper.findColumnHeaders()[columnIndex].findByClassName(resizerStyles.resizer)!.getElement();
+
+    expect(getResizeHandle(0)).toHaveAttribute('aria-roledescription', 'resize button');
+    expect(getResizeHandle(1)).toHaveAttribute('aria-roledescription', 'resize button');
+  });
+});
+
+test('should set last column width to "auto" when container width exceeds total column width', () => {
+  const totalColumnsWidth = 150 + 300;
+
+  const callbacks: ((entry: ContainerQueryEntry) => void)[] = [];
+  const fireCallbacks = (entry: ContainerQueryEntry) => callbacks.forEach(cb => cb(entry));
+  jest.mocked(useResizeObserver).mockImplementation((_target, cb) => {
+    // The table uses more than one resize observer.
+    // The callback must be triggered for all to ensure the expected one is targeted as well.
+    callbacks.push(cb);
+
+    useLayoutEffect(() => {
+      cb({ contentBoxWidth: totalColumnsWidth + 1 } as unknown as ContainerQueryEntry);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+  });
+
+  const { wrapper } = renderTable(<Table {...defaultProps} />);
+  expect(wrapper.findColumnHeaders().map(w => w.getElement().style.width)).toEqual(['150px', 'auto']);
+
+  fireCallbacks({ contentBoxWidth: totalColumnsWidth } as unknown as ContainerQueryEntry);
+  expect(wrapper.findColumnHeaders().map(w => w.getElement().style.width)).toEqual(['150px', '300px']);
+
+  fireCallbacks({ contentBoxWidth: totalColumnsWidth + 1 } as unknown as ContainerQueryEntry);
+  expect(wrapper.findColumnHeaders().map(w => w.getElement().style.width)).toEqual(['150px', 'auto']);
 });

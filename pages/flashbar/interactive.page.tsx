@@ -13,7 +13,8 @@ export default function InteractiveFlashbar() {
   };
 
   const add = (type: FlashbarProps.Type, hasHeader = false) => {
-    setItems(items => [generateItem({ type, id: nextId.current.toString(), dismiss, hasHeader }), ...items]);
+    const newItem = generateItem({ type, id: nextId.current.toString(), dismiss, hasHeader });
+    setItems(items => [newItem, ...items]);
     nextId.current = nextId.current + 1;
   };
 
@@ -26,15 +27,14 @@ export default function InteractiveFlashbar() {
   };
 
   const addToBottom = (type: FlashbarProps.Type, hasHeader = false) => {
-    setItems(items => [...items, generateItem({ type, dismiss, hasHeader, id: nextId.current.toString() })]);
+    const newItem = generateItem({ type, dismiss, hasHeader, id: nextId.current.toString() });
+    setItems(items => [...items, newItem]);
     nextId.current = nextId.current + 1;
   };
 
   const removeAndAddToBottom = (type: FlashbarProps.Type, hasHeader = false) => {
-    setItems(items => [
-      generateItem({ type, dismiss, hasHeader, id: nextId.current.toString() }),
-      ...items.slice(1, items.length),
-    ]);
+    const newItem = generateItem({ type, dismiss, hasHeader, id: nextId.current.toString() });
+    setItems(items => [newItem, ...items.slice(1, items.length)]);
     nextId.current = nextId.current + 1;
   };
 
@@ -84,12 +84,17 @@ export default function InteractiveFlashbar() {
             Add To Bottom
           </Button>
           <Button onClick={() => removeAndAddToBottom('error')}>Add And Remove</Button>
+          <Button data-id="remove-all" onClick={() => setItems([])}>
+            Remove all
+          </Button>
         </SpaceBetween>
+        <input id="focus-before" aria-label="Focusable input before the flashbars" />
         <ScreenshotArea>
           <Box padding="xxl">
             <Flashbar items={items} {...restProps} />
           </Box>
         </ScreenshotArea>
+        <input id="focus-after" aria-label="Focusable input after the flashbars" />
       </SpaceBetween>
     </>
   );

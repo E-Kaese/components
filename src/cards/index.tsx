@@ -15,7 +15,7 @@ import {
   useSelectionFocusMove,
   useSelection,
 } from '../table/selection';
-import InternalContainer from '../container/internal';
+import { InternalContainerAsSubstep } from '../container/internal';
 import InternalStatusIndicator from '../status-indicator/internal';
 import { applyDisplayName } from '../internal/utils/apply-display-name';
 import stickyScrolling from '../table/sticky-scrolling';
@@ -59,6 +59,7 @@ const Cards = React.forwardRef(function <T = any>(
     renderAriaLive,
     firstIndex,
     totalItemsCount,
+    entireCardClickable,
     ...rest
   }: CardsProps<T>,
   ref: React.Ref<CardsProps.Ref>
@@ -139,7 +140,7 @@ const Cards = React.forwardRef(function <T = any>(
     <LinkDefaultVariantContext.Provider value={{ defaultVariant: 'primary' }}>
       <AnalyticsFunnelSubStep>
         <div {...baseProps} className={clsx(baseProps.className, styles.root)} ref={mergedRef}>
-          <InternalContainer
+          <InternalContainerAsSubstep
             header={
               hasToolsHeader && (
                 <div
@@ -187,10 +188,11 @@ const Cards = React.forwardRef(function <T = any>(
                   onFocus={onCardFocus}
                   ariaLabel={ariaLabels?.cardsLabel}
                   ariaLabelledby={isLabelledByHeader && headerIdRef.current ? headerIdRef.current : undefined}
+                  entireCardClickable={entireCardClickable}
                 />
               )}
             </div>
-          </InternalContainer>
+          </InternalContainerAsSubstep>
         </div>
       </AnalyticsFunnelSubStep>
     </LinkDefaultVariantContext.Provider>
@@ -212,7 +214,11 @@ const CardsList = <T,>({
   onFocus,
   ariaLabelledby,
   ariaLabel,
-}: Pick<CardsProps<T>, 'items' | 'cardDefinition' | 'trackBy' | 'selectionType' | 'visibleSections'> & {
+  entireCardClickable,
+}: Pick<
+  CardsProps<T>,
+  'items' | 'cardDefinition' | 'trackBy' | 'selectionType' | 'visibleSections' | 'entireCardClickable'
+> & {
   columns: number | null;
   isItemSelected: (item: T) => boolean;
   getItemSelectionProps: (item: T) => SelectionControlProps;
@@ -223,6 +229,8 @@ const CardsList = <T,>({
   ariaDescribedby?: string;
 }) => {
   const selectable = !!selectionType;
+  const canClickEntireCard = selectable && entireCardClickable;
+  const isRefresh = useVisualRefresh();
 
   const { moveFocusDown, moveFocusUp } = useSelectionFocusMove(selectionType, items.length);
 
@@ -260,7 +268,18 @@ const CardsList = <T,>({
           {...(focusMarkers && focusMarkers.item)}
           role={listItemRole}
         >
-          <div className={styles['card-inner']}>
+          <div
+            className={clsx(styles['card-inner'], isRefresh && styles.refresh)}
+            onClick={
+              canClickEntireCard
+                ? event => {
+                    getItemSelectionProps(item).onChange();
+                    // Manually move focus to the native input (checkbox or radio button)
+                    event.currentTarget.querySelector('input')?.focus();
+                  }
+                : undefined
+            }
+          >
             <div className={styles['card-header']}>
               <div className={styles['card-header-inner']}>
                 {cardDefinition.header ? cardDefinition.header(item) : ''}

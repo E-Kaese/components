@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useContext } from 'react';
-import { FunnelContext, FunnelStepContext, FunnelSubStepContext } from '../context/analytics-context';
+import {
+  FunnelContext,
+  FunnelNameSelectorContext,
+  FunnelStepContext,
+  FunnelSubStepContext,
+} from '../context/analytics-context';
 import {
   DATA_ATTR_FUNNEL_INTERACTION_ID,
   DATA_ATTR_FUNNEL_SUBSTEP,
@@ -10,6 +15,7 @@ import {
   getSubStepAllSelector,
 } from '../selectors';
 import { FunnelMetrics } from '../';
+import { nodeBelongs } from '../../utils/node-belongs';
 
 /**
  * Custom React Hook to manage and interact with FunnelSubStep.
@@ -24,7 +30,7 @@ import { FunnelMetrics } from '../';
 export const useFunnelSubStep = () => {
   const context = useContext(FunnelSubStepContext);
   const { funnelInteractionId, funnelState, latestFocusCleanupFunction } = useFunnel();
-  const { stepNumber, stepNameSelector } = useFunnelStep();
+  const { stepNumber, stepNameSelector, subStepConfiguration } = useFunnelStep();
 
   const {
     subStepId,
@@ -63,12 +69,15 @@ export const useFunnelSubStep = () => {
 
       const subStepName = getNameFromSelector(subStepNameSelector);
       const stepName = getNameFromSelector(stepNameSelector);
-
+      const subStepNumber = subStepConfiguration.current
+        ?.get(stepNumber)
+        ?.find(step => step.name === subStepName)?.number;
       FunnelMetrics.funnelSubStepStart({
         funnelInteractionId,
         subStepSelector,
         subStepNameSelector,
         subStepName,
+        subStepNumber,
         stepNumber,
         stepName,
         stepNameSelector,
@@ -92,12 +101,15 @@ export const useFunnelSubStep = () => {
         }
         cleanupFunctionHasBeenRun = true;
 
+        const subStepNumber = subStepConfiguration.current?.get(stepNumber)?.find(s => s.name === subStepName)?.number;
+
         if (funnelState.current !== 'cancelled') {
           FunnelMetrics.funnelSubStepComplete({
             funnelInteractionId,
             subStepSelector,
             subStepNameSelector,
             subStepName,
+            subStepNumber,
             stepNumber,
             stepName,
             stepNameSelector,
@@ -121,7 +133,7 @@ export const useFunnelSubStep = () => {
       return;
     }
 
-    if (!subStepRef.current || !subStepRef.current.contains(event.relatedTarget) || !event.relatedTarget) {
+    if (!subStepRef.current || !event.relatedTarget || !nodeBelongs(subStepRef.current, event.relatedTarget)) {
       isFocusedSubStep.current = false;
 
       if (funnelInteractionId && subStepId && funnelState.current !== 'cancelled') {
@@ -174,4 +186,9 @@ export const useFunnel = () => {
     : {};
 
   return { funnelProps, ...context };
+};
+
+export const useFunnelNameSelector = () => {
+  const context = useContext(FunnelNameSelectorContext);
+  return context;
 };

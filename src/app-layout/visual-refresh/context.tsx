@@ -16,7 +16,6 @@ import { DynamicOverlapContext } from '../../internal/context/dynamic-overlap-co
 import { AppLayoutProps } from '../interfaces';
 import { fireNonCancelableEvent } from '../../internal/events';
 import { FocusControlRefs, useFocusControl } from '../utils/use-focus-control';
-import { DrawerFocusControlRefs, useDrawerFocusControl } from '../utils/use-drawer-focus-control';
 import { getSplitPanelDefaultSize } from '../../split-panel/utils/size-utils';
 import { isDevelopment } from '../../internal/is-development';
 import { getSplitPanelPosition } from './split-panel';
@@ -25,7 +24,6 @@ import { SplitPanelFocusControlRefs, useSplitPanelFocusControl } from '../utils/
 import { SplitPanelSideToggleProps } from '../../internal/context/split-panel-context';
 import { useObservedElement } from '../utils/use-observed-element';
 import { useMobile } from '../../internal/hooks/use-mobile';
-import { DrawerItem, InternalDrawerProps } from '../drawer/interfaces';
 import { useStableCallback, warnOnce } from '@cloudscape-design/component-toolkit/internal';
 import useResize from '../utils/use-resize';
 import styles from './styles.css.js';
@@ -35,21 +33,23 @@ import { useDrawers } from '../utils/use-drawers';
 import { useUniqueId } from '../../internal/hooks/use-unique-id';
 
 interface AppLayoutInternals extends AppLayoutProps {
-  activeDrawerId: string | undefined;
-  drawers: Array<DrawerItem>;
+  activeDrawerId: string | null;
+  drawers: Array<AppLayoutProps.Drawer> | undefined;
   drawersAriaLabel: string | undefined;
   drawersOverflowAriaLabel: string | undefined;
-  drawersRefs: DrawerFocusControlRefs;
+  drawersOverflowWithBadgeAriaLabel: string | undefined;
+  drawersRefs: FocusControlRefs;
   drawerSize: number;
+  drawersMinWidth: number;
   drawersMaxWidth: number;
   drawerRef: React.Ref<HTMLElement>;
   resizeHandle: React.ReactElement;
   drawersTriggerCount: number;
-  handleDrawersClick: (activeDrawerId: string | undefined, skipFocusControl?: boolean) => void;
+  handleDrawersClick: (activeDrawerId: string | null, skipFocusControl?: boolean) => void;
   handleSplitPanelClick: () => void;
   handleNavigationClick: (isOpen: boolean) => void;
   handleSplitPanelPreferencesChange: (detail: AppLayoutProps.SplitPanelPreferences) => void;
-  handleSplitPanelResize: (detail: { size: number }) => void;
+  handleSplitPanelResize: (newSize: number) => void;
   handleToolsClick: (value: boolean, skipFocusControl?: boolean) => void;
   hasBackgroundOverlap: boolean;
   hasDefaultToolsWidth: boolean;
@@ -90,6 +90,7 @@ interface AppLayoutInternals extends AppLayoutProps {
   splitPanelRefs: SplitPanelFocusControlRefs;
   toolsControlId: string;
   toolsRefs: FocusControlRefs;
+  __embeddedViewMode?: boolean;
 }
 
 /**
@@ -128,6 +129,9 @@ export const AppLayoutInternalsProvider = React.forwardRef(
     forwardRef: React.Ref<AppLayoutProps.Ref>
   ) => {
     const isMobile = useMobile();
+
+    // Private API for embedded view mode
+    const __embeddedViewMode = Boolean((props as any).__embeddedViewMode);
 
     if (isDevelopment) {
       if (controlledToolsOpen && toolsHide) {
@@ -229,28 +233,6 @@ export const AppLayoutInternalsProvider = React.forwardRef(
         fireNonCancelableEvent(props.onToolsChange, { open: isOpen });
       },
       [props.onToolsChange, setIsToolsOpen, focusToolsButtons]
-    );
-
-    /**
-     * On mobile viewports the navigation and tools drawers are adjusted to a fixed position
-     * that consumes 100% of the viewport height and width. The body content could potentially
-     * be scrollable underneath the drawer. In order to prevent this a CSS class needs to be
-     * added to the document body that sets overflow to hidden.
-     */
-    useEffect(
-      function handleBodyScroll() {
-        if (isMobile && (isNavigationOpen || isToolsOpen)) {
-          document.body.classList.add(styles['block-body-scroll']);
-        } else {
-          document.body.classList.remove(styles['block-body-scroll']);
-        }
-
-        // Ensure the CSS class is removed from the body on side effect cleanup
-        return function cleanup() {
-          document.body.classList.remove(styles['block-body-scroll']);
-        };
-      },
-      [isMobile, isNavigationOpen, isToolsOpen]
     );
 
     /**
@@ -356,7 +338,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
       displayed: false,
       ariaLabel: undefined,
     });
-    const splitPanelDisplayed = !!(splitPanelToggle.displayed || isSplitPanelOpen);
+    const splitPanelDisplayed = !!(splitPanelToggle.displayed || (isSplitPanelOpen && !!splitPanel));
     const splitPanelControlId = useUniqueId('split-panel-');
     const toolsControlId = useUniqueId('tools-');
 
@@ -368,9 +350,9 @@ export const AppLayoutInternalsProvider = React.forwardRef(
     );
 
     const handleSplitPanelResize = useCallback(
-      function handleSplitPanelChange(detail: { size: number }) {
-        setSplitPanelSize(detail.size);
-        fireNonCancelableEvent(props.onSplitPanelResize, detail);
+      (size: number) => {
+        setSplitPanelSize(size);
+        fireNonCancelableEvent(props.onSplitPanelResize, { size });
       },
       [props.onSplitPanelResize, setSplitPanelSize]
     );
@@ -388,21 +370,19 @@ export const AppLayoutInternalsProvider = React.forwardRef(
       drawers,
       activeDrawer,
       activeDrawerId,
+      minDrawerSize: drawersMinWidth,
       onActiveDrawerChange,
       onActiveDrawerResize,
       activeDrawerSize,
       ...drawersProps
-    } = useDrawers(
-      props as InternalDrawerProps,
-      {
-        ariaLabels: props.ariaLabels,
-        toolsHide,
-        toolsOpen: isToolsOpen,
-        tools: props.tools,
-        toolsWidth,
-      },
-      contentTypeDefaults
-    );
+    } = useDrawers(props, props.ariaLabels, {
+      ariaLabels: props.ariaLabels,
+      toolsHide,
+      toolsOpen: isToolsOpen,
+      tools: props.tools,
+      toolsWidth,
+      onToolsToggle: handleToolsClick,
+    });
 
     const [drawersMaxWidth, setDrawersMaxWidth] = useState(toolsWidth);
 
@@ -410,8 +390,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
       refs: drawersRefs,
       setFocus: focusDrawersButtons,
       loseFocus: loseDrawersFocus,
-      setLastInteraction: setDrawerLastInteraction,
-    } = useDrawerFocusControl([activeDrawerId, activeDrawer?.resizable], true, true);
+    } = useFocusControl(!!activeDrawerId, true, activeDrawerId);
 
     const drawerRef = useRef<HTMLDivElement>(null);
     const { resizeHandle, drawerSize } = useResize(drawerRef, {
@@ -423,20 +402,21 @@ export const AppLayoutInternalsProvider = React.forwardRef(
       drawersMaxWidth,
     });
 
-    const handleDrawersClick = (id: string | undefined, skipFocusControl?: boolean) => {
-      const newActiveDrawerId = id !== activeDrawerId ? id : undefined;
+    const handleDrawersClick = (id: string | null, skipFocusControl?: boolean) => {
+      const newActiveDrawerId = id !== activeDrawerId ? id : null;
 
       onActiveDrawerChange(newActiveDrawerId);
 
       !skipFocusControl && focusDrawersButtons();
-      setDrawerLastInteraction({ type: activeDrawerId ? 'close' : 'open' });
     };
 
-    const drawersTriggerCount =
-      drawers.length + (splitPanelDisplayed && splitPanelPosition === 'side' ? 1 : 0) + (!toolsHide ? 1 : 0);
+    let drawersTriggerCount = drawers ? drawers.length : !toolsHide ? 1 : 0;
+    if (splitPanelDisplayed && splitPanelPosition === 'side') {
+      drawersTriggerCount++;
+    }
     const hasOpenDrawer =
-      activeDrawerId !== undefined ||
-      isToolsOpen ||
+      !!activeDrawerId ||
+      (!toolsHide && isToolsOpen) ||
       (splitPanelDisplayed && splitPanelPosition === 'side' && isSplitPanelOpen);
     const hasDrawerViewportOverlay =
       isMobile && (!!activeDrawerId || (!navigationHide && isNavigationOpen) || (!toolsHide && isToolsOpen));
@@ -476,6 +456,28 @@ export const AppLayoutInternalsProvider = React.forwardRef(
     );
 
     /**
+     * On mobile viewports the navigation and tools drawers are adjusted to a fixed position
+     * that consumes 100% of the viewport height and width. The body content could potentially
+     * be scrollable underneath the drawer. In order to prevent this a CSS class needs to be
+     * added to the document body that sets overflow to hidden.
+     */
+    useEffect(
+      function handleBodyScroll() {
+        if (isMobile && (isNavigationOpen || isToolsOpen || !!activeDrawer)) {
+          document.body.classList.add(styles['block-body-scroll']);
+        } else {
+          document.body.classList.remove(styles['block-body-scroll']);
+        }
+
+        // Ensure the CSS class is removed from the body on side effect cleanup
+        return function cleanup() {
+          document.body.classList.remove(styles['block-body-scroll']);
+        };
+      },
+      [isMobile, isNavigationOpen, isToolsOpen, activeDrawer]
+    );
+
+    /**
      * Because the notifications slot does not give us any direction insight into
      * what the state of the child content is we need to have a mechanism for
      * tracking the height of the notifications and whether or not it has content.
@@ -488,17 +490,9 @@ export const AppLayoutInternalsProvider = React.forwardRef(
      * know if the notifications slot is empty.
      */
     const [notificationsContainerQuery, notificationsElement] = useContainerQuery(rect => rect.contentBoxHeight);
-    const [notificationsHeight, setNotificationsHeight] = useState(0);
-    const [hasNotificationsContent, setHasNotificationsContent] = useState(false);
 
-    useEffect(
-      function handleNotificationsContent() {
-        setNotificationsHeight(notificationsContainerQuery ?? 0);
-        setHasNotificationsContent(notificationsContainerQuery && notificationsContainerQuery > 0 ? true : false);
-      },
-      [notificationsContainerQuery]
-    );
-
+    const notificationsHeight = notificationsContainerQuery ?? 0;
+    const hasNotificationsContent = notificationsHeight > 0;
     /**
      * Determine the offsetBottom value based on the presence of a footer element and
      * the SplitPanel component. Ignore the SplitPanel if it is not in the bottom
@@ -522,7 +516,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
      * The first is the the content gap on the right which is stored in a design token
      * and applied in the Layout CSS:
      *
-     * $contentGapRight: #{awsui.$space-scaled-2x-xxxl};
+     * $contentGapRight: #{awsui.$space-layout-content-horizontal};
      *
      * The second is the width of the element that has the circular buttons for the
      * Tools and Split Panel. This could be suppressed given the state of the Tools
@@ -539,19 +533,22 @@ export const AppLayoutInternalsProvider = React.forwardRef(
      */
     useLayoutEffect(
       function handleSplitPanelMaxWidth() {
-        const contentGapRight = 80; // Approximately 40px when rendered but doubled for safety
-        const toolsFormOffsetWidth = 160; // Approximately 80px when rendered but doubled for safety
-        const toolsOffsetWidth = isToolsOpen ? toolsWidth : 0;
-        const activeDrawerOffsetWidth = activeDrawerId ? drawerSize : 0;
+        const contentGapRight = 50; // Approximately 24px when rendered but doubled for safety
+        const toolsFormOffsetWidth = 120; // Approximately 60px when rendered but doubled for safety
+        const getPanelOffsetWidth = () => {
+          if (drawers) {
+            return activeDrawerId ? drawerSize : 0;
+          }
+          return isToolsOpen ? toolsWidth : 0;
+        };
 
         setSplitPanelMaxWidth(
           layoutWidth -
             mainOffsetLeft -
             minContentWidth -
             contentGapRight -
-            toolsOffsetWidth -
             toolsFormOffsetWidth -
-            activeDrawerOffsetWidth
+            getPanelOffsetWidth()
         );
 
         setDrawersMaxWidth(layoutWidth - mainOffsetLeft - minContentWidth - contentGapRight - toolsFormOffsetWidth);
@@ -559,6 +556,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
       [
         activeDrawerId,
         drawerSize,
+        drawers,
         isNavigationOpen,
         isToolsOpen,
         layoutWidth,
@@ -585,10 +583,11 @@ export const AppLayoutInternalsProvider = React.forwardRef(
             handleToolsClick(true);
           },
           focusToolsClose: () => focusToolsButtons(true),
+          focusActiveDrawer: () => focusDrawersButtons(true),
           focusSplitPanel: () => splitPanelRefs.slider.current?.focus(),
         };
       },
-      [isMobile, handleNavigationClick, handleToolsClick, focusToolsButtons, splitPanelRefs.slider]
+      [isMobile, handleNavigationClick, handleToolsClick, focusToolsButtons, focusDrawersButtons, splitPanelRefs.slider]
     );
 
     return (
@@ -598,9 +597,11 @@ export const AppLayoutInternalsProvider = React.forwardRef(
           activeDrawerId,
           contentType,
           drawers,
-          drawersAriaLabel: drawersProps.ariaLabel,
-          drawersOverflowAriaLabel: drawersProps.overflowAriaLabel,
+          drawersAriaLabel: drawersProps.ariaLabelsWithDrawers?.drawers,
+          drawersOverflowAriaLabel: drawersProps.ariaLabelsWithDrawers?.drawersOverflow,
+          drawersOverflowWithBadgeAriaLabel: drawersProps.ariaLabelsWithDrawers?.drawersOverflowWithBadge,
           drawersRefs,
+          drawersMinWidth,
           drawersMaxWidth,
           drawerSize,
           drawerRef,
@@ -660,6 +661,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
           toolsOpen: isToolsOpen,
           toolsWidth,
           toolsRefs,
+          __embeddedViewMode,
         }}
       >
         <AppLayoutContext.Provider

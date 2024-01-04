@@ -6,6 +6,7 @@
     "i18nStrings.filterLabel": "Filtrer les données affichées",
     "i18nStrings.filterPlaceholder": "Filtrer les données",
     "i18nStrings.legendAriaLabel": "Légende",
+    "i18nStrings.chartAriaRoleDescription": "Graphique",
     "i18nStrings.xAxisAriaRoleDescription": "axe X",
     "i18nStrings.yAxisAriaRoleDescription": "axe Y"
   },
@@ -22,6 +23,9 @@
     "i18nStrings.labelHotspot": "{openState, select, true {Fermer l'annotation pour l'étape {stepNumber} de {totalStepCount}} false {Ouvrir l'annotation pour l'étape {stepNumber} de {totalStepCount}} other {}}"
   },
   "app-layout": {
+    "ariaLabels.drawers": "Tiroirs",
+    "ariaLabels.drawersOverflow": "Débordement de tiroirs",
+    "ariaLabels.drawersOverflowWithBadge": "Débordement de tiroirs avec badge",
     "ariaLabels.navigation": "Navigation latérale",
     "ariaLabels.navigationClose": "Fermer la navigation latérale",
     "ariaLabels.navigationToggle": "Ouvrir la navigation latérale",
@@ -92,6 +96,9 @@
     "contentDisplayPreference.liveAnnouncementDndItemReordered": "{isInitialPosition, select, true {Remettre l'élément à la position {currentPosition} de {total}} false {Déplacer l'élément vers la position {currentPosition} de {total}} other {}}",
     "contentDisplayPreference.liveAnnouncementDndItemCommitted": "{isInitialPosition, select, true {L'élément a été replacé dans sa position initiale {initialPosition} de {total}} false {L'élément a été déplacé de la position {initialPosition} à {finalPosition} de {total}} other {}}"
   },
+  "copy-to-clipboard": {
+    "i18nStrings.copyButtonText": "Copier"
+  },
   "date-range-picker": {
     "i18nStrings.relativeModeTitle": "Mode relatif",
     "i18nStrings.absoluteModeTitle": "Mode absolu",
@@ -111,8 +118,11 @@
     "i18nStrings.dateTimeConstraintText": "Pour la date, utilisez le format AAAA/MM/JJ. Pour l'heure, utilisez le format 24 heures.",
     "i18nStrings.errorIconAriaLabel": "Erreur",
     "i18nStrings.renderSelectedAbsoluteRangeAriaLive": "Plage sélectionnée de {startDate} à {endDate}",
-    "i18nStrings.formatRelativeRange": "{amount, plural, one {Dernier {amount} {unit}} other {Dernières {amount} {unit}s}}",
-    "i18nStrings.formatUnit": "{amount, plural, one {{unit}} other {{unit}s}}"
+    "i18nStrings.formatRelativeRange": "{unit, select, second {{amount, plural, zero {Dernières {amount} secondes} one {Dernière {amount} seconde} other {Dernières {amount} secondes}}} minute {{amount, plural, zero {Dernières {amount} minutes} one {Dernière {amount} minute} other {Dernières {amount} minutes}}} hour {{amount, plural, zero {Dernières {amount} heures} one {Dernière {amount} heure} other {Dernières {amount} heures}}} day {{amount, plural, zero {Derniers {amount} jours} one {Dernier {amount} jour} other {Derniers {amount} jours}}} week {{amount, plural, zero {Dernières {amount} semaines} one {Dernière {amount} semaine} other {Dernières {amount} semaines}}} month {{amount, plural, zero {Derniers {amount} mois} one {Dernier {amount} mois} other {Derniers {amount} mois}}} year {{amount, plural, zero {Dernières {amount} années} one {Dernière {amount} année} other {Dernières {amount} années}}} other {}}",
+    "i18nStrings.formatUnit": "{unit, select, second {{amount, plural, zero {secondes} one {seconde} other {secondes}}} minute {{amount, plural, zero {minutes} one {minute} other {minutes}}} hour {{amount, plural, zero {heures} one {heure} other {heures}}} day {{amount, plural, zero {jours} one {jour} other {jours}}} week {{amount, plural, zero {semaines} one {semaine} other {semaines}}} month {{amount, plural, zero {mois} one {mois} other {mois}}} year {{amount, plural, zero {années} one {année} other {années}}} other {}}"
+  },
+  "drawer": {
+    "i18nStrings.loadingText": "Chargement du contenu en cours"
   },
   "flashbar": {
     "i18nStrings.ariaLabel": "Notifications",
@@ -177,13 +187,14 @@
     "i18nStrings.operatorGreaterText": "Supérieur à",
     "i18nStrings.operatorLessOrEqualText": "Inférieur ou égal à",
     "i18nStrings.operatorLessText": "Inférieur à",
+    "i18nStrings.operatorStartsWithText": "Commence par",
     "i18nStrings.operatorText": "Opérateur",
     "i18nStrings.operatorsText": "Opérateurs",
     "i18nStrings.propertyText": "Propriété",
     "i18nStrings.tokenLimitShowFewer": "Afficher moins",
     "i18nStrings.tokenLimitShowMore": "Afficher plus",
     "i18nStrings.valueText": "Valeur",
-    "i18nStrings.removeTokenButtonAriaLabel": "{token__operator, select, equals {Supprimer le filtre, {token__propertyKey} est égal à {token__value}} not_equals {Supprimer le filtre, {token__propertyKey} n'est pas égal à {token__value}} greater_than {Supprimer le filtre, {token__propertyKey} est supérieur à {token__value}} greater_than_equal {Supprimer le filtre, {token__propertyKey} est supérieur ou égal à {token__value}} less_than {Supprimer le filtre, {token__propertyKey} est inférieur à {token__value}} less_than_equal {Supprimer le filtre, {token__propertyKey} est inférieur ou égal à {token__value}} contains {Supprimer le filtre, {token__propertyKey} contient {token__value}} not_contains {Supprimer le filtre, {token__propertyKey} ne contient pas {token__value}} other {}}"
+    "i18nStrings.removeTokenButtonAriaLabel": "{token__operator, select, equals {Supprimer le filtre, {token__propertyKey} est égal à {token__value}} not_equals {Supprimer le filtre, {token__propertyKey} n'est pas égal à {token__value}} greater_than {Supprimer le filtre, {token__propertyKey} est supérieur à {token__value}} greater_than_equal {Supprimer le filtre, {token__propertyKey} est supérieur ou égal à {token__value}} less_than {Supprimer le filtre, {token__propertyKey} est inférieur à {token__value}} less_than_equal {Supprimer le filtre, {token__propertyKey} est inférieur ou égal à {token__value}} contains {Supprimer le filtre, {token__propertyKey} contient {token__value}} not_contains {Supprimer le filtre, {token__propertyKey} ne contient pas {token__value}} starts_with {Supprimer le filtre, {token__propertyKey} commence par {token__value}} other {}}"
   },
   "s3-resource-selector": {
     "i18nStrings.inContextSelectPlaceholder": "Choisir une version",
@@ -222,7 +233,7 @@
     "i18nStrings.columnVersionID": "ID de version",
     "i18nStrings.columnVersionLastModified": "Dernière modification",
     "i18nStrings.columnVersionSize": "Taille",
-    "i18nStrings.validationPathMustBegin": "Le chemin doit commencer par s3 ://",
+    "i18nStrings.validationPathMustBegin": "Le chemin doit commencer par s3:// pour être valide.",
     "i18nStrings.validationBucketLowerCase": "Le nom du compartiment doit commencer par une minuscule ou un chiffre.",
     "i18nStrings.validationBucketMustNotContain": "Le nom du compartiment ne doit pas contenir de majuscules.",
     "i18nStrings.validationBucketLength": "Le nom du compartiment doit comporter entre 3 et 63 caractères.",
@@ -259,6 +270,7 @@
     "i18nStrings.resizeHandleAriaLabel": "Redimensionner le panneau divisé"
   },
   "table": {
+    "ariaLabels.resizerRoleDescription": "bouton de redimensionnement",
     "ariaLabels.submittingEditText": "Soumission de modification",
     "ariaLabels.successfulEditLabel": "Modification réussie",
     "columnDefinitions.editConfig.errorIconAriaLabel": "Erreur",

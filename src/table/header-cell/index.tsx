@@ -7,7 +7,7 @@ import { KeyCode } from '../../internal/keycode';
 import { TableProps } from '../interfaces';
 import { getSortingIconName, getSortingStatus, isSorted } from './utils';
 import styles from './styles.css.js';
-import { Resizer } from '../resizer';
+import { Divider, Resizer } from '../resizer';
 import { useUniqueId } from '../../internal/hooks/use-unique-id';
 import { useInternalI18n } from '../../i18n/context';
 import { StickyColumnsModel } from '../sticky-columns';
@@ -28,8 +28,6 @@ interface TableHeaderCellProps<ItemType> {
   onResizeFinish: () => void;
   colIndex: number;
   updateColumn: (columnId: PropertyKey, newWidth: number) => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
   resizableColumns?: boolean;
   isEditable?: boolean;
   columnId: PropertyKey;
@@ -37,6 +35,7 @@ interface TableHeaderCellProps<ItemType> {
   cellRef: React.RefCallback<HTMLElement>;
   focusedComponent?: null | string;
   tableRole: TableRole;
+  resizerRoleDescription?: string;
 }
 
 export function TableHeaderCell<ItemType>({
@@ -60,6 +59,7 @@ export function TableHeaderCell<ItemType>({
   stickyState,
   cellRef,
   tableRole,
+  resizerRoleDescription,
 }: TableHeaderCellProps<ItemType>) {
   const i18n = useInternalI18n('table');
   const sortable = !!column.sortingComparator || !!column.sortingField;
@@ -93,7 +93,6 @@ export function TableHeaderCell<ItemType>({
       sortingDisabled={sortingDisabled}
       hidden={hidden}
       colIndex={colIndex}
-      resizableColumns={resizableColumns}
       columnId={columnId}
       stickyState={stickyState}
       tableRole={tableRole}
@@ -139,18 +138,19 @@ export function TableHeaderCell<ItemType>({
           </span>
         )}
       </div>
-      {resizableColumns && (
-        <>
-          <Resizer
-            tabIndex={tabIndex}
-            focusId={`resize-control-${String(columnId)}`}
-            showFocusRing={focusedComponent === `resize-control-${String(columnId)}`}
-            onDragMove={newWidth => updateColumn(columnId, newWidth)}
-            onFinish={onResizeFinish}
-            ariaLabelledby={headerId}
-            minWidth={typeof column.minWidth === 'string' ? parseInt(column.minWidth) : column.minWidth}
-          />
-        </>
+      {resizableColumns ? (
+        <Resizer
+          tabIndex={tabIndex}
+          focusId={`resize-control-${String(columnId)}`}
+          showFocusRing={focusedComponent === `resize-control-${String(columnId)}`}
+          onWidthUpdate={newWidth => updateColumn(columnId, newWidth)}
+          onWidthUpdateCommit={onResizeFinish}
+          ariaLabelledby={headerId}
+          minWidth={typeof column.minWidth === 'string' ? parseInt(column.minWidth) : column.minWidth}
+          roleDescription={i18n('ariaLabels.resizerRoleDescription', resizerRoleDescription)}
+        />
+      ) : (
+        <Divider className={styles['resize-divider']} />
       )}
     </TableThElement>
   );

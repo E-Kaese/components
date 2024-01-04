@@ -69,7 +69,7 @@ export interface ButtonDropdownProps extends BaseComponentProps, ExpandToViewpor
   expandableGroups?: boolean;
   /**
    * Adds `aria-label` to the button dropdown trigger.
-   * It should be used in buttons that don't have text in order to make them accessible.
+   * Use this to provide an accessible name for buttons that don't have visible text.
    */
   ariaLabel?: string;
   /**
@@ -87,7 +87,8 @@ export interface ButtonDropdownProps extends BaseComponentProps, ExpandToViewpor
    */
   onItemFollow?: CancelableEventHandler<ButtonDropdownProps.ItemClickDetails>;
   /**
-   * A standalone action that is shown prior to the dropdown trigger. Use it with "primary" variant only.
+   * A standalone action that is shown prior to the dropdown trigger.
+   * Use it with "primary" and "normal" variant only.
    * Main action properties:
    * * `text` (string) - Specifies the text shown in the main action.
    * * `external` (boolean) - Marks the main action as external by adding an icon after the text. The link will open in a new tab when clicked. Note that this only works when `href` is also provided.

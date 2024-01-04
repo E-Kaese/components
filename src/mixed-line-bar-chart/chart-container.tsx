@@ -77,7 +77,7 @@ export interface ChartContainerProps<T extends ChartDataTypes> {
   ariaDescription: MixedLineBarChartProps<T>['ariaDescription'];
   i18nStrings: MixedLineBarChartProps<T>['i18nStrings'];
 
-  plotContainerRef: React.RefObject<HTMLDivElement>;
+  detailPopoverSeriesContent?: MixedLineBarChartProps.DetailPopoverSeriesContent<T>;
 }
 
 interface BaseAxisProps {
@@ -98,6 +98,8 @@ interface YAxisProps extends BaseAxisProps {
   scale: NumericChartScale;
   ticks: number[];
 }
+
+const fallbackContainerWidth = 500;
 
 export default function ChartContainer<T extends ChartDataTypes>({
   fitHeight,
@@ -125,7 +127,7 @@ export default function ChartContainer<T extends ChartDataTypes>({
   ariaLabelledby,
   ariaDescription,
   i18nStrings = {},
-  plotContainerRef,
+  detailPopoverSeriesContent,
   ...props
 }: ChartContainerProps<T>) {
   const plotRef = useRef<ChartPlotRef>(null);
@@ -133,8 +135,13 @@ export default function ChartContainer<T extends ChartDataTypes>({
 
   const [leftLabelsWidth, setLeftLabelsWidth] = useState(0);
   const [verticalMarkerX, setVerticalMarkerX] = useState<VerticalMarkerX<T> | null>(null);
-  const [containerWidth, containerMeasureRef] = useContainerWidth(500);
-  const plotWidth = containerWidth ? containerWidth - leftLabelsWidth - LEFT_LABELS_MARGIN : 500;
+  const [detailsPopoverText, setDetailsPopoverText] = useState('');
+  const [containerWidth, containerMeasureRef] = useContainerWidth(fallbackContainerWidth);
+  const maxLeftLabelsWidth = Math.round(containerWidth / 2);
+  const plotWidth = containerWidth
+    ? // Calculate the minimum between leftLabelsWidth and maxLeftLabelsWidth for extra safety because leftLabelsWidth could be out of date
+      Math.max(0, containerWidth - Math.min(leftLabelsWidth, maxLeftLabelsWidth) - LEFT_LABELS_MARGIN)
+    : fallbackContainerWidth;
   const containerRefObject = useRef(null);
   const containerRef = useMergeRefs(containerMeasureRef, containerRefObject);
   const popoverRef = useRef<HTMLElement | null>(null);
@@ -361,7 +368,7 @@ export default function ChartContainer<T extends ChartDataTypes>({
     }
   };
 
-  const onSVGMouseDown = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+  const onSVGClick = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
     if (isPopoverOpen) {
       if (isPopoverPinned) {
         dismissPopover();
@@ -391,11 +398,8 @@ export default function ChartContainer<T extends ChartDataTypes>({
       !(blurTarget instanceof Element) ||
       !nodeBelongs(containerRefObject.current, blurTarget)
     ) {
-      setHighlightedPoint(null);
+      clearHighlightedSeries();
       setVerticalMarkerX(null);
-      if (!plotContainerRef?.current?.contains(blurTarget)) {
-        clearHighlightedSeries();
-      }
 
       if (isPopoverOpen && !isPopoverPinned) {
         dismissPopover();
@@ -461,25 +465,30 @@ export default function ChartContainer<T extends ChartDataTypes>({
       const seriesToShow = visibleSeries.filter(
         series => series.series === highlightedPoint?.series || isXThreshold(series.series)
       );
-      return formatHighlighted(highlightedX, seriesToShow, xTickFormatter);
+      return formatHighlighted({
+        position: highlightedX,
+        series: seriesToShow,
+        xTickFormatter,
+        detailPopoverSeriesContent,
+      });
     }
 
     // Otherwise - show all visible series details.
-    return formatHighlighted(highlightedX, visibleSeries, xTickFormatter);
-  }, [highlightedX, highlightedPoint, visibleSeries, xTickFormatter]);
+    return formatHighlighted({
+      position: highlightedX,
+      series: visibleSeries,
+      xTickFormatter,
+      detailPopoverSeriesContent,
+    });
+  }, [highlightedX, highlightedPoint, visibleSeries, xTickFormatter, detailPopoverSeriesContent]);
 
   const detailPopoverFooterContent = useMemo(
     () => (detailPopoverFooter && highlightedX ? detailPopoverFooter(highlightedX) : null),
     [detailPopoverFooter, highlightedX]
   );
 
-  const activeAriaLabel = useMemo(
-    () =>
-      highlightDetails
-        ? `${highlightDetails.position}, ${highlightDetails.details.map(d => d.key + ' ' + d.value).join(',')}`
-        : '',
-    [highlightDetails]
-  );
+  const activeAriaLabel =
+    highlightDetails && detailsPopoverText ? `${highlightDetails.position}, ${detailsPopoverText}` : '';
 
   // Live region is used when nothing is focused e.g. when hovering.
   const activeLiveRegion =
@@ -501,6 +510,7 @@ export default function ChartContainer<T extends ChartDataTypes>({
           scale={leftAxisProps.scale}
           tickFormatter={leftAxisProps.tickFormatter as TickFormatter}
           autoWidth={setLeftLabelsWidth}
+          maxLabelsWidth={maxLeftLabelsWidth}
         />
       }
       bottomAxisLabel={<AxisLabel axis={x} position="bottom" title={bottomAxisProps.title} />}
@@ -525,7 +535,7 @@ export default function ChartContainer<T extends ChartDataTypes>({
           activeElementFocusOffset={isGroupNavigation ? 0 : isLineXKeyboardFocused ? { x: 8, y: 0 } : 3}
           onMouseMove={onSVGMouseMove}
           onMouseOut={onSVGMouseOut}
-          onMouseDown={onSVGMouseDown}
+          onClick={onSVGClick}
           onFocus={onSVGFocus}
           onBlur={onSVGBlur}
           onKeyDown={onSVGKeyDown}
@@ -548,8 +558,9 @@ export default function ChartContainer<T extends ChartDataTypes>({
             tickFormatter={leftAxisProps.tickFormatter as TickFormatter}
             title={leftAxisProps.title}
             ariaRoleDescription={leftAxisProps.ariaRoleDescription}
-            width={plotWidth}
-            height={plotHeight}
+            maxLabelsWidth={maxLeftLabelsWidth}
+            plotWidth={plotWidth}
+            plotHeight={plotHeight}
           />
 
           {horizontalBars && (
@@ -634,6 +645,8 @@ export default function ChartContainer<T extends ChartDataTypes>({
           footer={detailPopoverFooterContent}
           dismissAriaLabel={i18nStrings.detailPopoverDismissAriaLabel}
           onMouseLeave={onPopoverLeave}
+          onBlur={onSVGBlur}
+          setPopoverText={setDetailsPopoverText}
         />
       }
     />

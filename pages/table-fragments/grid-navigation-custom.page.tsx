@@ -1,11 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React, { useContext, useMemo, useRef, useState } from 'react';
-import SpaceBetween from '~components/space-between';
 import {
   AppLayout,
   Button,
   ButtonDropdown,
+  Checkbox,
+  CollectionPreferences,
   ColumnLayout,
   Container,
   ContentLayout,
@@ -15,8 +16,12 @@ import {
   Icon,
   Input,
   Link,
+  RadioGroup,
   Select,
+  SpaceBetween,
+  StatusIndicator,
 } from '~components';
+import { useEffectOnUpdate } from '~components/internal/hooks/use-effect-on-update';
 import styles from './styles.scss';
 import { id as generateId, generateItems, Instance } from '../table/generate-data';
 import AppContext, { AppContextType } from '../app/app-context';
@@ -28,62 +33,29 @@ import {
   getTableRoleProps,
   getTableRowRoleProps,
   getTableWrapperRoleProps,
-  useGridNavigation,
+  GridNavigationProvider,
 } from '~components/table/table-role';
-import { orderBy } from 'lodash';
+import { orderBy, range } from 'lodash';
 import appLayoutLabels from '../app-layout/utils/labels';
+import { stateToStatusIndicator } from '../table/shared-configs';
+import { contentDisplayPreferenceI18nStrings } from '../common/i18n-strings';
+
+interface ExtendedWindow extends Window {
+  refreshItems: () => void;
+}
+declare const window: ExtendedWindow;
 
 type PageContext = React.Context<
   AppContextType<{
     pageSize: number;
     tableRole: TableRole;
     actionsMode: ActionsMode;
+    autoRefresh: boolean;
+    visibleColumns: string;
   }>
 >;
 
 type ActionsMode = 'dropdown' | 'inline';
-
-const createColumnDefinitions = ({
-  onDelete,
-  onDuplicate,
-  onUpdate,
-  actionsMode,
-}: {
-  onDelete: (id: string) => void;
-  onDuplicate: (id: string) => void;
-  onUpdate: (id: string) => void;
-  actionsMode: ActionsMode;
-}) => [
-  {
-    key: 'id',
-    label: 'ID',
-    render: (item: Instance) => item.id,
-  },
-  {
-    key: 'actions',
-    label: 'Actions',
-    render: (item: Instance) => (
-      <ItemActionsCell
-        mode={actionsMode}
-        onDelete={() => onDelete(item.id)}
-        onDuplicate={() => onDuplicate(item.id)}
-        onUpdate={() => onUpdate(item.id)}
-      />
-    ),
-  },
-  {
-    key: 'state',
-    label: 'State',
-    render: (item: Instance) => item.state,
-  },
-  {
-    key: 'imageId',
-    label: 'Image ID',
-    render: (item: Instance) => <Link>{item.imageId}</Link>,
-  },
-  { key: 'dnsName', label: 'DNS name', render: (item: Instance) => <DnsEditCell item={item} /> },
-  { key: 'type', label: 'Type', render: (item: Instance) => item.type },
-];
 
 const tableRoleOptions = [{ value: 'table' }, { value: 'grid' }, { value: 'grid-default' }];
 
@@ -95,30 +67,78 @@ const actionsModeOptions = [
 export default function Page() {
   const [toolsOpen, setToolsOpen] = useState(false);
   const { urlParams, setUrlParams } = useContext(AppContext as PageContext);
-  const pageSize = urlParams.pageSize ?? 10;
-  const tableRole = urlParams.tableRole ?? 'grid';
-  const actionsMode = urlParams.actionsMode ?? 'dropdown';
+  const {
+    pageSize = 10,
+    tableRole = 'grid',
+    actionsMode = 'dropdown',
+    autoRefresh = false,
+    visibleColumns:
+      visibleColumnsString = 'id,actions,state,imageId,dnsName,type,inline-select,inline-radio,inline-input',
+  } = urlParams;
+  const visibleColumns = visibleColumnsString.split(',').filter(Boolean);
 
   const [items, setItems] = useState(generateItems(25));
-  const columnDefinitions = useMemo(
-    () =>
-      createColumnDefinitions({
-        onDelete: (id: string) => setItems(prev => prev.filter(item => item.id !== id)),
-        onDuplicate: (id: string) =>
-          setItems(prev => prev.flatMap(item => (item.id !== id ? [item] : [item, { ...item, id: generateId() }]))),
-        onUpdate: (id: string) =>
-          setItems(prev => prev.map(item => (item.id !== id ? item : { ...item, id: generateId() }))),
-        actionsMode,
-      }),
-    [actionsMode]
-  );
+  const [refreshCounter, setRefreshCounter] = useState(0);
+  window.refreshItems = () => setRefreshCounter(prev => prev + 1);
+
+  useEffectOnUpdate(() => {
+    setItems(prev => [...prev.slice(1), ...generateItems(1)]);
+    if (autoRefresh) {
+      const timeoutId = setTimeout(() => setRefreshCounter(prev => prev + 1), 10000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [autoRefresh, refreshCounter]);
+
+  const columnDefinitions = [
+    {
+      key: 'id',
+      label: 'ID',
+      render: (item: Instance) => item.id,
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (item: Instance) => (
+        <ItemActionsCell
+          mode={actionsMode}
+          onDelete={() => setItems(prev => prev.filter(prevItem => prevItem.id !== item.id))}
+          onDuplicate={() =>
+            setItems(prev =>
+              prev.flatMap(prevItem =>
+                prevItem.id !== item.id ? [prevItem] : [prevItem, { ...prevItem, id: generateId() }]
+              )
+            )
+          }
+          onUpdate={() =>
+            setItems(prev =>
+              prev.map(prevItem => (prevItem.id !== item.id ? prevItem : { ...prevItem, id: generateId() }))
+            )
+          }
+        />
+      ),
+    },
+    {
+      key: 'state',
+      label: 'State',
+      render: (item: Instance) => <StatusIndicator {...stateToStatusIndicator[item.state]} />,
+    },
+    {
+      key: 'imageId',
+      label: 'Image ID',
+      render: (item: Instance) => <Link>{item.imageId}</Link>,
+    },
+    { key: 'dnsName', label: 'DNS name', render: (item: Instance) => <DnsEditCell item={item} /> },
+    { key: 'type', label: 'Type', render: (item: Instance) => item.type },
+    { key: 'inline-select', label: 'Select', render: (item: Instance) => <InlineSelect value={item.type} /> },
+    { key: 'inline-radio', label: 'Radio', render: (item: Instance) => <InlineRadio value={item.type} /> },
+    { key: 'inline-input', label: 'Input', render: (item: Instance) => <InlineInput value={item.type} /> },
+  ];
+  const visibleColumnDefinitions = columnDefinitions.filter(def => visibleColumns.includes(def.key));
 
   const [sortingKey, setSortingKey] = useState<null | string>(null);
   const [sortingDirection, setSortingDirection] = useState<1 | -1>(1);
 
   const tableRef = useRef<HTMLTableElement>(null);
-
-  useGridNavigation({ tableRole, pageSize, getTable: () => tableRef.current });
 
   const sortedItems = useMemo(() => {
     if (!sortingKey) {
@@ -169,6 +189,54 @@ export default function Page() {
                   </FormField>
                 </ColumnLayout>
 
+                <SpaceBetween alignItems="center" size="m" direction="horizontal">
+                  <CollectionPreferences
+                    title="Preferences"
+                    confirmLabel="Confirm"
+                    cancelLabel="Cancel"
+                    customPreference={(
+                      customValue: undefined | { autoRefresh: boolean },
+                      setCustomValue: (value: { autoRefresh: boolean }) => void
+                    ) => (
+                      <Checkbox
+                        checked={!!customValue?.autoRefresh}
+                        onChange={event => setCustomValue({ autoRefresh: event.detail.checked })}
+                      >
+                        Auto-refresh every 10 seconds
+                      </Checkbox>
+                    )}
+                    preferences={{
+                      contentDisplay: columnDefinitions.map(column => ({
+                        id: column.key,
+                        visible: visibleColumns.includes(column.key),
+                      })),
+                    }}
+                    onConfirm={({ detail }) =>
+                      setUrlParams({
+                        visibleColumns: (detail.contentDisplay ?? [])
+                          .filter(column => column.visible)
+                          .map(column => column.id)
+                          .join(','),
+                        autoRefresh: detail.custom.autoRefresh,
+                      })
+                    }
+                    contentDisplayPreference={{
+                      title: 'Column preferences',
+                      description: 'Customize the columns visibility.',
+                      options: columnDefinitions.map(column => ({
+                        id: column.key,
+                        label: column.label,
+                        alwaysVisible: column.key === 'id',
+                      })),
+                      ...contentDisplayPreferenceI18nStrings,
+                    }}
+                  />
+
+                  <Button onClick={() => setRefreshCounter(prev => prev + 1)} iconName="refresh" ariaLabel="Refresh">
+                    Refresh
+                  </Button>
+                </SpaceBetween>
+
                 <Link onFollow={() => setToolsOpen(true)} data-testid="link-before">
                   How to use grid navigation?
                 </Link>
@@ -180,27 +248,33 @@ export default function Page() {
               </Link>
             }
           >
-            <div className={styles['custom-table']} {...getTableWrapperRoleProps({ tableRole, isScrollable: false })}>
-              <table
-                ref={tableRef}
-                className={styles['custom-table-table']}
-                {...getTableRoleProps({
-                  tableRole,
-                  totalItemsCount: items.length,
-                  totalColumnsCount: columnDefinitions.length,
-                })}
-              >
-                <thead>
-                  <tr {...getTableHeaderRowRoleProps({ tableRole })}>
-                    {columnDefinitions.map((column, colIndex) => (
-                      <th
-                        key={column.key}
-                        className={styles['custom-table-cell']}
-                        {...getTableColHeaderRoleProps({ tableRole, colIndex })}
-                      >
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap' }}>
-                          <button
-                            className={styles['custom-table-sorting-header']}
+            <GridNavigationProvider
+              keyboardNavigation={tableRole === 'grid'}
+              pageSize={pageSize}
+              getTable={() => tableRef.current}
+            >
+              <div className={styles['custom-table']} {...getTableWrapperRoleProps({ tableRole, isScrollable: false })}>
+                <table
+                  ref={tableRef}
+                  className={styles['custom-table-table']}
+                  {...getTableRoleProps({
+                    tableRole,
+                    totalItemsCount: items.length,
+                    totalColumnsCount: visibleColumnDefinitions.length,
+                  })}
+                >
+                  <thead>
+                    <tr {...getTableHeaderRowRoleProps({ tableRole })}>
+                      {visibleColumnDefinitions.map((column, colIndex) => (
+                        <th
+                          key={column.key}
+                          className={styles['custom-table-cell']}
+                          {...getTableColHeaderRoleProps({ tableRole, colIndex })}
+                        >
+                          <SortingHeader
+                            column={column}
+                            sortingKey={sortingKey}
+                            sortingDirection={sortingDirection}
                             onClick={() => {
                               if (sortingKey !== column.key) {
                                 setSortingKey(column.key);
@@ -209,37 +283,87 @@ export default function Page() {
                                 setSortingDirection(prev => (prev === 1 ? -1 : 1));
                               }
                             }}
-                          >
-                            {column.label}
-                          </button>
-                          {sortingKey === column.key && sortingDirection === -1 && <Icon name="angle-down" />}
-                          {sortingKey === column.key && sortingDirection === 1 && <Icon name="angle-up" />}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedItems.map((item, rowIndex) => (
-                    <tr key={item.id} {...getTableRowRoleProps({ tableRole, rowIndex, firstIndex: 0 })}>
-                      {columnDefinitions.map((column, colIndex) => (
-                        <td
-                          key={column.key}
-                          className={styles['custom-table-cell']}
-                          {...getTableCellRoleProps({ tableRole, colIndex })}
-                        >
-                          {column.render(item)}
-                        </td>
+                          />
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {sortedItems.map((item, rowIndex) => (
+                      <tr key={item.id} {...getTableRowRoleProps({ tableRole, rowIndex, firstIndex: 0 })}>
+                        {visibleColumnDefinitions.map((column, colIndex) => (
+                          <td
+                            key={column.key}
+                            className={styles['custom-table-cell']}
+                            {...getTableCellRoleProps({ tableRole, colIndex })}
+                          >
+                            {column.render(item)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </GridNavigationProvider>
           </Container>
         </ContentLayout>
       }
     />
+  );
+}
+
+function SortingHeader({
+  column,
+  sortingKey,
+  sortingDirection,
+  onClick,
+}: {
+  column: { key: string; label: string };
+  sortingKey: null | string;
+  sortingDirection: -1 | 1;
+  onClick: () => void;
+}) {
+  return (
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap' }}>
+      <button className={styles['custom-table-sorting-header']} onClick={onClick}>
+        {column.label}
+      </button>
+      {sortingKey === column.key && sortingDirection === -1 && <Icon name="angle-down" />}
+      {sortingKey === column.key && sortingDirection === 1 && <Icon name="angle-up" />}
+    </div>
+  );
+}
+
+function InlineInput({ value: initialValue }: { value: string }) {
+  const [value, setValue] = useState(initialValue);
+  return (
+    <div style={{ minWidth: 200 }}>
+      <Input ariaLabel="Inline input" value={value} onChange={e => setValue(e.detail.value)} />
+    </div>
+  );
+}
+
+function InlineSelect({ value: initialValue }: { value: string }) {
+  const options = range(0, 5).map(i => ({ value: initialValue + i }));
+  const [selectedOption, setSelectedOption] = useState(options[0]);
+  return (
+    <Select
+      selectedOption={selectedOption}
+      options={options}
+      onChange={e => setSelectedOption(e.detail.selectedOption as any)}
+      expandToViewport={true}
+    />
+  );
+}
+
+function InlineRadio({ value: initialValue }: { value: string }) {
+  const items = range(0, 2).map(i => ({ value: initialValue + i, label: initialValue + i }));
+  const [value, setValue] = useState(initialValue + 0);
+  return (
+    <div style={{ minWidth: 200 }}>
+      <RadioGroup items={items} value={value} onChange={e => setValue(e.detail.value)} />
+    </div>
   );
 }
 
@@ -325,8 +449,8 @@ function DnsEditCell({ item }: { item: Instance }) {
       style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap' }}
     >
       <Input autoFocus={true} value={value} onChange={event => setValue(event.detail.value)} />
-      <Button iconName="check" onClick={() => setActive(false)} />
-      <Button iconName="close" onClick={() => setActive(false)} />
+      <Button iconName="check" ariaLabel="Save" onClick={() => setActive(false)} />
+      <Button iconName="close" ariaLabel="Cancel" onClick={() => setActive(false)} />
     </div>
   );
 }

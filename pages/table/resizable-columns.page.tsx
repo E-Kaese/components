@@ -1,6 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import range from 'lodash/range';
 import zipObject from 'lodash/zipObject';
 import Button from '~components/button';
@@ -13,6 +13,13 @@ import SpaceBetween from '~components/space-between';
 import Table, { TableProps } from '~components/table';
 import { NonCancelableCustomEvent } from '~components/interfaces';
 import ScreenshotArea from '../utils/screenshot-area';
+import AppContext, { AppContextType } from '../app/app-context';
+
+declare global {
+  interface Window {
+    __columnWidths: readonly number[];
+  }
+}
 
 interface Item {
   id: number;
@@ -84,7 +91,28 @@ const items: Item[] = [
   })),
 ];
 
+type PageContext = React.Context<
+  AppContextType<{
+    wrapLines: boolean;
+    stickyHeader: boolean;
+    resizableColumns: boolean;
+    fullPage: boolean;
+    withColumnIds?: boolean;
+    withSelection?: boolean;
+  }>
+>;
+
 export default function App() {
+  const { urlParams, setUrlParams } = useContext(AppContext as PageContext);
+  const {
+    wrapLines = false,
+    stickyHeader = false,
+    resizableColumns = true,
+    fullPage = false,
+    withColumnIds = true,
+    withSelection = false,
+  } = urlParams;
+
   const [renderKey, setRenderKey] = useState(0);
   const [columns, setColumns] = useState(columnsConfig);
   const [columnDisplay, setColumnDisplay] = useState([
@@ -94,12 +122,11 @@ export default function App() {
     { id: 'state', visible: true },
     { id: 'extra', visible: false },
   ]);
-  const [wrapLines, setWrapLines] = useState(false);
-  const [stickyHeader, setStickyHeader] = useState(false);
-  const [resizableColumns, setResizableColumns] = useState(true);
+
   const [sorting, setSorting] = useState<TableProps.SortingState<any>>();
 
   function handleWidthChange(event: NonCancelableCustomEvent<TableProps.ColumnWidthsChangeDetail>) {
+    window.__columnWidths = event.detail.widths;
     const widths = zipObject(
       columnDisplay.map(column => column.id!),
       event.detail.widths
@@ -120,22 +147,31 @@ export default function App() {
       <Container header={<Header>Preferences</Header>}>
         <ColumnLayout columns={3} borders="vertical">
           <div>
-            <Checkbox checked={wrapLines} onChange={event => setWrapLines(event.detail.checked)}>
+            <Checkbox checked={wrapLines} onChange={event => setUrlParams({ wrapLines: event.detail.checked })}>
               Wrap lines
             </Checkbox>
             <Checkbox
               id="sticky-header-toggle"
               checked={stickyHeader}
-              onChange={event => setStickyHeader(event.detail.checked)}
+              onChange={event => setUrlParams({ stickyHeader: event.detail.checked })}
             >
               Sticky header
             </Checkbox>
             <Checkbox
               id="resizable-columns-toggle"
               checked={resizableColumns}
-              onChange={event => setResizableColumns(event.detail.checked)}
+              onChange={event => setUrlParams({ resizableColumns: event.detail.checked })}
             >
               Resizable columns
+            </Checkbox>
+            <Checkbox checked={fullPage} onChange={event => setUrlParams({ fullPage: event.detail.checked })}>
+              Full page table
+            </Checkbox>
+            <Checkbox checked={withColumnIds} onChange={event => setUrlParams({ withColumnIds: event.detail.checked })}>
+              Columns have IDs
+            </Checkbox>
+            <Checkbox checked={withSelection} onChange={event => setUrlParams({ withSelection: event.detail.checked })}>
+              With row selection
             </Checkbox>
           </div>
           <div>
@@ -166,15 +202,17 @@ export default function App() {
           key={renderKey}
           header={<Header>Simple table</Header>}
           stickyHeader={stickyHeader}
-          columnDefinitions={columns}
+          columnDefinitions={columns.map(col => (withColumnIds ? col : { ...col, id: undefined }))}
           resizableColumns={resizableColumns}
-          columnDisplay={columnDisplay}
+          columnDisplay={withColumnIds ? columnDisplay : undefined}
+          selectionType={withSelection ? 'single' : undefined}
           items={items}
           wrapLines={wrapLines}
           sortingColumn={sorting?.sortingColumn}
           sortingDescending={sorting?.isDescending}
           onSortingChange={event => setSorting(event.detail)}
           onColumnWidthsChange={handleWidthChange}
+          variant={fullPage ? 'full-page' : undefined}
         />
       </ScreenshotArea>
     </SpaceBetween>

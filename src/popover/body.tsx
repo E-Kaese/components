@@ -45,6 +45,7 @@ export default function PopoverBody({
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       if (event.keyCode === KeyCode.escape) {
+        event.stopPropagation();
         onDismiss();
       }
     },
@@ -53,7 +54,7 @@ export default function PopoverBody({
 
   // Implement our own auto-focus rather than using FocusLock's,
   // because we also want to focus the dismiss button when it
-  // is added dyamically (e.g. in chart popovers)
+  // is added dynamically (e.g. in chart popovers)
   useEffect(() => {
     if (showDismissButton && !dismissButtonFocused.current) {
       dismissButtonRef.current?.focus({ preventScroll: true });

@@ -115,6 +115,140 @@ An \`onButtonClick\` event is fired when the user clicks it.",
 }
 `;
 
+exports[`Documenter definition for anchor-navigation matches the snapshot: anchor-navigation 1`] = `
+Object {
+  "events": Array [
+    Object {
+      "cancelable": false,
+      "description": "Fired when an active anchor link changes.
+Note: This event is triggered both by the component's internal scroll-spy logic,
+or when the \`activeHref\` prop is manually updated.
+",
+      "detailInlineType": Object {
+        "name": "AnchorNavigationProps.Anchor",
+        "properties": Array [
+          Object {
+            "name": "href",
+            "optional": false,
+            "type": "string",
+          },
+          Object {
+            "name": "info",
+            "optional": true,
+            "type": "string",
+          },
+          Object {
+            "name": "level",
+            "optional": false,
+            "type": "number",
+          },
+          Object {
+            "name": "text",
+            "optional": false,
+            "type": "string",
+          },
+        ],
+        "type": "object",
+      },
+      "detailType": "AnchorNavigationProps.Anchor",
+      "name": "onActiveHrefChange",
+    },
+    Object {
+      "cancelable": true,
+      "description": "Fired when an anchor link is clicked without any modifier keys.",
+      "detailInlineType": Object {
+        "name": "AnchorNavigationProps.Anchor",
+        "properties": Array [
+          Object {
+            "name": "href",
+            "optional": false,
+            "type": "string",
+          },
+          Object {
+            "name": "info",
+            "optional": true,
+            "type": "string",
+          },
+          Object {
+            "name": "level",
+            "optional": false,
+            "type": "number",
+          },
+          Object {
+            "name": "text",
+            "optional": false,
+            "type": "string",
+          },
+        ],
+        "type": "object",
+      },
+      "detailType": "AnchorNavigationProps.Anchor",
+      "name": "onFollow",
+    },
+  ],
+  "functions": Array [],
+  "name": "AnchorNavigation",
+  "properties": Array [
+    Object {
+      "description": "Specifies the active anchor href. When set, the component will operate in a
+controlled manner, and internal scroll-spy will be disabled.",
+      "name": "activeHref",
+      "optional": true,
+      "type": "string",
+    },
+    Object {
+      "description": "List of anchors. Each anchor object has the following properties:
+* \`text\` (string) - The text for the anchor item.
+* \`href\` (string) - The \`id\` attribute of the target HTML element that the anchor refers to.
+For example: \`\\"#section1.1\\"\`
+* \`level\` (number) - Level of nesting of the anchor.
+* \`info\` (string | undefined) - Additional information to display next to the link, for example: \\"New\\" or \\"Updated\\".
+
+Note: The list of anchors should be sorted in the order they appear on the page.
+",
+      "name": "anchors",
+      "optional": false,
+      "type": "Array<AnchorNavigationProps.Anchor>",
+    },
+    Object {
+      "description": "Adds \`aria-labelledby\` to the component.
+Use this property for identifying the header or title that labels the anchor navigation.
+To use it correctly, define an ID for the element either as label, and set the property to that ID.
+",
+      "name": "ariaLabelledby",
+      "optional": true,
+      "type": "string",
+    },
+    Object {
+      "deprecatedTag": "Custom CSS is not supported. For other use cases, use [data attributes](https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes).",
+      "description": "Adds the specified classes to the root element of the component.",
+      "name": "className",
+      "optional": true,
+      "type": "string",
+    },
+    Object {
+      "deprecatedTag": "Custom CSS is not supported. For other use cases, use [data attributes](https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes).",
+      "description": "Adds the specified ID to the root element of the component.",
+      "name": "id",
+      "optional": true,
+      "type": "string",
+    },
+    Object {
+      "defaultValue": "0",
+      "description": "Specifies the height (in pixels) to be considered as an offset when activating anchors.
+This is useful when you have a fixed or sticky header that might overlap with the content as you scroll.
+Defaults to 0.
+",
+      "name": "scrollSpyOffset",
+      "optional": true,
+      "type": "number",
+    },
+  ],
+  "regions": Array [],
+  "releaseStatus": "stable",
+}
+`;
+
 exports[`Documenter definition for annotation-context matches the snapshot: annotation-context 1`] = `
 Object {
   "events": Array [
@@ -266,6 +400,23 @@ Object {
   "events": Array [
     Object {
       "cancelable": false,
+      "description": "Fired when the active drawer is toggled.",
+      "detailInlineType": Object {
+        "name": "AppLayoutProps.DrawerChangeDetail",
+        "properties": Array [
+          Object {
+            "name": "activeDrawerId",
+            "optional": false,
+            "type": "null | string",
+          },
+        ],
+        "type": "object",
+      },
+      "detailType": "AppLayoutProps.DrawerChangeDetail",
+      "name": "onDrawerChange",
+    },
+    Object {
+      "cancelable": false,
       "description": "Fired when the navigation drawer is toggled.",
       "detailInlineType": Object {
         "name": "AppLayoutProps.ChangeDetail",
@@ -359,6 +510,12 @@ viewport size.",
       "returnType": "void",
     },
     Object {
+      "description": "Focuses the active drawer. Use this to focus the active drawer after opening it programmatically.",
+      "name": "focusActiveDrawer",
+      "parameters": Array [],
+      "returnType": "void",
+    },
+    Object {
       "description": "Focuses the split panel if it is open.",
       "name": "focusSplitPanel",
       "parameters": Array [],
@@ -383,6 +540,12 @@ to control the state by listening to \`toolsChange\` and providing \`toolsOpen\`
   "name": "AppLayout",
   "properties": Array [
     Object {
+      "description": "The active drawer id. If you want to clear the active drawer, use \`null\`.",
+      "name": "activeDrawerId",
+      "optional": true,
+      "type": "null | string",
+    },
+    Object {
       "description": "Aria labels for the drawer operating buttons. Use this property to ensure accessibility.
 * \`navigation\` (string) - Label for the landmark that wraps the navigation drawer.
 * \`navigationClose\` (string) - Label for the button that closes the navigation drawer.
@@ -391,6 +554,9 @@ to control the state by listening to \`toolsChange\` and providing \`toolsOpen\`
 * \`tools\` (string) - Label for the landmark that wraps the tools drawer.
 * \`toolsClose\` (string) - Label for the button that closes the tools drawer.
 * \`toolsToggle\` (string) - Label for the button that opens the tools drawer.
+* \`drawers\` (string) - Label for the landmark that the active drawer.
+* \`drawersOverflow\` (string) - Label for the ellipsis button with any overflow drawers.
+* \`drawersOverflowWithBadge\` (string) - Label for the ellipsis button with any overflow drawers, with a badge.
 
 Example:
 \`\`\`
@@ -401,13 +567,31 @@ Example:
   notifications: \\"Notifications\\",
   tools: \\"Help panel\\",
   toolsClose: \\"Close help panel\\",
-  toolsToggle: \\"Open help panel\\"
+  toolsToggle: \\"Open help panel\\",
+  drawers: \\"Drawers\\",
+  drawersOverflow: \\"Overflow drawers\\",
+  drawersOverflowWithBadge: \\"Overflow drawers (Unread notifications)\\"
 }
 \`\`\`",
       "i18nTag": true,
       "inlineType": Object {
         "name": "AppLayoutProps.Labels",
         "properties": Array [
+          Object {
+            "name": "drawers",
+            "optional": true,
+            "type": "string",
+          },
+          Object {
+            "name": "drawersOverflow",
+            "optional": true,
+            "type": "string",
+          },
+          Object {
+            "name": "drawersOverflowWithBadge",
+            "optional": true,
+            "type": "string",
+          },
           Object {
             "name": "navigation",
             "optional": true,
@@ -497,6 +681,22 @@ Individual properties will always take precedence over the default coming from t
       "name": "disableContentPaddings",
       "optional": true,
       "type": "boolean",
+    },
+    Object {
+      "description": "Drawers property.
+Each Drawer is an item in the drawers wrapper with the following properties:
+* id (string) - the id of the drawer.
+* content (React.ReactNode) - the content in the drawer.
+* trigger (DrawerTrigger) - the button that opens and closes the active drawer.
+* ariaLabels (DrawerAriaLabels) - the labels for the interactive elements of the drawer.
+* badge (boolean) - Adds a badge to the corner of the icon to indicate a state change. For example: Unread notifications.
+* resizable (boolean) - if the drawer is resizable or not.
+* defaultSize (number) - starting size of the drawer. if not set, defaults to 290.
+* onResize (({ size: number }) => void) - Fired when the active drawer is resized.
+",
+      "name": "drawers",
+      "optional": true,
+      "type": "Array<AppLayoutProps.Drawer>",
     },
     Object {
       "defaultValue": "'#b #f'",
@@ -1968,6 +2168,31 @@ Do not use \`ariaLabel\` and \`ariaLabelledby\` at the same time.",
       "type": "CartesianChartProps.DetailPopoverFooter<T>",
     },
     Object {
+      "description": "A function that determines the details that are displayed in the popover for each series.
+Use this for wrapping keys or values in external links, or to display a metric breakdown by adding an additional level of nested items.
+The function is called with the parameters \`{ series, x, y }\` representing the series, the highlighted x coordinate value and its corresponding y value respectively,
+and should return the following properties:
+* \`key\` (ReactNode) - Name of the series.
+* \`value\` (ReactNode) - Value of the series at the highlighted x coordinate.
+* \`subItems\` (ReadonlyArray<{ key: ReactNode; value: ReactNode }>) - (Optional) List of nested key-value pairs.
+* \`expandable\` (boolean) - (Optional) Determines whether the optional list of nested items provided via \`subItems\` is expandable. This is \`false\` by default.
+",
+      "inlineType": Object {
+        "name": "MixedLineBarChartProps.DetailPopoverSeriesContent",
+        "parameters": Array [
+          Object {
+            "name": "data",
+            "type": "MixedLineBarChartProps.DetailPopoverSeriesData<T>",
+          },
+        ],
+        "returnType": "MixedLineBarChartProps.DetailPopoverSeriesKeyValuePair",
+        "type": "function",
+      },
+      "name": "detailPopoverSeriesContent",
+      "optional": true,
+      "type": "MixedLineBarChartProps.DetailPopoverSeriesContent<T>",
+    },
+    Object {
       "defaultValue": "\\"medium\\"",
       "description": "Determines the maximum width the detail popover will be limited to.",
       "inlineType": Object {
@@ -2778,8 +3003,9 @@ modifier keys (that is, CTRL, ALT, SHIFT, META), and the button has an \`href\` 
       "type": "boolean",
     },
     Object {
-      "description": "Adds \`aria-label\` to the button element. It should be used in buttons that don't have text in order to make
-them accessible. The text will also be added to the \`title\` attribute of the button.",
+      "description": "Adds \`aria-label\` to the button element. Use this to provide an accessible name for buttons
+that don't have visible text, and to distinguish between multiple buttons with identical visible text.
+The text will also be added to the \`title\` attribute of the button.",
       "name": "ariaLabel",
       "optional": true,
       "type": "string",
@@ -2908,6 +3134,7 @@ This property is ignored if you use a predefined icon or if you set your custom 
           "flag",
           "folder-open",
           "folder",
+          "gen-ai",
           "group-active",
           "group",
           "heart",
@@ -3161,7 +3388,7 @@ modifier keys (that is, CTRL, ALT, SHIFT, META), and the item has an \`href\` se
   "properties": Array [
     Object {
       "description": "Adds \`aria-label\` to the button dropdown trigger.
-It should be used in buttons that don't have text in order to make them accessible.",
+Use this to provide an accessible name for buttons that don't have visible text.",
       "name": "ariaLabel",
       "optional": true,
       "type": "string",
@@ -3260,7 +3487,8 @@ It prevents clicks.",
       "type": "string",
     },
     Object {
-      "description": "A standalone action that is shown prior to the dropdown trigger. Use it with \\"primary\\" variant only.
+      "description": "A standalone action that is shown prior to the dropdown trigger.
+Use it with \\"primary\\" and \\"normal\\" variant only.
 Main action properties:
 * \`text\` (string) - Specifies the text shown in the main action.
 * \`external\` (boolean) - Marks the main action as external by adding an icon after the text. The link will open in a new tab when clicked. Note that this only works when \`href\` is also provided.
@@ -3685,6 +3913,13 @@ Default value:
       "name": "className",
       "optional": true,
       "type": "string",
+    },
+    Object {
+      "description": "Activating this property makes the entire card clickable to select it.
+Don't use this property if the card has any other interactive elements.",
+      "name": "entireCardClickable",
+      "optional": true,
+      "type": "boolean",
     },
     Object {
       "description": " Use this property to inform screen readers which range of cards is currently displayed.
@@ -4534,6 +4769,7 @@ You must set the current value in the \`preferences.contentDensity\` property.",
     Object {
       "description": "Configures the built-in content display preference for order and visibility of columns in a table.
 Once set, the component displays this preference in the modal.
+Cannot be used together with \`visibleContentPreference\`.
 
 It contains the following:
 - \`title\` (string) - Specifies the text displayed at the top of the preference.
@@ -4805,8 +5041,9 @@ You must set the current value in the \`preferences.stripedRows\` property.",
       "type": "string",
     },
     Object {
-      "description": "Configures the built-in \\"visible content selection\\" preference (for example, visible columns in a table).
+      "description": "Configures the built-in \\"visible content selection\\" preference (for example, visible sections in cards).
 If you set it, the component displays this preference in the modal.
+Cannot be used together with \`contentDisplayPreference\`.
 
 It contains the following:
 - \`title\` (string) - Specifies the text displayed at the top of the preference.
@@ -4820,6 +5057,8 @@ Each group of options contains the following:
   - \`editable\` (boolean) - (Optional) Determines whether the user is able to toggle its visibility. This is \`true\` by default.
 
 You must set the current list of visible content \`id\`s in the \`preferences.visibleContent\` property.
+
+**Deprecated** in table, replaced by \`contentDisplayPreference\`.
 ",
       "inlineType": Object {
         "name": "CollectionPreferencesProps.VisibleContentPreference",
@@ -5014,7 +5253,7 @@ all containers to the height of the longest one, to avoid extra vertical scroll 
     Object {
       "description": "Use this slot to render a media element. Supported element types are 'img', 'video', and 'picture'.
 You can define different positions and sizes for the media element within the container.
-* \`content\` - Use this slot to render your media element. We support \`img\`, \`video\` and \`picture\` elements.
+* \`content\` - Use this slot to render your media element. We support \`img\`, \`video\`, \`picture\`, and \`iframe\` elements.
 
 * \`position\` - Defines the media slot's position within the container. Defaults to \`top\`.
 
@@ -5838,6 +6077,11 @@ Default: the user's current time offset as provided by the browser.
             "type": "(unit: DateRangePickerProps.TimeUnit, value: number) => string",
           },
           Object {
+            "name": "modeSelectionLabel",
+            "optional": true,
+            "type": "string",
+          },
+          Object {
             "name": "nextMonthAriaLabel",
             "optional": true,
             "type": "string",
@@ -6052,6 +6296,69 @@ or a relative time range.",
     },
   ],
   "regions": Array [],
+  "releaseStatus": "stable",
+}
+`;
+
+exports[`Documenter definition for drawer matches the snapshot: drawer 1`] = `
+Object {
+  "events": Array [],
+  "functions": Array [],
+  "name": "Drawer",
+  "properties": Array [
+    Object {
+      "deprecatedTag": "Custom CSS is not supported. For other use cases, use [data attributes](https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes).",
+      "description": "Adds the specified classes to the root element of the component.",
+      "name": "className",
+      "optional": true,
+      "type": "string",
+    },
+    Object {
+      "description": "An object containing all the necessary localized strings required by the component.",
+      "i18nTag": true,
+      "inlineType": Object {
+        "name": "I18nStrings",
+        "properties": Array [
+          Object {
+            "name": "loadingText",
+            "optional": true,
+            "type": "string",
+          },
+        ],
+        "type": "object",
+      },
+      "name": "i18nStrings",
+      "optional": true,
+      "type": "I18nStrings",
+    },
+    Object {
+      "deprecatedTag": "Custom CSS is not supported. For other use cases, use [data attributes](https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes).",
+      "description": "Adds the specified ID to the root element of the component.",
+      "name": "id",
+      "optional": true,
+      "type": "string",
+    },
+    Object {
+      "description": "Renders the drawer in a loading state. We recommend that you also set a \`loadingText\`.",
+      "name": "loading",
+      "optional": true,
+      "type": "boolean",
+    },
+  ],
+  "regions": Array [
+    Object {
+      "description": "Main content of the drawer.",
+      "isDefault": true,
+      "name": "children",
+    },
+    Object {
+      "description": "Header of the drawer.
+It should contain the only \`h2\` used in the drawer.
+",
+      "isDefault": false,
+      "name": "header",
+    },
+  ],
   "releaseStatus": "stable",
 }
 `;
@@ -7124,6 +7431,7 @@ This property is ignored if you use a predefined icon or if you set your custom 
           "flag",
           "folder-open",
           "folder",
+          "gen-ai",
           "group-active",
           "group",
           "heart",
@@ -7728,6 +8036,31 @@ Do not use \`ariaLabel\` and \`ariaLabelledby\` at the same time.",
       "name": "detailPopoverFooter",
       "optional": true,
       "type": "CartesianChartProps.DetailPopoverFooter<T>",
+    },
+    Object {
+      "description": "A function that determines the details that are displayed in the popover for each series.
+Use this for wrapping keys or values in external links, or to display a metric breakdown by adding an additional level of nested items.
+The function is called with the parameters \`{ series, x, y }\` representing the series, the highlighted x coordinate value and its corresponding y value respectively,
+and should return the following properties:
+* \`key\` (ReactNode) - Name of the series.
+* \`value\` (ReactNode) - Value of the series at the highlighted x coordinate.
+* \`subItems\` (ReadonlyArray<{ key: ReactNode; value: ReactNode }>) - (Optional) List of nested key-value pairs.
+* \`expandable\` (boolean) - (Optional) Determines whether the optional list of nested items provided via \`subItems\` is expandable. This is \`false\` by default.
+",
+      "inlineType": Object {
+        "name": "MixedLineBarChartProps.DetailPopoverSeriesContent",
+        "parameters": Array [
+          Object {
+            "name": "data",
+            "type": "MixedLineBarChartProps.DetailPopoverSeriesData<T>",
+          },
+        ],
+        "returnType": "MixedLineBarChartProps.DetailPopoverSeriesKeyValuePair",
+        "type": "function",
+      },
+      "name": "detailPopoverSeriesContent",
+      "optional": true,
+      "type": "MixedLineBarChartProps.DetailPopoverSeriesContent<T>",
     },
     Object {
       "defaultValue": "\\"medium\\"",
@@ -8339,6 +8672,31 @@ Do not use \`ariaLabel\` and \`ariaLabelledby\` at the same time.",
       "type": "CartesianChartProps.DetailPopoverFooter<T>",
     },
     Object {
+      "description": "A function that determines the details that are displayed in the popover for each series.
+Use this for wrapping keys or values in external links, or to display a metric breakdown by adding an additional level of nested items.
+The function is called with the parameters \`{ series, x, y }\` representing the series, the highlighted x coordinate value and its corresponding y value respectively,
+and should return the following properties:
+* \`key\` (ReactNode) - Name of the series.
+* \`value\` (ReactNode) - Value of the series at the highlighted x coordinate.
+* \`subItems\` (ReadonlyArray<{ key: ReactNode; value: ReactNode }>) - (Optional) List of nested key-value pairs.
+* \`expandable\` (boolean) - (Optional) Determines whether the optional list of nested items provided via \`subItems\` is expandable. This is \`false\` by default.
+",
+      "inlineType": Object {
+        "name": "MixedLineBarChartProps.DetailPopoverSeriesContent",
+        "parameters": Array [
+          Object {
+            "name": "data",
+            "type": "MixedLineBarChartProps.DetailPopoverSeriesData<T>",
+          },
+        ],
+        "returnType": "MixedLineBarChartProps.DetailPopoverSeriesKeyValuePair",
+        "type": "function",
+      },
+      "name": "detailPopoverSeriesContent",
+      "optional": true,
+      "type": "MixedLineBarChartProps.DetailPopoverSeriesContent<T>",
+    },
+    Object {
       "defaultValue": "\\"medium\\"",
       "description": "Determines the maximum width the detail popover will be limited to.",
       "inlineType": Object {
@@ -8881,7 +9239,8 @@ and set the property to a string of each ID separated by spaces (for example, \`
       "type": "string",
     },
     Object {
-      "description": "Adds \`aria-label\` to the select element.",
+      "description": "Adds \`aria-label\` to the select element.
+Use this if you don't have a visible label for this control.",
       "name": "ariaLabel",
       "optional": true,
       "type": "string",
@@ -9347,7 +9706,7 @@ Example:
 \`\`\`
 {
   nextPageLabel: 'Next page',
-  paginationLabel: 'Table pagination'
+  paginationLabel: 'Table pagination',
   previousPageLabel: 'Previous page',
   pageLabel: pageNumber => \`Page \${pageNumber}\`
 }
@@ -9518,8 +9877,8 @@ The full data object will be passed down to events and properties like \`detailP
 The function is called with the data of the target segment and is expected to return an array of detail pairs.
 By default, each segment displays two detail pairs: count and percentage.
 Each pair has the following properties:
-* \`key\` (string) - Name of the detail or metric.
-* \`value\` (string | number) - The value of this detail for the target segment.
+* \`key\` (ReactNode) - Name of the detail or metric.
+* \`value\` (ReactNode) - The value of this detail for the target segment.
 ",
       "inlineType": Object {
         "name": "PieChartProps.DetailPopoverContentFunction",
@@ -9931,7 +10290,8 @@ Note: Using popover rendered with portal within a Modal is not supported.
       "type": "string",
     },
     Object {
-      "description": "Adds an aria-label to the text trigger button.",
+      "description": "Adds \`aria-label\` to the text trigger button. Use this to provide an accessible name for triggers
+that don't have visible text, and to distinguish between multiple triggers with identical visible text.",
       "name": "triggerAriaLabel",
       "optional": true,
       "type": "string",
@@ -9986,6 +10346,18 @@ Use the \`buttonText\` property and the \`onButtonClick\` event listener of the 
   "functions": Array [],
   "name": "ProgressBar",
   "properties": Array [
+    Object {
+      "description": "Adds an \`aria-label\` to the progress bar.",
+      "name": "ariaLabel",
+      "optional": true,
+      "type": "string",
+    },
+    Object {
+      "description": "Adds \`aria-labelledby\` to the progress bar.",
+      "name": "ariaLabelledby",
+      "optional": true,
+      "type": "string",
+    },
     Object {
       "deprecatedTag": "Custom CSS is not supported. For other use cases, use [data attributes](https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes).",
       "description": "Adds the specified classes to the root element of the component.",
@@ -10489,6 +10861,11 @@ operations are communicated to the user in another way.",
             "type": "string",
           },
           Object {
+            "name": "operatorStartsWithText",
+            "optional": true,
+            "type": "string",
+          },
+          Object {
             "name": "operatorText",
             "optional": true,
             "type": "string",
@@ -10548,7 +10925,7 @@ operations are communicated to the user in another way.",
 Each token has the following properties:
 * value [string]: The string value of the token to be used as a filter.
 * propertyKey [string]: The key of the corresponding property in filteringProperties.
-* operator ['<' | '<=' | '>' | '>=' | ':' | '!:' | '=' | '!=']: The operator which indicates how to filter the dataset using this token.
+* operator ['<' | '<=' | '>' | '>=' | ':' | '!:' | '=' | '!=' | '^']: The operator which indicates how to filter the dataset using this token.
 
 \`operation\` has two valid values [and, or] and controls the join operation to be applied between tokens when filtering the items.
 ",
@@ -10594,6 +10971,12 @@ it removes options that are not currently in view from the DOM.",
 filter queries only after an initial filter is applied.",
       "isDefault": false,
       "name": "customControl",
+    },
+    Object {
+      "description": "A slot that replaces the standard \\"Clear filter\\" button.
+When using this slot, make sure to still provide a mechanism to clear all filters.",
+      "isDefault": false,
+      "name": "customFilterActions",
     },
     Object {
       "description": "Displayed when there are no options to display.
@@ -11439,7 +11822,8 @@ and set the property to a string of each ID separated by spaces (for example, \`
       "type": "string",
     },
     Object {
-      "description": "Adds \`aria-label\` to the select element.",
+      "description": "Adds \`aria-label\` to the select element.
+Use this if you don't have a visible label for this control.",
       "name": "ariaLabel",
       "optional": true,
       "type": "string",
@@ -12292,6 +12676,7 @@ Object {
           "grey",
           "green",
           "red",
+          "yellow",
         ],
       },
       "name": "colorOverride",
@@ -12514,6 +12899,7 @@ items also receives the corresponding  \`Item\` object. You can use the \`select
 add a meaningful description to the whole selection.
 * \`tableLabel\` (string) - Provides an alternative text for the table. If you use a header for this table, you may reuse the string
                           to provide a caption-like description. For example, tableLabel=Instances will be announced as 'Instances table'.
+* \`resizerRoleDescription\` (string) - Provides role description for table column resizer buttons.
 * \`activateEditLabel\` (EditableColumnDefinition, Item) => string -
                      Specifies an alternative text for the edit button in editable cells.
 * \`cancelEditLabel\` (EditableColumnDefinition) => string -
@@ -12547,6 +12933,11 @@ add a meaningful description to the whole selection.
             "name": "itemSelectionLabel",
             "optional": true,
             "type": "(data: TableProps.SelectionState<T>, row: T) => string",
+          },
+          Object {
+            "name": "resizerRoleDescription",
+            "optional": true,
+            "type": "string",
           },
           Object {
             "name": "selectionGroupLabel",
@@ -12909,6 +13300,7 @@ It's also used to connect \`items\` and \`selectedItems\` values when they refer
       "visualRefreshTag": "\`embedded\`, \`stacked\`, and \`full-page\` variants",
     },
     Object {
+      "deprecatedTag": "Replaced by \`columnDisplay\`.",
       "description": "Specifies an array containing the \`id\`s of visible columns. If not set, all columns are displayed.
 Use it in conjunction with the visible content preference of the [collection preferences](/components/collection-preferences/) component.
 
@@ -14430,6 +14822,13 @@ Object {
       "name": "className",
       "optional": true,
       "type": "string",
+    },
+    Object {
+      "description": "Removes any outer padding from the component.
+We recommend to always enable this property.",
+      "name": "disableOuterPadding",
+      "optional": true,
+      "type": "boolean",
     },
     Object {
       "description": "An object containing all the necessary localized strings required by the component.",
