@@ -8,239 +8,251 @@
 @use './shared' as shared;
 @use '../internal/generated/custom-css-properties/index.scss' as style-extensions;
 
-.root {
-  #{style-extensions.$containerBorderColor}: #{awsui.$color-border-container};
-  #{style-extensions.$containerBorderWidth}: #{awsui.$border-container-width};
-  #{style-extensions.$containerBorderTopColor}: #{awsui.$color-border-container-top};
-  #{style-extensions.$containerBorderTopWidth}: #{awsui.$border-container-top-width};
-  @include styles.styles-reset;
-  word-wrap: break-word;
-  position: relative;
-
-  &.fit-height {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    &.with-side-media {
-      flex-direction: row;
-    }
-  }
-
-  &.variant {
-    &-default,
-    &-stacked {
-      background-color: awsui.$color-background-container-content;
-      // Border and shadows are applied with ::before and ::after elements (respectively)
-      @include styles.container-style;
-    }
-    // Meld container bottom corners into next adjoining container
-    &-stacked:not(:last-child),
-    &-stacked:not(:last-child)::before,
-    &-stacked:not(:last-child)::after {
-      border-bottom-right-radius: 0;
-      border-bottom-left-radius: 0;
-      border-bottom-width: 0;
-    }
-    // Meld container top corners into preceding container
-    &-stacked + &-stacked,
-    &-stacked + &-stacked::before,
-    &-stacked + &-stacked::after {
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-    }
-    // Replace container border with a divider
-    &-stacked + &-stacked:not(.refresh)::before {
-      @include shared.divider;
-    }
-  }
-
-  // To ensure the top border/divider is visible on sticky elements which have a higher z-index
-  &.sticky-enabled:not(.refresh) {
-    &::before {
-      top: calc(-1 * #{awsui.$border-container-top-width});
-    }
-    &.variant-stacked::before {
-      top: calc(-1 * #{awsui.$border-divider-section-width});
+/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+@layer default, extensions;
+/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+@layer extensions {
+  .style-extensions {
+    &.root {
+      border: var(#{style-extensions.$containerBorderColor}) solid var(#{style-extensions.$containerBorderWidth});
+      border-top: var(#{style-extensions.$containerBorderTopColor}) solid
+        var(#{style-extensions.$containerBorderTopWidth});
     }
   }
 }
 
-.with-side-media {
-  display: flex;
-  flex-direction: row;
-}
-
-.with-top-media {
-  display: flex;
-  flex-direction: column;
-}
-
-.content-wrapper {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  &-fit-height {
-    height: 100%;
-    overflow: hidden;
-  }
-}
-
-.media {
-  overflow: hidden;
-  flex-shrink: 0;
-
-  // stylelint-disable-next-line @cloudscape-design/no-implicit-descendant, selector-max-type
-  img,
-  video,
-  picture {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-
-  // stylelint-disable-next-line @cloudscape-design/no-implicit-descendant, selector-max-type
-  iframe {
-    width: 100%;
-    height: 100%;
-    border: 0;
-  }
-
-  &-top {
-    max-height: 66%;
-    border-top-left-radius: awsui.$border-radius-container;
-    border-top-right-radius: awsui.$border-radius-container;
-  }
-
-  &-side {
-    max-width: 66%;
-    border-top-left-radius: awsui.$border-radius-container;
-    border-bottom-left-radius: awsui.$border-radius-container;
-  }
-}
-
-.header {
-  background-color: awsui.$color-background-container-header;
-  border-top-left-radius: awsui.$border-radius-container;
-  border-top-right-radius: awsui.$border-radius-container;
-
-  &.header-with-media {
-    background: none;
-    &:not(:empty) {
-      border-bottom: none;
-    }
-  }
-
-  // sticky positioning may be disabled (on mobile or if browser does not support it),
-  // but some markup still requires a new stacking context
-  &-sticky-disabled {
+/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+@layer default {
+  .root {
+    @include styles.styles-reset;
+    word-wrap: break-word;
     position: relative;
-    z-index: 1;
-  }
 
-  &-sticky-enabled {
-    top: 0;
-    /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
-    position: sticky;
-    z-index: 800;
-  }
-
-  &-stuck {
-    border-radius: 0;
-    &::before {
-      border: 0;
+    &.fit-height {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      &.with-side-media {
+        flex-direction: row;
+      }
     }
-    &:not(.header-variant-cards) {
-      box-shadow: awsui.$shadow-sticky-embedded;
+
+    &.variant {
+      &-default,
+      &-stacked {
+        background-color: awsui.$color-background-container-content;
+        // Border and shadows are applied with ::before and ::after elements (respectively)
+        @include styles.container-style;
+      }
+      // Meld container bottom corners into next adjoining container
+      &-stacked:not(:last-child),
+      &-stacked:not(:last-child)::before,
+      &-stacked:not(:last-child)::after {
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+        border-bottom-width: 0;
+      }
+      // Meld container top corners into preceding container
+      &-stacked + &-stacked,
+      &-stacked + &-stacked::before,
+      &-stacked + &-stacked::after {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+      // Replace container border with a divider
+      &-stacked + &-stacked:not(.refresh)::before {
+        @include shared.divider;
+      }
     }
-  }
 
-  &-dynamic-height.header-stuck {
-    // to prevent the block from changing its height when variant dynamically changes
-    margin-bottom: calc(#{awsui.$line-height-heading-xl} - #{awsui.$line-height-heading-l});
-  }
-
-  &:not(:empty) {
-    border-bottom: awsui.$border-container-sticky-width solid awsui.$color-border-container-divider;
-  }
-
-  &.with-paddings {
-    padding: shared.$header-padding;
-    &.header-variant-cards {
-      padding: awsui.$space-container-header-top awsui.$space-container-horizontal;
-    }
-  }
-
-  &.with-hidden-content {
-    border-bottom-left-radius: awsui.$border-radius-container;
-    border-bottom-right-radius: awsui.$border-radius-container;
-  }
-
-  &-variant-cards {
-    // Border and shadows are applied with ::before and ::after elements (respectively)
-    @include styles.container-style;
-    &:not(.header-sticky-enabled) {
-      position: relative;
-    }
-    &.header-stuck::after,
-    &.header-stuck::before {
-      border: 0;
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-    }
-  }
-
-  &-variant-full-page.header-stuck {
-    box-shadow: none;
-
-    &::after {
-      content: '';
-
-      position: absolute;
-      right: 0;
-      left: 0;
-      bottom: 0;
-      top: 0;
-
-      box-shadow: awsui.$shadow-sticky;
-      // This polygon only shows the part of the shadow that is lower than the element itself.
-      clip-path: polygon(-999% 100%, 999% 100%, 999% 999%, -999% 999%);
-    }
-  }
-}
-
-/*
-The dynamic height dark header needs a background that will cover
-the default white background of the container component.
-*/
-.dark-header {
-  background-color: awsui.$color-background-layout-main;
-  color: awsui.$color-text-body-default;
-}
-
-.content {
-  flex: 1;
-  &-fit-height {
-    overflow: auto;
-  }
-  &.with-paddings {
-    padding: awsui.$space-scaled-l awsui.$space-container-horizontal;
-
-    .header + & {
-      padding-top: awsui.$space-container-content-top;
-      &.content-with-media {
-        padding-top: 0;
+    // To ensure the top border/divider is visible on sticky elements which have a higher z-index
+    &.sticky-enabled:not(.refresh) {
+      &::before {
+        top: calc(-1 * #{awsui.$border-container-top-width});
+      }
+      &.variant-stacked::before {
+        top: calc(-1 * #{awsui.$border-divider-section-width});
       }
     }
   }
-}
 
-.footer {
-  &.with-paddings {
-    padding: shared.$footer-padding;
+  .with-side-media {
+    display: flex;
+    flex-direction: row;
   }
 
-  &.with-divider {
-    @include shared.divider;
+  .with-top-media {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .content-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    &-fit-height {
+      height: 100%;
+      overflow: hidden;
+    }
+  }
+
+  .media {
+    overflow: hidden;
+    flex-shrink: 0;
+
+    // stylelint-disable-next-line @cloudscape-design/no-implicit-descendant, selector-max-type
+    img,
+    video,
+    picture {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    // stylelint-disable-next-line @cloudscape-design/no-implicit-descendant, selector-max-type
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    &-top {
+      max-height: 66%;
+      border-top-left-radius: awsui.$border-radius-container;
+      border-top-right-radius: awsui.$border-radius-container;
+    }
+
+    &-side {
+      max-width: 66%;
+      border-top-left-radius: awsui.$border-radius-container;
+      border-bottom-left-radius: awsui.$border-radius-container;
+    }
+  }
+
+  .header {
+    background-color: awsui.$color-background-container-header;
+    border-top-left-radius: awsui.$border-radius-container;
+    border-top-right-radius: awsui.$border-radius-container;
+
+    &.header-with-media {
+      background: none;
+      &:not(:empty) {
+        border-bottom: none;
+      }
+    }
+
+    // sticky positioning may be disabled (on mobile or if browser does not support it),
+    // but some markup still requires a new stacking context
+    &-sticky-disabled {
+      position: relative;
+      z-index: 1;
+    }
+
+    &-sticky-enabled {
+      top: 0;
+      /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+      position: sticky;
+      z-index: 800;
+    }
+
+    &-stuck {
+      border-radius: 0;
+      &::before {
+        border: 0;
+      }
+      &:not(.header-variant-cards) {
+        box-shadow: awsui.$shadow-sticky-embedded;
+      }
+    }
+
+    &-dynamic-height.header-stuck {
+      // to prevent the block from changing its height when variant dynamically changes
+      margin-bottom: calc(#{awsui.$line-height-heading-xl} - #{awsui.$line-height-heading-l});
+    }
+
+    &:not(:empty) {
+      border-bottom: awsui.$border-container-sticky-width solid awsui.$color-border-container-divider;
+    }
+
+    &.with-paddings {
+      padding: shared.$header-padding;
+      &.header-variant-cards {
+        padding: awsui.$space-container-header-top awsui.$space-container-horizontal;
+      }
+    }
+
+    &.with-hidden-content {
+      border-bottom-left-radius: awsui.$border-radius-container;
+      border-bottom-right-radius: awsui.$border-radius-container;
+    }
+
+    &-variant-cards {
+      // Border and shadows are applied with ::before and ::after elements (respectively)
+      @include styles.container-style;
+      &:not(.header-sticky-enabled) {
+        position: relative;
+      }
+      &.header-stuck::after,
+      &.header-stuck::before {
+        border: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+    }
+
+    &-variant-full-page.header-stuck {
+      box-shadow: none;
+
+      &::after {
+        content: '';
+
+        position: absolute;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        top: 0;
+
+        box-shadow: awsui.$shadow-sticky;
+        // This polygon only shows the part of the shadow that is lower than the element itself.
+        clip-path: polygon(-999% 100%, 999% 100%, 999% 999%, -999% 999%);
+      }
+    }
+  }
+
+  /*
+The dynamic height dark header needs a background that will cover
+the default white background of the container component.
+*/
+  .dark-header {
+    background-color: awsui.$color-background-layout-main;
+    color: awsui.$color-text-body-default;
+  }
+
+  .content {
+    flex: 1;
+    &-fit-height {
+      overflow: auto;
+    }
+    &.with-paddings {
+      padding: awsui.$space-scaled-l awsui.$space-container-horizontal;
+
+      .header + & {
+        padding-top: awsui.$space-container-content-top;
+        &.content-with-media {
+          padding-top: 0;
+        }
+      }
+    }
+  }
+
+  .footer {
+    &.with-paddings {
+      padding: shared.$footer-padding;
+    }
+
+    &.with-divider {
+      @include shared.divider;
+    }
   }
 }
