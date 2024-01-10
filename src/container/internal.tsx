@@ -15,8 +15,8 @@ import styles from './styles.css.js';
 import { useFunnelSubStep } from '../internal/analytics/hooks/use-funnel';
 import { useModalContext } from '../internal/context/modal-context';
 import { useUniqueId } from '../internal/hooks/use-unique-id';
-import customCssProps from '../internal/generated/custom-css-properties';
-
+import styleExtensionProps from './__style-extension-props__/index';
+// import { camelCase } from 'change-case';
 export interface InternalContainerProps extends Omit<ContainerProps, 'variant'>, InternalBaseComponentProps {
   __stickyHeader?: boolean;
   __stickyOffset?: number;
@@ -98,6 +98,18 @@ export default function InternalContainer({
   const mergedRef = useMergeRefs(rootRef, __internalRootRef);
   const headerMergedRef = useMergeRefs(headerRef, overlapElement, __headerRef);
 
+  function getInlineStyles() {
+    if (styleExtensions) {
+      const inlineCustomProps: Record<string, string> = {};
+      Object.keys(styleExtensionProps).forEach(key => {
+        if (styleExtensions[key]) {
+          inlineCustomProps[`${styleExtensionProps[key]}`] = `${styleExtensions[key]}`;
+        }
+      });
+      return inlineCustomProps;
+    }
+  }
+
   /**
    * The visual refresh AppLayout component needs to know if a child component
    * has a high contrast sticky header. This is to make sure the background element
@@ -137,14 +149,7 @@ export default function InternalContainer({
         isRefresh && styles.refresh,
         styleExtensions && styles['style-extensions']
       )}
-      style={
-        styleExtensions && {
-          [customCssProps.containerBorderColor]: `${styleExtensions['container-border-color']}`,
-          [customCssProps.containerBorderWidth]: `${styleExtensions['container-border-width']}`,
-          [customCssProps.containerBorderTopColor]: `${styleExtensions['container-border-top-color']}`,
-          [customCssProps.containerBorderTopWidth]: `${styleExtensions['container-border-top-width']}`,
-        }
-      }
+      style={getInlineStyles()}
       ref={mergedRef}
     >
       {hasMedia && (

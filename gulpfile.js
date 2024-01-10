@@ -21,12 +21,13 @@ const {
   licenses,
   themeableSource,
   bundleVendorFiles,
+  generateStyleExtensionProps,
 } = require('./build-tools/tasks');
 
 const quickBuild = series(
   clean,
   parallel(packageJSON, generateI18nMessages, generateEnvironment, generateIcons, generateIndexFile, licenses),
-  parallel(generateCustomCssPropertiesMap, styles, typescript, testUtils),
+  parallel(generateCustomCssPropertiesMap, generateStyleExtensionProps, styles, typescript, testUtils),
   bundleVendorFiles
 );
 

@@ -7,6 +7,7 @@ module.exports = {
   generateIcons: require('./generate-icons'),
   generateIndexFile: require('./generate-index-file'),
   generateCustomCssPropertiesMap: require('./generate-custom-css-properties'),
+  generateStyleExtensionProps: require('./generate-style-extension-props'),
   packageJSON: require('./package-json'),
   styles: require('./styles'),
   unit: require('./unit'),

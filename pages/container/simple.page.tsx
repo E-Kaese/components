@@ -16,11 +16,8 @@ export default function SimpleContainers() {
         <SpaceBetween size="l">
           <Container
             styleExtensions={{
-              'container-border-color': '#7638fa',
-              'container-border-width': '2px',
-              // need to add override here too, otherwise the default design token will be applied
-              'container-border-top-color': '#7638fa',
-              'container-border-top-width': '2px',
+              'border-color': '#7638fa',
+              'border-width': '2px',
             }}
             header={
               <Header
@@ -48,17 +45,22 @@ export default function SimpleContainers() {
           <Container
             header="Container plain text in header"
             styleExtensions={{
-              'container-border-color': '#7638fa',
-              'container-border-width': '2px',
-              'container-border-top-color': '#7638fa',
-              'container-border-top-width': '4px',
+              'border-color': 'linear-gradient(190deg, #3F0074 17%, #7300E5 50%, #0096FA 87%, #99F7FF 100%)',
+              'border-width': '2px',
             }}
           >
             Lorem ipsum dolor sit amet, consectetur adipisicing elit. Phasellus tincidunt suscipit varius. Nullam dui
             tortor, mollis vitae molestie sed, malesuada.Lorem ipsum dolor sit amet, consectetur adipiscing. Nullam dui
             tortor, mollis vitae molestie sed. Phasellus tincidunt suscipit varius.
           </Container>
-          <Container header={<Header variant="h2">Container header</Header>}>
+          <Container
+            header={<Header variant="h2">Container header</Header>}
+            disableContentPaddings={true}
+            styleExtensions={{
+              'padding-inline': '40px',
+              'padding-block': '6px',
+            }}
+          >
             This container uses a semantically correct h2 in the header. Lorem ipsum dolor sit amet, consectetur
             adipisicing elit. Phasellus tincidunt suscipit varius. Nullam dui tortor, mollis vitae molestie sed,
             malesuada.Lorem ipsum dolor sit amet, consectetur adipiscing. Nullam dui tortor, mollis vitae molestie sed.

@@ -23,6 +23,11 @@ export interface BaseComponentProps {
   // we also support data-* attributes, but they are always implicitly allowed by typescript
   // http://www.typescriptlang.org/docs/handbook/jsx.html#attribute-type-checking
   // "Note: If an attribute name is not a valid JS identifier (like a data-* attribute), it is not considered to be an error"
+
+  /**
+   * CSS properties that can be overridden at a component instance level
+   */
+  styleExtensions?: Record<string, any>;
 }
 
 export function getBaseProps(props: BaseComponentProps) {
@@ -30,6 +35,9 @@ export function getBaseProps(props: BaseComponentProps) {
   Object.keys(props).forEach(prop => {
     if (prop === 'id' || prop === 'className' || prop.match(/^data-/)) {
       baseProps[prop] = (props as Record<string, any>)[prop];
+    }
+    if (prop === 'styleExtensions') {
+      baseProps.style = (props as Record<string, any>)[prop];
     }
   });
   return baseProps as BaseComponentProps;

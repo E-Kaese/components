@@ -6,7 +6,7 @@
 @use '../internal/styles/tokens' as awsui;
 @use '../internal/styles' as styles;
 @use './shared' as shared;
-@use '../internal/generated/custom-css-properties/index.scss' as style-extensions;
+@use './__style-extension-props__/index.scss' as style-extensions;
 
 /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
 @layer default, extensions;
@@ -14,9 +14,21 @@
 @layer extensions {
   .style-extensions {
     &.root {
-      border: var(#{style-extensions.$containerBorderColor}) solid var(#{style-extensions.$containerBorderWidth});
-      border-top: var(#{style-extensions.$containerBorderTopColor}) solid
-        var(#{style-extensions.$containerBorderTopWidth});
+      border: none;
+      background: linear-gradient(#ffff, #fff) content-box,
+        var(#{style-extensions.$border-color}, awsui.$color-border-divider-default) padding-box;
+      padding: var(#{style-extensions.$border-width}, awsui.$border-divider-section-width);
+      border-radius: var(#{style-extensions.$border-radius}, awsui.$border-radius-container);
+    }
+    // stylelint-disable-next-line @cloudscape-design/no-implicit-descendant
+    .header {
+      padding-inline: var(#{style-extensions.$padding-inline}, awsui.$space-container-horizontal);
+      padding-block-start: var(#{style-extensions.$padding-block}, awsui.$space-container-header-top);
+    }
+    // stylelint-disable-next-line @cloudscape-design/no-implicit-descendant
+    .content {
+      padding-inline: var(#{style-extensions.$padding-inline}, awsui.$space-container-horizontal);
+      padding-block-end: var(#{style-extensions.$padding-block}, awsui.$space-scaled-l);
     }
   }
 }
@@ -24,6 +36,8 @@
 /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
 @layer default {
   .root {
+    // #{style-extensions.$border-radius}: awsui.$border-radius-container;
+
     @include styles.styles-reset;
     word-wrap: break-word;
     position: relative;
