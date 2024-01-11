@@ -14064,8 +14064,8 @@ Object {
         "color-border-container-top": Object {
           "$description": "The top border color for containers and first item in dropdowns. For example: the top border of a card, dropdown, and table.",
           "$value": Object {
-            "dark": "#d1d5db",
-            "light": "#414d5c",
+            "dark": "transparent",
+            "light": "transparent",
           },
         },
         "color-border-control-default": Object {
@@ -16338,8 +16338,8 @@ Object {
         "color-border-container-top": Object {
           "$description": "The top border color for containers and first item in dropdowns. For example: the top border of a card, dropdown, and table.",
           "$value": Object {
-            "dark": "#d1d5db",
-            "light": "#d1d5db",
+            "dark": "transparent",
+            "light": "transparent",
           },
         },
         "color-border-control-default": Object {
@@ -18612,8 +18612,8 @@ Object {
         "color-border-container-top": Object {
           "$description": "The top border color for containers and first item in dropdowns. For example: the top border of a card, dropdown, and table.",
           "$value": Object {
-            "dark": "#414d5c",
-            "light": "#b6bec9",
+            "dark": "transparent",
+            "light": "transparent",
           },
         },
         "color-border-control-default": Object {
@@ -20886,8 +20886,8 @@ Object {
         "color-border-container-top": Object {
           "$description": "The top border color for containers and first item in dropdowns. For example: the top border of a card, dropdown, and table.",
           "$value": Object {
-            "dark": "#fbfbfb",
-            "light": "#fbfbfb",
+            "dark": "transparent",
+            "light": "transparent",
           },
         },
         "color-border-control-default": Object {
@@ -23160,8 +23160,8 @@ Object {
         "color-border-container-top": Object {
           "$description": "The top border color for containers and first item in dropdowns. For example: the top border of a card, dropdown, and table.",
           "$value": Object {
-            "dark": "#000716",
-            "light": "#000716",
+            "dark": "transparent",
+            "light": "transparent",
           },
         },
         "color-border-control-default": Object {
@@ -25434,8 +25434,8 @@ Object {
         "color-border-container-top": Object {
           "$description": "The top border color for containers and first item in dropdowns. For example: the top border of a card, dropdown, and table.",
           "$value": Object {
-            "dark": "#414d5c",
-            "light": "#414d5c",
+            "dark": "transparent",
+            "light": "transparent",
           },
         },
         "color-border-control-default": Object {
@@ -27708,8 +27708,8 @@ Object {
         "color-border-container-top": Object {
           "$description": "The top border color for containers and first item in dropdowns. For example: the top border of a card, dropdown, and table.",
           "$value": Object {
-            "dark": "#414d5c",
-            "light": "#414d5c",
+            "dark": "transparent",
+            "light": "transparent",
           },
         },
         "color-border-control-default": Object {
@@ -29982,8 +29982,8 @@ Object {
     "color-border-container-top": Object {
       "$description": "The top border color for containers and first item in dropdowns. For example: the top border of a card, dropdown, and table.",
       "$value": Object {
-        "dark": "#414d5c",
-        "light": "#b6bec9",
+        "dark": "transparent",
+        "light": "transparent",
       },
     },
     "color-border-control-default": Object {

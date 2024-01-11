@@ -9,7 +9,6 @@
 @use '../foundation' as foundation;
 @use '../utils' as utils;
 @use './constants' as constants;
-@use '../../generated/custom-css-properties/index.scss' as style-extensions;
 
 @mixin link-focus {
   // For classic

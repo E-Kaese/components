@@ -9,7 +9,6 @@ const tokens: StyleDictionary.BordersDictionary = {
   borderCodeEditorStatusDividerWidth: '0px',
   borderContainerStickyWidth: '1px',
   borderContainerTopWidth: '1px',
-  borderContainerWidth: '0px',
   borderControlFocusRingShadowSpread: '1px',
   borderControlInvalidFocusRingShadowSpread: '{borderControlFocusRingShadowSpread}',
   borderDividerSectionWidth: '1px',

@@ -4,7 +4,6 @@ const path = require('path');
 const { writeFile, listPublicItems } = require('../utils/files');
 const { getHashDigest } = require('loader-utils');
 const { existsSync } = require('fs');
-// const { camelCase } = require('change-case');
 
 module.exports = function generateStyleExtensionProps() {
   listPublicItems('src').map(componentDir => {

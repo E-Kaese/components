@@ -16,7 +16,6 @@ import { useFunnelSubStep } from '../internal/analytics/hooks/use-funnel';
 import { useModalContext } from '../internal/context/modal-context';
 import { useUniqueId } from '../internal/hooks/use-unique-id';
 import styleExtensionProps from './__style-extension-props__/index';
-// import { camelCase } from 'change-case';
 export interface InternalContainerProps extends Omit<ContainerProps, 'variant'>, InternalBaseComponentProps {
   __stickyHeader?: boolean;
   __stickyOffset?: number;
