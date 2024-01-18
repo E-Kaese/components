@@ -14,6 +14,11 @@ export type ColorPaletteTokenName =
   | 'colorBlue800'
   | 'colorBlue900'
   | 'colorBlueOpaque'
+  | 'colorGenAiBlue600'
+  | 'colorGenAiCyan300'
+  | 'colorGenAiPurple100'
+  | 'colorGenAiPurple600'
+  | 'colorGenAiPurple800'
   | 'colorGreen100'
   | 'colorGreen500'
   | 'colorGreen600'
@@ -444,7 +449,12 @@ export type ColorsTokenName =
   | 'colorDropzoneBackgroundActive'
   | 'colorDropzoneBackgroundHover'
   | 'colorDropzoneTextActive'
-  | 'colorDropzoneTextHover';
+  | 'colorDropzoneTextHover'
+  | 'colorGenAiPrimary800'
+  | 'colorGenAiPrimary600'
+  | 'colorGenAiPrimary100'
+  | 'colorGenAiAccent1'
+  | 'colorGenAiAccent2';
 export type TypographyTokenName =
   | 'fontBoxValueLargeWeight'
   | 'fontButtonLetterSpacing'

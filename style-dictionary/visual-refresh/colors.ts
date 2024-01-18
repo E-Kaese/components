@@ -241,6 +241,11 @@ const tokens: StyleDictionary.ColorsDictionary = {
   colorDropzoneBackgroundHover: { light: '{colorBlue200}', dark: '{colorBlue600}' },
   colorDropzoneTextActive: { light: '{colorGrey550}', dark: '{colorGrey800}' },
   colorDropzoneTextHover: { light: '{colorBlue800}', dark: '{colorWhite}' },
+  colorGenAiPrimary800: '{colorGenAiPurple800}',
+  colorGenAiPrimary600: '{colorGenAiPurple600}',
+  colorGenAiPrimary100: '{colorGenAiPurple100}',
+  colorGenAiAccent1: '{colorGenAiBlue600}',
+  colorGenAiAccent2: '{colorGenAiCyan300}',
 };
 
 const expandedTokens: StyleDictionary.ExpandedColorScopeDictionary = expandColorDictionary(tokens);
