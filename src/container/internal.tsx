@@ -38,6 +38,7 @@ export interface InternalContainerProps extends Omit<ContainerProps, 'variant'>,
 
   __funnelSubStepProps?: ReturnType<typeof useFunnelSubStep>['funnelSubStepProps'];
   __subStepRef?: ReturnType<typeof useFunnelSubStep>['subStepRef'];
+  __genAI?: boolean;
 }
 
 export function InternalContainerAsSubstep(props: InternalContainerProps) {
@@ -74,6 +75,7 @@ export default function InternalContainer({
   __disableStickyMobile = true,
   __funnelSubStepProps,
   __subStepRef,
+  __genAI,
   ...restProps
 }: InternalContainerProps) {
   const isMobile = useMobile();
@@ -135,6 +137,7 @@ export default function InternalContainer({
         shouldHaveStickyStyles && [styles['sticky-enabled']],
         isRefresh && styles.refresh
       )}
+      data-gen-ai={__genAI}
       ref={mergedRef}
     >
       {hasMedia && (

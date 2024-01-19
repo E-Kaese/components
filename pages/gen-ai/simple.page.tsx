@@ -4,7 +4,7 @@ import React from 'react';
 import InternalAlert from '~components/alert/internal';
 import Badge from '~components/badge';
 import Button from '~components/button';
-import Container from '~components/container';
+import InternalContainer from '~components/container/internal';
 import Header from '~components/header';
 import Icon from '~components/icon';
 import Link from '~components/link';
@@ -50,7 +50,8 @@ export default function GenAIComponents() {
             </SpaceBetween>
           </VisualContext>
 
-          <Container
+          <InternalContainer
+            __genAI={true}
             header={
               <Header variant="h2" info={<Link variant="info">Info</Link>}>
                 Container
@@ -60,7 +61,7 @@ export default function GenAIComponents() {
             Lorem ipsum dolor sit amet, consectetur adipisicing elit. Phasellus tincidunt suscipit varius. Nullam dui
             tortor, mollis vitae molestie sed, malesuada.Lorem ipsum dolor sit amet, consectetur adipiscing. Nullam dui
             tortor, mollis vitae molestie sed. Phasellus tincidunt suscipit varius.
-          </Container>
+          </InternalContainer>
         </SpaceBetween>
       </ScreenshotArea>
     </article>
