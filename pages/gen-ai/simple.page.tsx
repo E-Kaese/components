@@ -10,6 +10,7 @@ import Icon from '~components/icon';
 import Link from '~components/link';
 import SpaceBetween from '~components/space-between';
 import ScreenshotArea from '../utils/screenshot-area';
+import VisualContext from '~components/internal/components/visual-context';
 
 export default function GenAIComponents() {
   return (
@@ -34,18 +35,20 @@ export default function GenAIComponents() {
             <Button variant="inline-link">Inline link</Button>
           </SpaceBetween>
 
-          <SpaceBetween direction="horizontal" size="s">
-            <Button variant="primary" iconName="gen-ai">
-              Primary
-            </Button>
-            <Button iconName="gen-ai">Normal</Button>
-            <Button variant="link" iconName="gen-ai">
-              Link
-            </Button>
-            <Button variant="inline-link" iconName="gen-ai">
-              Inline link
-            </Button>
-          </SpaceBetween>
+          <VisualContext contextName="gen-ai">
+            <SpaceBetween direction="horizontal" size="s">
+              <Button variant="primary" iconName="gen-ai">
+                Primary
+              </Button>
+              <Button iconName="gen-ai">Normal</Button>
+              <Button variant="link" iconName="gen-ai">
+                Link
+              </Button>
+              <Button variant="inline-link" iconName="gen-ai">
+                Inline link
+              </Button>
+            </SpaceBetween>
+          </VisualContext>
 
           <Container
             header={

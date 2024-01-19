@@ -11,6 +11,7 @@ import {
   createAlertContext,
 } from '../utils/contexts';
 import alertHeaderContextTokens from './contexts/header-alert';
+import genAIContextTokens from './contexts/gen-ai';
 
 const modes = [
   createColorMode('.awsui-dark-mode'),
@@ -52,6 +53,11 @@ export function buildVisualRefresh(builder: ThemeBuilder) {
     id: 'alert-header',
     selector: '.awsui-context-content-header .awsui-context-alert',
     tokens: alertHeaderContextTokens,
+  });
+  builder.addContext({
+    id: 'gen-ai',
+    selector: '.awsui-context-gen-ai',
+    tokens: genAIContextTokens,
   });
 
   return builder.build();
