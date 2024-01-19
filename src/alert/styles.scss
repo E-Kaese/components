@@ -146,3 +146,11 @@ $_text-colors: (
     }
   }
 }
+
+[data-gen-ai='true'] {
+  border-color: awsui.$color-gen-ai-primary-600;
+  background-color: awsui.$color-gen-ai-primary-100;
+  > .alert-focus-wrapper > .icon {
+    color: awsui.$color-gen-ai-primary-800;
+  }
+}

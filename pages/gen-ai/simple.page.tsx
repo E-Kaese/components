@@ -17,7 +17,7 @@ export default function GenAIComponents() {
       <h1>Simple containers</h1>
       <ScreenshotArea>
         <SpaceBetween size="l">
-          <InternalAlert header="AI Assistant">
+          <InternalAlert header="AI Assistant" __genAI={true}>
             Here goes some information that was either produced by AI or part of an AI process.
           </InternalAlert>
           <SpaceBetween direction="horizontal" size="s">

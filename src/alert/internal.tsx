@@ -15,7 +15,6 @@ import useForwardFocus from '../internal/hooks/forward-focus';
 import { AlertProps } from './interfaces';
 import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
 import { useMergeRefs } from '../internal/hooks/use-merge-refs';
-import { SomeRequired } from '../internal/types';
 import { useInternalI18n } from '../i18n/context';
 import { DATA_ATTR_ANALYTICS_ALERT } from '../internal/analytics/selectors';
 import { LinkDefaultVariantContext } from '../internal/context/link-default-variant-context';
@@ -30,14 +29,16 @@ const typeToIcon: Record<AlertProps.Type, IconProps['name']> = {
   info: 'status-info',
 };
 
-type InternalAlertProps = SomeRequired<AlertProps, 'type'> & InternalBaseComponentProps<HTMLDivElement>;
+type InternalAlertProps = AlertProps & {
+  __genAI?: boolean;
+} & InternalBaseComponentProps<HTMLDivElement>;
 
 const useDiscoveredAction = createUseDiscoveredAction(awsuiPluginsInternal.alert.onActionRegistered);
 
 const InternalAlert = React.forwardRef(
   (
     {
-      type,
+      type = 'info',
       statusIconAriaLabel,
       visible = true,
       dismissible,
@@ -48,6 +49,7 @@ const InternalAlert = React.forwardRef(
       action,
       onDismiss,
       onButtonClick,
+      __genAI,
       __internalRootRef = null,
       ...rest
     }: InternalAlertProps,
@@ -92,10 +94,11 @@ const InternalAlert = React.forwardRef(
                 dismissible && styles['with-dismiss'],
                 styles[`breakpoint-${breakpoint}`]
               )}
+              data-gen-ai={__genAI}
             >
               <div className={styles['alert-focus-wrapper']} tabIndex={-1} ref={focusRef}>
                 <div className={clsx(styles.icon, styles.text)} role="img" aria-label={statusIconAriaLabel}>
-                  <InternalIcon name={typeToIcon[type]} size={size} />
+                  <InternalIcon name={__genAI ? 'gen-ai' : typeToIcon[type]} size={size} />
                 </div>
                 <div className={clsx(styles.message, styles.text)}>
                   {header && (
