@@ -4,6 +4,8 @@ import React, { KeyboardEvent, useCallback, useRef } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import clsx from 'clsx';
 
+import { trackEvent } from '@cloudscape-design/component-toolkit/internal';
+
 import { getBaseProps } from '../internal/base-component';
 import { useControllable } from '../internal/hooks/use-controllable';
 import { useUniqueId } from '../internal/hooks/use-unique-id';
@@ -90,6 +92,14 @@ export default function InternalExpandableSection({
     onKeyUp,
     onKeyDown,
     onClick,
+    onFocus: () => {
+      __internalRootRef?.current &&
+        trackEvent(__internalRootRef.current as HTMLElement, 'focus', { componentName: 'ExpandableSection' });
+    },
+    onBlur: () => {
+      __internalRootRef?.current &&
+        trackEvent(__internalRootRef.current as HTMLElement, 'blur', { componentName: 'ExpandableSection' });
+    },
   };
 
   // Map stacked variant to container to avoid code duplication

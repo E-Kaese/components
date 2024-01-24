@@ -8,7 +8,7 @@ import { AnnotationContextProps } from './interfaces';
 import { HotspotContext, hotspotContext } from './context';
 import { fireNonCancelableEvent } from '../internal/events';
 import { HotspotProps } from '../hotspot/interfaces';
-import { useTelemetry } from '../internal/hooks/use-telemetry';
+// import { useTelemetry } from '../internal/hooks/use-telemetry';
 import { applyDisplayName } from '../internal/utils/apply-display-name';
 import { getStepInfo } from './utils';
 
@@ -26,7 +26,7 @@ export default function AnnotationContext({
   onExitTutorial,
   i18nStrings,
 }: AnnotationContextProps): JSX.Element {
-  useTelemetry('AnnotationContext');
+  // useTelemetry('AnnotationContext');
 
   const [open, setOpen] = useState(true);
 

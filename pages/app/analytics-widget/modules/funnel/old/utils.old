@@ -1,0 +1,150 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+import { type Fiber } from 'react-reconciler';
+
+import { FUNNEL_COMPONENTS, SUBSTEP_COMPONENTS } from '../modules/funnel/handlers';
+import { Funnel } from '../modules/funnel/funnel';
+
+import { BufferEvent } from '../types';
+
+const reactFiberPrefix = '__reactFiber$';
+const react16FiberPrefix = '__reactInternalInstance$';
+
+export function getFiberNodeFromElement(element: Element): Fiber | undefined {
+  for (const key in element) {
+    if (key.startsWith(reactFiberPrefix) || key.startsWith(react16FiberPrefix)) {
+      return element[key as keyof Element] as unknown as Fiber;
+    }
+  }
+}
+
+export function getElementFromFiberNode(node: Fiber): HTMLElement | undefined {
+  const fiberNodeRef = node.ref as any;
+  return fiberNodeRef.current as HTMLElement;
+}
+
+export function getNodeFromRef(element: Element): HTMLElement | undefined {
+  for (const key in element) {
+    if (key.startsWith(reactFiberPrefix) || key.startsWith(react16FiberPrefix)) {
+      const fiberNode = element[key as keyof Element] as unknown as Fiber;
+      if (fiberNode.ref && (fiberNode.ref as any).current) {
+        console.log('debug2', fiberNode);
+        return getElementFromFiberNode(fiberNode);
+      }
+    }
+  }
+  return undefined;
+}
+
+export function findClosestAncestor(element: Element, componentName: string): Fiber | undefined {
+  const startNode = getFiberNodeFromElement(element)!;
+  for (let current: Fiber | null = startNode; current !== null && current !== undefined; current = current.return) {
+    if (current.type?.displayName && current.type?.displayName === componentName) {
+      return current;
+    }
+  }
+
+  return undefined;
+}
+
+export function getAncestors(startNode: Fiber): string[] {
+  const ancestors = [];
+  for (let current: Fiber | null = startNode; current !== null && current !== undefined; current = current.return) {
+    if (current.type?.displayName) {
+      ancestors.push(current.type.displayName);
+    }
+  }
+  return ancestors;
+}
+
+export function findUp(componentName: string, node: HTMLElement, domSnapshot?: HTMLElement): HTMLElement | null {
+  if (!node.parentNode) {
+    return null;
+  }
+
+  if ((node as any).__awsuiMetadata__?.name === componentName) {
+    return node;
+  }
+
+  if (node.dataset.awsuiReferrerId) {
+    const referrer = (domSnapshot || document).querySelector(`[id=${node.dataset.awsuiReferrerId}]`) as HTMLElement;
+    if (referrer) {
+      return findUp(componentName, referrer, domSnapshot);
+    }
+  }
+
+  return findUp(componentName, node.parentNode as HTMLElement, domSnapshot);
+}
+
+export function isInModal(element: HTMLElement) {
+  return isInComponent(element, 'Modal');
+}
+
+export function isInComponent(element: HTMLElement, componentName: string) {
+  const tree = getAncestors(getFiberNodeFromElement(element)!);
+  return tree.includes(componentName);
+}
+
+export function isInFunnel(element: HTMLElement) {
+  const tree = getAncestors(getFiberNodeFromElement(element)!);
+  return FUNNEL_COMPONENTS.some(componentName => tree.includes(componentName));
+}
+
+export function isInSubStep(element: HTMLElement) {
+  const tree = getAncestors(getFiberNodeFromElement(element)!);
+  return SUBSTEP_COMPONENTS.some(componentName => tree.includes(componentName));
+}
+
+export function isContainerVariant(event: BufferEvent) {
+  return (event.target as any).__awsuiMetadata__?.componentConfiguration?.variant !== 'container';
+}
+
+export function findSubstep(event: BufferEvent, funnel: Funnel, domSnapshot?: HTMLElement) {
+  const [parentContainer] = SUBSTEP_COMPONENTS.map(component => findUp(component, event.target, domSnapshot)).filter(
+    Boolean
+  );
+
+  if (!parentContainer) {
+    console.log('No parent container');
+    return; // Not in a substep
+  }
+
+  if (!funnel.currentStep) {
+    console.log('Cant find substep as there is no active step');
+    return;
+  }
+
+  return Object.values(funnel.currentStep.substeps).find(substep => substep.element === parentContainer);
+}
+
+export function getFunnelNode(
+  event: BufferEvent,
+  funnelElementMap: any,
+  domSnapshot?: HTMLElement
+): Funnel | undefined {
+  const isInModal = isInComponent(event.target, 'Modal');
+  const isInWizard = isInComponent(event.target, 'Wizard');
+  const componentKey = isInModal ? 'Modal' : isInWizard ? 'Wizard' : 'Form';
+
+  const funnelRootComponent = findUp(componentKey, event.target, domSnapshot);
+  return funnelElementMap.get(funnelRootComponent);
+}
+
+export function generateUUID() {
+  // Generate random bytes
+  const cryptoObj = window.crypto; // for IE 11
+  const randomBytes = new Uint8Array(16);
+  cryptoObj.getRandomValues(randomBytes);
+
+  // Set the version (4) and variant (8, 9, A, or B) bits
+  randomBytes[6] = (randomBytes[6] & 0x0f) | 0x40; // version 4
+  randomBytes[8] = (randomBytes[8] & 0x3f) | 0x80; // variant 8, 9, A, or B
+
+  // Format the bytes as a UUID string
+  const uuid = Array.from(randomBytes)
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('');
+
+  // Insert the dashes at the appropriate positions
+  return `${uuid.slice(0, 8)}-${uuid.slice(8, 12)}-${uuid.slice(12, 16)}-${uuid.slice(16, 20)}-${uuid.slice(20)}`;
+}

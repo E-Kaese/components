@@ -23,6 +23,8 @@ interface ExpandableDefaultHeaderProps {
   onKeyUp: KeyboardEventHandler;
   onKeyDown: KeyboardEventHandler;
   onClick: MouseEventHandler;
+  onFocus?: React.FocusEventHandler;
+  onBlur?: React.FocusEventHandler;
   icon: JSX.Element;
   variant: InternalVariant;
 }
@@ -86,6 +88,8 @@ const ExpandableNavigationHeader = ({
   id,
   className,
   onClick,
+  onBlur,
+  onFocus,
   ariaLabelledBy,
   ariaLabel,
   ariaControls,
@@ -103,6 +107,8 @@ const ExpandableNavigationHeader = ({
         aria-expanded={expanded}
         type="button"
         onClick={onClick}
+        onFocus={onFocus}
+        onBlur={onBlur}
       >
         {icon}
       </button>
@@ -116,6 +122,8 @@ const ExpandableHeaderTextWrapper = ({
   descriptionId,
   className,
   onClick,
+  onBlur,
+  onFocus,
   ariaLabel,
   ariaControls,
   expanded,
@@ -165,6 +173,8 @@ const ExpandableHeaderTextWrapper = ({
       aria-describedby={description ? descriptionId : undefined}
       aria-controls={ariaControls}
       aria-expanded={expanded}
+      onFocus={onFocus}
+      onBlur={onBlur}
       {...headerButtonListeners}
     >
       <span className={clsx(styles['icon-container'], styles[`icon-container-${variant}`])}>{icon}</span>
@@ -223,6 +233,8 @@ export const ExpandableSectionHeader = ({
   ariaLabelledBy,
   onKeyUp,
   onKeyDown,
+  onFocus,
+  onBlur,
   onClick,
 }: ExpandableSectionHeaderProps) => {
   const icon = (
@@ -239,6 +251,8 @@ export const ExpandableSectionHeader = ({
     ariaControls: ariaControls,
     ariaLabel: ariaLabel,
     onClick: onClick,
+    onFocus,
+    onBlur,
     variant,
   };
 

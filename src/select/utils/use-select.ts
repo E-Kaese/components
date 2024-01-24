@@ -20,6 +20,8 @@ import { useUniqueId } from '../../internal/hooks/use-unique-id';
 import { DropdownStatusProps } from '../../internal/components/dropdown-status';
 import { ButtonTriggerProps } from '../../internal/components/button-trigger';
 
+import { trackEvent } from '@cloudscape-design/component-toolkit/internal';
+
 export type MenuProps = Omit<OptionsListProps, 'children'> & { ref: React.RefObject<HTMLUListElement> };
 export type GetOptionProps = (option: DropdownOption, index: number) => ItemProps;
 
@@ -93,10 +95,14 @@ export function useSelect({
   });
 
   const handleFocus = () => {
+    // TODO: Is the componentName correct here? Since this is a hook can it be a different component using it?
+    triggerRef?.current && trackEvent(triggerRef.current, 'focus', { componentName: 'Select' });
     fireNonCancelableEvent(onFocus, {});
   };
 
   const handleBlur = () => {
+    // TODO: Is the componentName correct here? Since this is a hook can it be a different component using it?
+    triggerRef?.current && trackEvent(triggerRef.current, 'blur', { componentName: 'Select' });
     fireNonCancelableEvent(onBlur, {});
     closeDropdown();
   };

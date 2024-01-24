@@ -3,7 +3,7 @@
 import React from 'react';
 import { applyDisplayName } from '../internal/utils/apply-display-name';
 import { FormProps } from './interfaces';
-import InternalForm from './internal';
+import InternalForm, { InternalFormProps } from './internal';
 import useBaseComponent from '../internal/hooks/use-base-component';
 
 import { AnalyticsFunnel, AnalyticsFunnelStep } from '../internal/analytics/components/analytics-funnel';
@@ -12,6 +12,7 @@ import { useFunnel, useFunnelNameSelector, useFunnelStep } from '../internal/ana
 
 import formStyles from './styles.css.js';
 import headerStyles from '../header/styles.css.js';
+import { trackEvent } from '@cloudscape-design/component-toolkit/internal';
 
 export { FormProps };
 
@@ -23,6 +24,12 @@ const FormWithAnalytics = ({ variant = 'full-page', actions, ...props }: FormPro
     if (variant === 'primary') {
       funnelNextOrSubmitAttempt();
       funnelSubmit();
+
+      if ((props as InternalFormProps).__internalRootRef) {
+        trackEvent((props as InternalFormProps).__internalRootRef?.current as HTMLElement, 'submit', {
+          componentName: 'Form',
+        });
+      }
     }
   };
 

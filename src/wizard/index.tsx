@@ -13,7 +13,15 @@ import { WizardProps } from './interfaces';
 import { useFunnel } from '../internal/analytics/hooks/use-funnel';
 
 function Wizard({ isLoadingNextStep = false, allowSkipTo = false, ...props }: WizardProps) {
-  const baseComponentProps = useBaseComponent('Wizard');
+  const optionalSteps = props.steps
+    .map((step, index) => (step.isOptional ? index + 1 : -1))
+    .filter(step => step !== -1);
+
+  const baseComponentProps = useBaseComponent('Wizard', {
+    steps: props.steps,
+    optionalSteps,
+    activeStepIndex: props.activeStepIndex,
+  });
   const { wizardCount } = useFunnel();
   const externalProps = getExternalProps(props);
 
@@ -26,9 +34,7 @@ function Wizard({ isLoadingNextStep = false, allowSkipTo = false, ...props }: Wi
   return (
     <AnalyticsFunnel
       funnelType="multi-page"
-      optionalStepNumbers={props.steps
-        .map((step, index) => (step.isOptional ? index + 1 : -1))
-        .filter(step => step !== -1)}
+      optionalStepNumbers={optionalSteps}
       totalFunnelSteps={props.steps.length}
       stepConfiguration={getStepConfiguration(props.steps)}
     >

@@ -5,7 +5,7 @@ import clsx from 'clsx';
 
 import { getBaseProps } from '../internal/base-component';
 import { fireNonCancelableEvent } from '../internal/events';
-import { warnOnce } from '@cloudscape-design/component-toolkit/internal';
+import { warnOnce, trackEvent, useTrackComponentProperty } from '@cloudscape-design/component-toolkit/internal';
 
 import { useContainerBreakpoints } from '../internal/hooks/container-queries';
 import { useControllable } from '../internal/hooks/use-controllable';
@@ -68,7 +68,6 @@ export default function InternalWizard({
   const navigationEvent = (requestedStepIndex: number, reason: WizardProps.NavigationReason) => {
     if (funnelInteractionId) {
       const stepName = getNameFromSelector(STEP_NAME_SELECTOR);
-
       FunnelMetrics.funnelStepNavigation({
         navigationType: reason,
         funnelInteractionId,
@@ -80,12 +79,23 @@ export default function InternalWizard({
       });
     }
 
+    trackEvent(__internalRootRef?.current, 'step-navigation', {
+      componentName: 'Wizard',
+      detail: {
+        stepNumber: actualActiveStepIndex + 1,
+        destinationStepNumber: requestedStepIndex + 1,
+        navigationType: reason,
+      },
+    });
+
     setActiveStepIndex(requestedStepIndex);
     fireNonCancelableEvent(onNavigate, { requestedStepIndex, reason });
   };
   const onStepClick = (stepIndex: number) => navigationEvent(stepIndex, 'step');
   const onSkipToClick = (stepIndex: number) => navigationEvent(stepIndex, 'skip');
   const onCancelClick = () => {
+    trackEvent(__internalRootRef?.current, 'cancel', { componentName: 'Wizard' });
+
     funnelCancel();
     fireNonCancelableEvent(onCancel);
   };
@@ -95,6 +105,7 @@ export default function InternalWizard({
 
     if (isLastStep) {
       funnelSubmit();
+      trackEvent(__internalRootRef?.current, 'submit', { componentName: 'Wizard' });
       fireNonCancelableEvent(onSubmit);
     } else {
       navigationEvent(actualActiveStepIndex + 1, 'next');
@@ -139,6 +150,9 @@ export default function InternalWizard({
     );
   }
 
+  useTrackComponentProperty(__internalRootRef, 'Wizard', 'steps', steps);
+  useTrackComponentProperty(__internalRootRef, 'Wizard', 'activeStepIndex', actualActiveStepIndex);
+
   if (allowSkipTo && !skipToButtonLabel) {
     warnOnce(
       'Wizard',
@@ -178,6 +192,7 @@ export default function InternalWizard({
         >
           {isVisualRefresh && <div className={clsx(styles.background, contentHeaderClassName)} />}
           <WizardForm
+            wizardRef={__internalRootRef}
             steps={steps}
             isVisualRefresh={isVisualRefresh}
             showCollapsedSteps={smallContainer}

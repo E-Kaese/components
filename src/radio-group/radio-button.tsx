@@ -9,6 +9,7 @@ import { useVisualRefresh } from '../internal/hooks/use-visual-mode';
 import { RadioGroupProps } from './interfaces';
 import styles from './styles.css.js';
 import { useSingleTabStopNavigation } from '../internal/context/single-tab-stop-navigation-context';
+import { trackEvent } from '@cloudscape-design/component-toolkit/internal';
 
 interface RadioButtonProps extends RadioGroupProps.RadioButtonDefinition {
   name: string;
@@ -46,6 +47,12 @@ export default React.forwardRef(function RadioButton(
           checked={checked}
           // empty handler to suppress React controllability warning
           onChange={() => {}}
+          onFocus={() => {
+            radioButtonRef.current && trackEvent(radioButtonRef.current, 'focus', { componentName: 'RadioButton' });
+          }}
+          onBlur={() => {
+            radioButtonRef.current && trackEvent(radioButtonRef.current, 'blur', { componentName: 'RadioButton' });
+          }}
         />
       )}
       onClick={() => {

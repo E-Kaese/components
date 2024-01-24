@@ -1,6 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useRef } from 'react';
+import React, { MutableRefObject, useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import InternalForm from '../form/internal';
 import InternalHeader from '../header/internal';
@@ -12,6 +12,7 @@ import styles from './styles.css.js';
 import { useEffectOnUpdate } from '../internal/hooks/use-effect-on-update';
 import { AnalyticsFunnelStep } from '../internal/analytics/components/analytics-funnel';
 import { DATA_ATTR_FUNNEL_KEY, FUNNEL_KEY_STEP_NAME } from '../internal/analytics/selectors';
+import { trackEvent } from '@cloudscape-design/component-toolkit/internal';
 
 interface WizardFormProps {
   steps: ReadonlyArray<WizardProps.Step>;
@@ -27,6 +28,7 @@ interface WizardFormProps {
   onPreviousClick: () => void;
   onPrimaryClick: () => void;
   onSkipToClick: (stepIndex: number) => void;
+  wizardRef: MutableRefObject<any> | undefined | null;
 }
 
 export const STEP_NAME_SELECTOR = `[${DATA_ATTR_FUNNEL_KEY}=${FUNNEL_KEY_STEP_NAME}]`;
@@ -45,6 +47,7 @@ export default function WizardForm({
   onPreviousClick,
   onPrimaryClick,
   onSkipToClick,
+  wizardRef,
 }: WizardFormProps) {
   const { title, info, description, content, errorText, isOptional } = steps[activeStepIndex] || {};
   const isLastStep = activeStepIndex >= steps.length - 1;
@@ -58,11 +61,33 @@ export default function WizardForm({
     }
   }, [activeStepIndex]);
 
+  useEffect(() => {
+    if (wizardRef && errorText) {
+      trackEvent(wizardRef.current, 'error', { componentName: 'Wizard', errorText });
+    }
+  }, [wizardRef, errorText]);
+
   const showSkipTo = allowSkipTo && skipToTargetIndex !== -1;
   const skipToButtonText =
     skipToTargetIndex !== -1 && i18nStrings.skipToButtonLabel
       ? i18nStrings.skipToButtonLabel(steps[skipToTargetIndex], skipToTargetIndex + 1)
       : undefined;
+
+  useEffect(() => {
+    if (wizardRef) {
+      const ref = wizardRef.current;
+      trackEvent(ref, 'step-mount', {
+        componentName: 'Wizard',
+        stepNumber: `${activeStepIndex + 1}`,
+        stepName: steps[activeStepIndex].title,
+        stepType: steps[activeStepIndex].isOptional ? 'optional' : 'required',
+      });
+
+      return () => {
+        trackEvent(ref, 'step-unmount', { componentName: 'Wizard', stepIndex: `${activeStepIndex}` });
+      };
+    }
+  }, [wizardRef, activeStepIndex, steps]);
 
   return (
     <>

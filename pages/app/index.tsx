@@ -4,6 +4,7 @@ import React, { Suspense, useContext, useEffect } from 'react';
 import { render } from 'react-dom';
 import { HashRouter, Redirect } from 'react-router-dom';
 import { createHashHistory } from 'history';
+
 import { applyMode, applyDensity, disableMotion } from '@cloudscape-design/global-styles';
 
 // import font-size reset and Ember font
@@ -20,6 +21,8 @@ import AppContext, { AppContextProvider, parseQuery } from './app-context';
 interface GlobalFlags {
   removeHighContrastHeader?: boolean;
 }
+import AnalyticsWidget from './analytics-widget/index';
+
 const awsuiVisualRefreshFlag = Symbol.for('awsui-visual-refresh-flag');
 const awsuiGlobalFlagsSymbol = Symbol.for('awsui-global-flags');
 
@@ -38,7 +41,7 @@ function App() {
   const {
     mode,
     pageId,
-    urlParams: { density, motionDisabled },
+    urlParams: { density, motionDisabled, removeHeader },
   } = useContext(AppContext);
 
   // AppLayout already contains <main>
@@ -74,7 +77,7 @@ function App() {
     <StrictModeWrapper pageId={pageId}>
       <Suspense fallback={<span>Loading...</span>}>
         <ContentTag>
-          <Header sticky={isAppLayout && pageId !== undefined && pageId.indexOf('legacy') === -1} />
+          {!removeHeader && <Header sticky={isAppLayout && pageId !== undefined && pageId.indexOf('legacy') === -1} />}
           {pageId ? <PageView pageId={pageId} /> : <IndexPage />}
         </ContentTag>
       </Suspense>
@@ -105,3 +108,9 @@ render(
   </HashRouter>,
   document.getElementById('app')
 );
+
+const timeInMs = 0;
+console.log('Setting timeout', timeInMs);
+setTimeout(() => {
+  new AnalyticsWidget().register();
+}, timeInMs);

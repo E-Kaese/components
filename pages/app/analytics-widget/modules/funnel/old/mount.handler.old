@@ -1,0 +1,89 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+import { Handler, Handlers } from '../../../../types';
+import { isInComponent } from '../../../../utils/browser';
+import {
+  getModalFunnelName,
+  getMultiPageFunnelName,
+  getSinglePageFunnelName,
+  getSubStepName,
+} from '../../../../utils/funnel';
+import { createFunnel } from '../../funnel';
+import { getFunnelFromParentNode } from '../../helpers';
+
+const handleFormMount: Handler = (event, domSnapshot) => {
+  const isInModal = isInComponent(event.target, 'Modal');
+  const funnelType = isInModal ? 'modal' : 'single-page';
+  const [funnelName, funnelNameSelector] = isInModal
+    ? getModalFunnelName(event.target)
+    : getSinglePageFunnelName(event.target, domSnapshot);
+
+  createFunnel(
+    {
+      funnelName: funnelName || 'Unknown funnel',
+      funnelType,
+      initialStepNumber: '1',
+      steps: [{ stepName: funnelName || 'Unknown step', stepNumber: '1', isOptional: false, substeps: [] }],
+      optionalSteps: [],
+      selectors: {
+        funnelName: funnelNameSelector!,
+      },
+    },
+    event.target
+  );
+};
+
+const handleWizardMount: Handler = (event, domSnapshot) => {
+  const [funnelName, funnelNameSelector] = getMultiPageFunnelName(domSnapshot);
+  const { componentConfiguration } = event.detail;
+
+  createFunnel(
+    {
+      funnelName: funnelName || 'Unknown funnel',
+      funnelType: 'multi-page',
+      initialStepNumber: `${componentConfiguration.activeStepIndex + 1}`,
+      steps: componentConfiguration.steps.map((step: any, index: number) => ({
+        stepName: step.title,
+        stepNumber: (index + 1).toString(),
+        isOptional: !!step.isOptional,
+        substeps: {},
+      })),
+      optionalSteps: componentConfiguration.optionalSteps.map((step: number) => `${step}`),
+      selectors: {
+        funnelName: funnelNameSelector!,
+      },
+    },
+    event.target
+  );
+};
+
+const handleContainerMount: Handler = (event, domSnapshot) => {
+  const funnel = getFunnelFromParentNode(event.target, domSnapshot);
+  if (!funnel) {
+    return;
+  }
+
+  const [substepName] = getSubStepName(event.target);
+  funnel.registerSubStep(event.target, substepName || 'Unknown substep');
+};
+
+const handleExpandableSectionMount: Handler = (event, domSnapshot) => {
+  if ((event.target as any).__awsuiMetadata__.componentConfiguration.variant !== 'container') {
+    return;
+  }
+
+  const funnel = getFunnelFromParentNode(event.target, domSnapshot);
+  if (!funnel) {
+    return;
+  }
+
+  const [substepName] = getSubStepName(event.target);
+  funnel.registerSubStep(event.target, substepName || 'Unknown substep');
+};
+
+export const handlers: Handlers = {
+  Form: handleFormMount,
+  Wizard: handleWizardMount,
+  Container: handleContainerMount,
+  ExpandableSection: handleExpandableSectionMount,
+};

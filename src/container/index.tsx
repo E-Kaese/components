@@ -16,7 +16,7 @@ export default function Container({
   disableContentPaddings = false,
   ...props
 }: ContainerProps) {
-  const baseComponentProps = useBaseComponent('Container');
+  const baseComponentProps = useBaseComponent('Container', { variant });
   const externalProps = getExternalProps(props);
 
   return (

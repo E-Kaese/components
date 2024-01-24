@@ -1,0 +1,31 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//
+import { CreateHandlersFactory, Handlers } from '../../../../types';
+import { getFunnels } from '../../funnel';
+import { handlers as mountHandlers } from './mount.handler';
+import { handlers as unmountHandlers } from './unmount.handler';
+
+const createHandlers: CreateHandlersFactory = (handlers: Handlers) => (event, domSnapshot) => {
+  const handler = handlers[event.detail.componentName];
+  if (handler) {
+    try {
+      handler(event, domSnapshot);
+    } catch (error) {
+      console.error(`Error handling event for ${event.detail.componentName}:`, error);
+    }
+  } else {
+    console.warn(`No handler found for event: ${event.detail.componentName}`);
+  }
+};
+
+export const handlers: Handlers = {
+  mount: createHandlers(mountHandlers),
+  unmount: createHandlers(unmountHandlers),
+  'root-mount': () => {
+    const funnels = getFunnels();
+    for (const funnel of funnels) {
+      funnel.start();
+    }
+  },
+};

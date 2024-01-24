@@ -1,0 +1,33 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import { Handler, Handlers } from '../../../../types';
+import { getFunnelFromParentNode } from '../../helpers';
+
+const handleFormUnmount: Handler = (event, domSnapshot) => {
+  const funnel = getFunnelFromParentNode(event.target, domSnapshot);
+  if (!funnel) {
+    console.warn('Could not find funnel for form unmount');
+    return;
+  }
+
+  funnel.complete();
+};
+
+const handleWizardUnmount: Handler = (event, domSnapshot) => {
+  const funnel = getFunnelFromParentNode(event.target, domSnapshot);
+  if (!funnel) {
+    console.warn('Could not find funnel for form unmount');
+    return;
+  }
+
+  funnel.complete();
+};
+
+const handleContainerUnMount: Handler = () => {};
+
+export const handlers: Handlers = {
+  Form: handleFormUnmount,
+  Wizard: handleWizardUnmount,
+  Container: handleContainerUnMount,
+};

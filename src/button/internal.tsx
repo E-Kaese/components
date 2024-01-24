@@ -23,6 +23,7 @@ import { FunnelMetrics } from '../internal/analytics';
 import { useUniqueId } from '../internal/hooks/use-unique-id';
 import { usePerformanceMarks } from '../internal/hooks/use-performance-marks';
 import { useSingleTabStopNavigation } from '../internal/context/single-tab-stop-navigation-context';
+import { trackEvent } from '@cloudscape-design/component-toolkit/internal';
 
 export type InternalButtonProps = Omit<ButtonProps, 'variant'> & {
   variant?: ButtonProps['variant'] | 'flashbar-icon' | 'breadcrumb-group' | 'menu-trigger' | 'modal-dismiss';
@@ -126,6 +127,15 @@ export const InternalButton = React.forwardRef(
       const { altKey, button, ctrlKey, metaKey, shiftKey } = event;
       fireCancelableEvent(onClick, { altKey, button, ctrlKey, metaKey, shiftKey }, event);
       buttonContext.onClick({ variant });
+      buttonRef.current && trackEvent(buttonRef.current, 'click', { componentName: 'Button', props: { variant } });
+    };
+
+    const handleFocus = () => {
+      buttonRef.current && trackEvent(buttonRef.current, 'focus', { componentName: 'Button' });
+    };
+
+    const handleBlur = () => {
+      buttonRef.current && trackEvent(buttonRef.current, 'blur', { componentName: 'Button' });
     };
 
     const buttonClass = clsx(props.className, styles.button, styles[`variant-${variant}`], {
@@ -156,6 +166,8 @@ export const InternalButton = React.forwardRef(
       title: ariaLabel,
       className: buttonClass,
       onClick: handleClick,
+      onFocus: handleFocus,
+      onBlur: handleBlur,
       [DATA_ATTR_FUNNEL_VALUE]: uniqueId,
     } as const;
 

@@ -1,0 +1,234 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+interface FunnelStep {
+  stepName: string;
+  stepNumber: string;
+  isOptional: boolean;
+  substeps: Record<string, FunnelSubStep>;
+}
+
+interface FunnelSubStep {
+  subStepName: string;
+  subStepNumber: string;
+  element: HTMLElement;
+}
+
+interface FunnelConfig {
+  funnelName: string;
+  funnelType: FunnelType;
+  initialStepNumber: string;
+  steps: FunnelStep[];
+  optionalSteps: string[];
+  selectors: Record<string, string>;
+}
+
+export type FunnelType = 'single-page' | 'multi-page' | 'modal' | undefined;
+type FunnelState = 'initial' | 'started' | 'completed' | 'submitting' | 'error';
+
+export class Funnel {
+  protected funnelType: FunnelType;
+  protected funnelName: string | undefined;
+  protected funnelId: string | undefined;
+  protected funnelVersion = '2.0';
+  public state: FunnelState = 'initial';
+  public currentStep: FunnelStep | null = null;
+  public currentSubstep: FunnelSubStep | null = null;
+
+  constructor(protected funnelConfig: FunnelConfig) {
+    this.currentStep = this.funnelConfig.steps.find(step => step.stepNumber === funnelConfig.initialStepNumber) ?? null;
+  }
+
+  setActiveStep(stepNumber: string | null) {
+    if (!stepNumber && this.currentStep) {
+      console.log(`[${this.funnelId}]`, 'Step complete', this.currentStep);
+      this.currentStep = null;
+    } else if (stepNumber && !this.currentStep) {
+      this.currentStep = this.funnelConfig.steps.find(step => step.stepNumber === stepNumber) ?? null;
+      if (!this.currentStep) {
+        console.error(`[${this.funnelId}]`, 'No step found with number', stepNumber);
+        return;
+      }
+
+      console.log(`[${this.funnelId}]`, 'Step started', {
+        stepNumber: this.currentStep.stepNumber,
+        stepName: this.currentStep.stepName,
+      });
+
+      const funnelStepStartProps: FunnelStepStartProps = {
+        funnelInteractionId: this.funnelId!,
+        stepNameSelector: this.funnelConfig.selectors.stepName,
+        subStepAllSelector: this.funnelConfig.selectors.subStepAll,
+        stepNumber: parseInt(stepNumber),
+        stepName: this.currentStep.stepName,
+        subStepConfiguration: Object.values(this.currentStep.substeps).map(substep => ({
+          name: substep.subStepName,
+          number: parseInt(substep.subStepNumber),
+        })),
+        totalSubSteps: Object.values(this.currentStep.substeps).length,
+      };
+
+      FunnelMetrics.funnelStepStart({ ...funnelStepStartProps } as any);
+    } else if (this.currentStep && this.currentStep.stepNumber !== stepNumber) {
+      console.log(`[${this.funnelId}]`, 'Step complete', {
+        stepNumber: this.currentStep.stepNumber,
+        stepName: this.currentStep.stepName,
+      });
+
+      this.currentStep = this.funnelConfig.steps.find(step => step.stepNumber === stepNumber) ?? null;
+      if (this.currentStep) {
+        console.log(`[${this.funnelId}]`, 'Step started', {
+          stepNumber: this.currentStep.stepNumber,
+          stepName: this.currentStep.stepName,
+        });
+      }
+    }
+  }
+
+  setActiveSubStep(subStepNumber: string | null | undefined) {
+    if (!subStepNumber && !this.currentSubstep) {
+      return;
+    }
+
+    if (!subStepNumber && this.currentSubstep) {
+      console.log(`[${this.funnelId}]`, 'Substep complete', this.currentSubstep);
+      this.currentSubstep = null;
+    } else if (subStepNumber && !this.currentSubstep) {
+      this.currentSubstep = this.currentStep?.substeps[subStepNumber] ?? null;
+      if (!this.currentSubstep) {
+        console.error(`[${this.funnelId}]`, 'No substep found with number', subStepNumber);
+        return;
+      }
+
+      console.log(`[${this.funnelId}]`, 'Substep started', this.currentSubstep);
+      this.state = 'started';
+    } else if (this.currentSubstep && this.currentSubstep.subStepNumber !== subStepNumber) {
+      console.log(`[${this.funnelId}]`, 'Substep complete', this.currentSubstep);
+      this.currentSubstep = this.currentStep?.substeps[subStepNumber!] ?? null;
+      console.log(`[${this.funnelId}]`, 'Substep started', this.currentSubstep);
+      this.state = 'started';
+    }
+  }
+
+  start() {
+    this.state = 'started';
+    this.funnelId = generateUUID();
+    console.log(`[${this.funnelId}]`, 'Funnel started', {
+      funnelName: this.funnelName,
+      funnelType: this.funnelType,
+      funnelId: this.funnelId,
+      funnelVersion: this.funnelVersion,
+      config: this.funnelConfig,
+    });
+
+    const funnelStartProps: FunnelStartProps = {
+      funnelNameSelector: this.funnelConfig.selectors.funnelName,
+      componentVersion: PACKAGE_VERSION,
+      funnelType: this.funnelType as any,
+      funnelVersion: this.funnelVersion,
+      theme: THEME,
+      optionalStepNumbers: this.funnelConfig.optionalSteps.map(stepNumber => parseInt(stepNumber, 10)),
+      totalFunnelSteps: this.funnelConfig.steps.length,
+      stepConfiguration: this.funnelConfig.steps.map(step => ({
+        name: step.stepName,
+        number: parseInt(step.stepNumber),
+        isOptional: step.isOptional,
+      })),
+    };
+
+    FunnelMetrics.funnelStart({
+      ...funnelStartProps,
+      additional: {
+        funnelName: this.funnelName,
+        funnelId: this.funnelId,
+        config: this.funnelConfig,
+      },
+    } as any);
+
+    if (this.funnelType === 'single-page') {
+      const funnelStepStartProps: FunnelStepStartProps = {
+        funnelInteractionId: this.funnelId!,
+        stepNameSelector: this.funnelConfig.selectors.stepName,
+        subStepAllSelector: this.funnelConfig.selectors.subStepAll,
+        stepNumber: parseInt(this.currentStep!.stepNumber),
+        stepName: this.currentStep!.stepName,
+        subStepConfiguration: Object.values(this.currentStep!.substeps).map(substep => ({
+          name: substep.subStepName,
+          number: parseInt(substep.subStepNumber),
+        })),
+        totalSubSteps: Object.values(this.currentStep!.substeps).length,
+      };
+
+      FunnelMetrics.funnelStepStart({ ...funnelStepStartProps } as any);
+    }
+
+    return this.funnelId;
+  }
+
+  complete() {
+    if (this.state !== 'completed') {
+      this.setActiveSubStep(null);
+      this.setActiveStep(null);
+
+      const previousState = this.state;
+      this.state = 'completed';
+      console.log(`[${this.funnelId}]`, 'Funnel completed', {
+        result: previousState === 'submitting' ? 'Success' : 'Cancelled',
+      });
+    }
+  }
+
+  submit() {
+    if (this.state !== 'submitting') {
+      this.state = 'submitting';
+      console.log(`[${this.funnelId}]`, 'Funnel submitted', { funnelId: this.funnelId });
+    }
+  }
+
+  error(errorText: string) {
+    if (this.state !== 'error') {
+      this.state = 'error';
+      console.log(`[${this.funnelId}]`, 'Funnel Error', { errorText });
+    }
+  }
+
+  stepError(errorText: string) {
+    console.log(`[${this.funnelId}]`, 'Funnel step Error', {
+      errorText,
+      stepNumber: this.currentStep?.stepNumber,
+      stepName: this.currentStep?.stepName,
+      isOptional: this.currentStep?.isOptional,
+    });
+  }
+
+  subStepError(substepNumber: string, { label, error }: { label: string; error: string }) {
+    const subStep = this.currentStep?.substeps[substepNumber];
+    console.log(
+      `[${this.funnelId}]`,
+      'Funnel substep error',
+      { label, error },
+      {
+        ...subStep,
+        stepNumber: this.currentStep?.stepNumber,
+        stepName: this.currentStep?.stepName,
+        isOptional: this.currentStep?.isOptional,
+      }
+    );
+  }
+
+  helpLinkInteraction({ formFieldLabel, label }: { formFieldLabel: string; label: string }) {
+    console.log(`[${this.funnelId}]`, 'Funnel help link interaction', { formFieldLabel, label });
+  }
+
+  externalLinkInteraction({ formFieldLabel, label }: { formFieldLabel: string; label: string }) {
+    console.log(`[${this.funnelId}]`, 'Funnel external link interaction', { formFieldLabel, label });
+  }
+
+  getConfig() {
+    return this.funnelConfig;
+  }
+
+  updateFunnelConfig(funnelConfig: FunnelConfig) {
+    this.funnelConfig = funnelConfig;
+    console.log(`[${this.funnelId}]`, 'Funnel config updated', { funnelConfig });
+  }
+}

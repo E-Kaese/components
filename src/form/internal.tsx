@@ -14,8 +14,9 @@ import { useInternalI18n } from '../i18n/context';
 
 import { useFunnel } from '../internal/analytics/hooks/use-funnel';
 import { FunnelMetrics } from '../internal/analytics';
+import { trackEvent } from '@cloudscape-design/component-toolkit/internal';
 
-type InternalFormProps = FormProps & InternalBaseComponentProps;
+export type InternalFormProps = FormProps & InternalBaseComponentProps;
 
 export default function InternalForm({
   children,
@@ -33,6 +34,12 @@ export default function InternalForm({
   const errorIconAriaLabel = i18n('errorIconAriaLabel', errorIconAriaLabelOverride);
 
   const { funnelInteractionId, submissionAttempt, errorCount } = useFunnel();
+
+  useEffect(() => {
+    if (errorText && __internalRootRef) {
+      trackEvent(__internalRootRef.current as HTMLElement, 'error', { componentName: 'Form', errorText });
+    }
+  }, [__internalRootRef, errorText]);
 
   useEffect(() => {
     if (funnelInteractionId && errorText) {

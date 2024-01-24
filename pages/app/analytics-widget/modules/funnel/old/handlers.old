@@ -1,0 +1,291 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+import createWrapper from '~components/test-utils/selectors';
+import { findSubstep, findUp, getFunnelNode, isContainerVariant, isInComponent, isInFunnel } from '../../utils/utils';
+import { Funnel } from './funnel';
+
+import { BufferEvent } from '../../types';
+
+export const FUNNEL_COMPONENTS = ['Form', 'Wizard', 'Modal'];
+export const SUBSTEP_COMPONENTS = ['Container', 'ExpandableSection'];
+
+const funnelElementMap = new Map();
+
+function handleWizardMount(event: BufferEvent, domSnapshot: HTMLElement) {
+  const breadcrumbLinksSelector = createWrapper('')
+    .findAppLayout()
+    .findBreadcrumbs()
+    .findBreadcrumbGroup()
+    .findBreadcrumbLinks()
+    .toSelector();
+
+  const breadcrumbLinks = domSnapshot.querySelectorAll(breadcrumbLinksSelector);
+  const breadcrumbText = breadcrumbLinks[breadcrumbLinks.length - 1].textContent;
+  const funnelName = breadcrumbText ?? 'Unknown funnel';
+
+  const { componentConfiguration } = event.detail;
+  console.log('Wizard componentConfiguration', componentConfiguration);
+  const funnel = new Funnel(funnelName, 'multi-page', {
+    initialStepNumber: `${componentConfiguration.activeStepIndex + 1}`,
+    steps: componentConfiguration.steps.map((step: any, index: number) => ({
+      stepName: step.title,
+      stepNumber: (index + 1).toString(),
+      isOptional: !!step.isOptional,
+      substeps: {},
+    })),
+    optionalSteps: componentConfiguration.optionalSteps.map((step: number) => `${step}`),
+    selectors: {
+      funnelName: breadcrumbLinksSelector,
+    },
+  });
+
+  funnelElementMap.set(event.target, funnel);
+}
+
+function handleFormMount(event: BufferEvent, domSnapshot: HTMLElement) {
+  const isInModal = isInComponent(event.target, 'Modal');
+  const funnelNameSelector = isInModal
+    ? createWrapper().findModal().findHeader().findHeader().findHeadingText().toSelector()
+    : createWrapper('').findHeader().findHeadingText().toSelector();
+
+  const breadcrumbLinksSelector = createWrapper('')
+    .findAppLayout()
+    .findBreadcrumbs()
+    .findBreadcrumbGroup()
+    .findBreadcrumbLinks()
+    .toSelector();
+
+  const breadcrumbLinks = domSnapshot.querySelectorAll(breadcrumbLinksSelector);
+  const breadcrumbText = breadcrumbLinks[breadcrumbLinks.length - 1].textContent;
+  const fallbackFunnelName = breadcrumbText ?? 'Unknown funnel';
+
+  const funnelName = domSnapshot.querySelector(funnelNameSelector)?.textContent || fallbackFunnelName;
+
+  const funnel = new Funnel(funnelName, isInModal ? 'modal' : 'single-page', {
+    initialStepNumber: '1',
+    steps: [{ stepName: funnelName, stepNumber: '1', isOptional: false, substeps: {} }],
+    optionalSteps: [],
+    selectors: {
+      funnelName: funnelNameSelector,
+    },
+  });
+
+  if (isInModal) {
+    const modal = findUp('Modal', event.target, domSnapshot);
+    funnelElementMap.set(modal, funnel);
+  } else {
+    funnelElementMap.set(event.target, funnel);
+  }
+}
+
+function handleSubStepMountEvent(event: BufferEvent, domSnapshot?: HTMLElement) {
+  if (event.detail.componentName !== 'Container' && isContainerVariant(event)) {
+    return;
+  }
+
+  const funnel = getFunnelNode(event, funnelElementMap, domSnapshot);
+  if (!funnel) {
+    return;
+  }
+
+  if (!funnel.currentStep) {
+    return;
+  }
+
+  if (funnel.funnelType === 'single-page' && funnel.state === 'started') {
+    funnel.updateFunnelConfig(funnel.getConfig());
+  }
+
+  const headerTextSelector = createWrapper('').findHeader().findHeadingText().toSelector();
+  const subStepName = event.target.querySelector(headerTextSelector)?.textContent || 'Unknown substep';
+
+  const subStepNumber = Object.keys(funnel.currentStep.substeps).length + 1;
+  funnel.currentStep.substeps[subStepNumber] = {
+    subStepName,
+    subStepNumber: `${subStepNumber}`,
+    element: event.target,
+  };
+}
+
+export function handleMountEvent(event: BufferEvent, domSnapshot: HTMLElement = document.body) {
+  switch (event.detail.componentName) {
+    case 'Form':
+      handleFormMount(event, domSnapshot);
+      break;
+    case 'Wizard':
+      handleWizardMount(event, domSnapshot);
+      break;
+    default:
+      if (SUBSTEP_COMPONENTS.includes(event.detail.componentName)) {
+        handleSubStepMountEvent(event, domSnapshot);
+      }
+      break;
+  }
+}
+
+export function handleUnmountEvent(event: BufferEvent, domSnapshot: HTMLElement = document.body) {
+  if (!isInFunnel(event.target)) {
+    return; // Not in a funnel
+  }
+
+  const funnel = getFunnelNode(event, funnelElementMap, domSnapshot);
+  if (!funnel) {
+    return;
+  }
+
+  if (SUBSTEP_COMPONENTS.includes(event.detail.componentName)) {
+    if (funnel.funnelType === 'single-page' && funnel.state === 'started') {
+      funnel.updateFunnelConfig(funnel.getConfig());
+    }
+
+    if (!funnel.currentStep) {
+      return;
+    }
+
+    const substep = findSubstep(event, funnel, domSnapshot);
+    if (!substep) {
+      return;
+    }
+
+    delete funnel.currentStep.substeps[substep.subStepNumber];
+  }
+
+  if (FUNNEL_COMPONENTS.includes(event.detail.componentName)) {
+    funnel.complete();
+  }
+}
+
+export function handleFocusEvent(event: BufferEvent, domSnapshot?: HTMLElement) {
+  if (!isInFunnel(event.target)) {
+    return; // Not in a funnel
+  }
+
+  const funnel = getFunnelNode(event, funnelElementMap, domSnapshot);
+  if (!funnel) {
+    console.log('Could not find funnel');
+    return;
+  }
+
+  if (!SUBSTEP_COMPONENTS.some(componentName => isInComponent(event.target, componentName))) {
+    funnel.setActiveSubStep(null);
+    return; // Not in a substep
+  }
+
+  const substep = findSubstep(event, funnel, domSnapshot);
+  if (!substep) {
+    console.log('Could not find parent substep');
+    return;
+  }
+
+  funnel.setActiveSubStep(substep.subStepNumber);
+}
+
+export function handleErrorEvent(event: BufferEvent, domSnapshot?: HTMLElement) {
+  if (!isInFunnel(event.target)) {
+    return; // Not in a funnel
+  }
+
+  const funnel = getFunnelNode(event, funnelElementMap, domSnapshot);
+  if (!funnel) {
+    console.log('Could not find funnel');
+    return;
+  }
+
+  switch (event.detail.componentName) {
+    case 'Form':
+    case 'Wizard':
+      funnel.stepError((event.detail as any).errorText);
+      funnel.error((event.detail as any).errorText);
+      break;
+    case 'FormField': {
+      const substep = findSubstep(event, funnel, domSnapshot);
+      if (!substep) {
+        console.log('Could not find parent substep');
+        return;
+      }
+
+      const formFieldWrapper = createWrapper('').findFormField();
+      const formFieldLabel =
+        (domSnapshot || event.target).querySelector(formFieldWrapper.findLabel().toSelector())?.textContent ?? '';
+      const formFieldError =
+        (domSnapshot || event.target).querySelector(formFieldWrapper.findError().toSelector())?.textContent ?? '';
+
+      funnel.subStepError(substep.subStepNumber, { label: formFieldLabel, error: formFieldError });
+      break;
+    }
+  }
+}
+
+export function handleSubmitEvent(event: BufferEvent, domSnapshot?: HTMLElement) {
+  if (!isInFunnel(event.target)) {
+    return; // Not in a funnel
+  }
+
+  const funnel = getFunnelNode(event, funnelElementMap, domSnapshot);
+  funnel?.submit();
+}
+
+export function handleClickEvent(event: BufferEvent, domSnapshot?: HTMLElement) {
+  if (!isInFunnel(event.target)) {
+    return; // Not in a funnel
+  }
+
+  const funnel = getFunnelNode(event, funnelElementMap, domSnapshot);
+  if (!funnel) {
+    console.log('Could not find funnel');
+    return;
+  }
+
+  if (event.detail.componentName === 'Link') {
+    const formFieldWrapper = createWrapper('').findFormField();
+    const formFieldLabel =
+      (domSnapshot || document).querySelector(formFieldWrapper.findLabel().toSelector())?.textContent ?? '';
+    const label = (event.target.textContent ?? '').trim();
+
+    if ((event.detail as any).variant === 'info') {
+      funnel.helpLinkInteraction({ formFieldLabel, label });
+    } else if ((event.detail as any).external === true) {
+      funnel.externalLinkInteraction({ formFieldLabel, label });
+    }
+  } else if (event.detail.componentName === 'Button') {
+    if (isInComponent(event.target, 'Modal') && event.detail.props.variant === 'primary') {
+      funnel.submit();
+    }
+  }
+}
+
+export function handlePropertyChangeEvent(event: BufferEvent, domSnapshot?: HTMLElement) {
+  const funnel = getFunnelNode(event, funnelElementMap, domSnapshot);
+  if (!funnel) {
+    return;
+  }
+
+  switch (event.detail.componentName) {
+    case 'Wizard':
+      if (funnel.state !== 'initial') {
+        funnel.setActiveStep(`${event.detail.detail.activeStepIndex + 1}`);
+      }
+      break;
+    case 'Modal': {
+      if (event.detail.detail.visible === true) {
+        funnel.start();
+      }
+    }
+  }
+}
+
+export function handleRootMountEvent() {
+  console.log('Ready event');
+  [...funnelElementMap.values()].forEach((funnel: Funnel) => funnel.start());
+}
+
+export const handlers = {
+  mount: handleMountEvent,
+  unmount: handleUnmountEvent,
+  focus: handleFocusEvent,
+  error: handleErrorEvent,
+  submit: handleSubmitEvent,
+  click: handleClickEvent,
+  'property-change': handlePropertyChangeEvent,
+  'root-mount': handleRootMountEvent,
+} as Record<string, any>;

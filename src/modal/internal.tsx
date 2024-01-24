@@ -28,6 +28,7 @@ import { ButtonContext } from '../internal/context/button-context';
 import { FunnelNameSelectorContext } from '../internal/analytics/context/analytics-context';
 import { ModalContext } from '../internal/context/modal-context';
 import { useFunnelSubStep } from '../internal/analytics/hooks/use-funnel';
+import { trackEvent, useTrackComponentPropertyAfterRender } from '@cloudscape-design/component-toolkit/internal';
 
 type InternalModalProps = SomeRequired<ModalProps, 'size'> & InternalBaseComponentProps;
 
@@ -66,6 +67,7 @@ function InnerModal({
   const isRefresh = useVisualRefresh();
 
   const baseProps = getBaseProps(rest);
+  useTrackComponentPropertyAfterRender(__internalRootRef, 'Modal', 'visible', visible);
 
   // enable body scroll and restore focus if unmounting while visible
   useEffect(() => {
@@ -177,9 +179,20 @@ function InnerModal({
                       <div ref={stickySentinelRef} />
                     </div>
                     {footer && (
-                      <div ref={footerRef} className={clsx(styles.footer, footerStuck && styles['footer--stuck'])}>
-                        {footer}
-                      </div>
+                      <ButtonContext.Provider
+                        value={{
+                          onClick: ({ variant }) => {
+                            if (variant === 'primary') {
+                              __internalRootRef?.current &&
+                                trackEvent(__internalRootRef.current, 'submit', { componentName: 'Modal' });
+                            }
+                          },
+                        }}
+                      >
+                        <div ref={footerRef} className={clsx(styles.footer, footerStuck && styles['footer--stuck'])}>
+                          {footer}
+                        </div>
+                      </ButtonContext.Provider>
                     )}
                   </div>
                 </div>

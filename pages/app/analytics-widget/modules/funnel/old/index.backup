@@ -1,0 +1,109 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+import {
+  handleErrorEvent,
+  handleFocusEvent,
+  handleMountEvent,
+  handleUnmountEvent,
+  handleSubmitEvent,
+  handleClickEvent,
+  handlePropertyChangeEvent,
+  handleReadyEvent,
+} from './funnel/handlers';
+
+function flushBuffer(eventBuffer: BufferItem[]) {
+  const orderPriority: Record<string, number> = { AppLayout: 999, BreadcrumbGroup: 998, Form: 997, Wizard: 997 };
+
+  eventBuffer.sort((a: BufferItem, b: BufferItem) => {
+    const indexA = a.event.eventName === 'mount' ? orderPriority[a.event.detail.componentName] || 0 : 0;
+    const indexB = b.event.eventName === 'mount' ? orderPriority[b.event.detail.componentName] || 0 : 0;
+    return indexB - indexA;
+  });
+
+  while (eventBuffer.length > 0) {
+    const item = eventBuffer.shift();
+    if (!item) {
+      break;
+    }
+
+    const { event, domSnapshot } = item;
+    trackEvent(event.target, event.eventName, event.detail, domSnapshot);
+  }
+}
+
+let shouldBufferEvents = true;
+const widgetEventBuffer: BufferItem[] = [];
+const isAppLayoutMountEvent = (eventName: string, componentName: string) =>
+  eventName === 'mount' && componentName === 'AppLayout';
+
+function trackEvent(target: HTMLElement, eventName: string, detail: any, domSnapshot?: HTMLElement) {
+  if (isAppLayoutMountEvent(eventName, detail.componentName)) {
+    processEvent({ eventName, target, detail }, domSnapshot);
+    shouldBufferEvents = false;
+    flushBuffer(widgetEventBuffer);
+    handleReadyEvent();
+    return;
+  }
+
+  if (shouldBufferEvents) {
+    widgetEventBuffer.push({ event: { target, eventName, detail }, domSnapshot });
+    return;
+  }
+
+  return processEvent({ eventName, target, detail }, domSnapshot);
+}
+
+function processEvent(event: BufferEvent, domSnapshot?: HTMLElement) {
+  switch (event.eventName) {
+    case 'mount':
+      handleMountEvent(event, domSnapshot);
+      break;
+    case 'unmount':
+      handleUnmountEvent(event);
+      break;
+    case 'focus':
+      handleFocusEvent(event, domSnapshot);
+      break;
+    case 'error':
+      handleErrorEvent(event, domSnapshot);
+      break;
+    case 'submit':
+      handleSubmitEvent(event, domSnapshot);
+      break;
+    case 'click':
+      handleClickEvent(event, domSnapshot);
+      break;
+    case 'property-change':
+      handlePropertyChangeEvent(event, domSnapshot);
+      break;
+    default:
+      break;
+  }
+}
+
+export interface BufferEvent {
+  eventName: string;
+  target: HTMLElement;
+  detail: {
+    componentName: string;
+    props?: any;
+    detail?: any;
+    componentConfiguration?: any;
+  };
+}
+export interface BufferItem {
+  event: BufferEvent;
+  domSnapshot?: HTMLElement;
+}
+
+export default class Widget {
+  protected initialized = false;
+
+  public register() {
+    const { analytics } = (window as any).__awsui__;
+    this.initialized = true;
+    flushBuffer(analytics.eventBuffer);
+    analytics.trackEvent = trackEvent;
+    console.log('Analytics widget registered');
+  }
+}

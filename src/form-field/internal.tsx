@@ -27,6 +27,7 @@ import {
   getNameFromSelector,
   getSubStepAllSelector,
 } from '../internal/analytics/selectors';
+import { trackEvent } from '@cloudscape-design/component-toolkit/internal';
 
 interface FormFieldErrorProps {
   id?: string;
@@ -121,13 +122,19 @@ export default function InternalFormField({
 
   useEffect(() => {
     if (funnelInteractionId && errorText && funnelState.current !== 'complete') {
+      const currentRef = __internalRootRef?.current;
       const stepName = getNameFromSelector(stepNameSelector);
       const subStepName = getNameFromSelector(subStepNameSelector);
+
+      const fieldError = currentRef
+        ?.querySelector<HTMLElement>(`${getFieldSlotSeletor(slotIds.error)} .${styles.error__message}`)
+        ?.innerText?.trim();
+      const fieldLabel = currentRef?.querySelector<HTMLElement>(getFieldSlotSeletor(slotIds.label)!)?.innerText?.trim();
 
       errorCount.current++;
 
       // We don't want to report an error if it is hidden, e.g. inside an Expandable Section.
-      const errorIsVisible = (__internalRootRef?.current?.getBoundingClientRect()?.width ?? 0) > 0;
+      const errorIsVisible = (currentRef?.getBoundingClientRect()?.width ?? 0) > 0;
 
       if (errorIsVisible) {
         FunnelMetrics.funnelSubStepError({
@@ -142,9 +149,17 @@ export default function InternalFormField({
           fieldLabelSelector: getFieldSlotSeletor(slotIds.label),
           subStepAllSelector: getSubStepAllSelector(),
         });
+
+        currentRef &&
+          trackEvent(currentRef, 'error', { componentName: 'FormField', detail: { fieldError, fieldLabel } });
       }
 
       return () => {
+        if (errorIsVisible) {
+          currentRef &&
+            trackEvent(currentRef, 'error-clear', { componentName: 'FormField', detail: { fieldError, fieldLabel } });
+        }
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
         errorCount.current--;
       };

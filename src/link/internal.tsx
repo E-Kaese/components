@@ -27,6 +27,7 @@ import {
 } from '../internal/analytics/selectors';
 import { LinkDefaultVariantContext } from '../internal/context/link-default-variant-context';
 import { useSingleTabStopNavigation } from '../internal/context/single-tab-stop-navigation-context';
+import { trackEvent } from '@cloudscape-design/component-toolkit/internal';
 
 type InternalLinkProps = InternalBaseComponentProps<HTMLAnchorElement> &
   Omit<LinkProps, 'variant'> & {
@@ -112,6 +113,7 @@ const InternalLink = React.forwardRef(
         fireFunnelEvent(funnelInteractionId);
       }
 
+      linkRef.current && trackEvent(linkRef.current, 'click', { componentName: 'Link', variant, external });
       fireCancelableEvent(onFollow, { href, external, target: anchorTarget }, event);
     };
 
@@ -138,6 +140,13 @@ const InternalLink = React.forwardRef(
 
     // Visual refresh should only add styles to buttons that don't already have unique styles (e.g. primary/secondary variants)
     const applyButtonStyles = isButton && isVisualRefresh && !hasSpecialStyle;
+    const handleFocus = () => {
+      linkRef.current && trackEvent(linkRef.current, 'focus', { componentName: 'Link' });
+    };
+
+    const handleBlur = () => {
+      linkRef.current && trackEvent(linkRef.current, 'blur', { componentName: 'Link' });
+    };
 
     const sharedProps = {
       id: linkId,
@@ -155,6 +164,8 @@ const InternalLink = React.forwardRef(
       'aria-label': ariaLabel,
       'aria-labelledby': '',
       [DATA_ATTR_FUNNEL_VALUE]: uniqueId,
+      onFocus: handleFocus,
+      onBlur: handleBlur,
     };
 
     if (variant === 'info' && infoLinkLabelFromContext && !ariaLabel) {
