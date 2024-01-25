@@ -42,7 +42,7 @@ export function findClosestAncestor(element: Element, componentName: string): Fi
   return undefined;
 }
 
-export function getAncestors(startNode: Fiber): string[] {
+export function getComponentTree(startNode: Fiber): string[] {
   const ancestors = [];
   for (let current: Fiber | null = startNode; current !== null && current !== undefined; current = current.return) {
     if (current.type?.displayName) {
@@ -88,7 +88,7 @@ export function findDown(componentName: string, node: HTMLElement): HTMLElement 
 }
 
 export function isInComponent(element: HTMLElement, componentName: string) {
-  const tree = getAncestors(getFiberNodeFromElement(element)!);
+  const [, ...tree] = getComponentTree(getFiberNodeFromElement(element)!);
   return tree.includes(componentName);
 }
 
@@ -97,7 +97,24 @@ export function getParentFunnelNode(element: HTMLElement, domSnapshot = document
     return findDown('Form', element);
   }
 
-  const componentKey = isInComponent(element, 'Wizard') ? 'Wizard' : 'Form';
+  // Return the outer most Funnel
+  let componentKey = undefined;
+  const tree = getComponentTree(getFiberNodeFromElement(element)!);
+  while (tree.length > 0) {
+    const current = tree.pop();
+    if (!current) {
+      break;
+    }
+
+    if (['Wizard', 'Form', 'Modal'].includes(current)) {
+      componentKey = current;
+      break;
+    }
+  }
+
+  if (!componentKey) {
+    return null;
+  }
 
   return findUp(componentKey, element, domSnapshot);
 }

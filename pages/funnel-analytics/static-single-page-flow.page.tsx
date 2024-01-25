@@ -177,7 +177,7 @@ export default function StaticSinglePageCreatePage() {
               </SpaceBetween>
             }
             header={
-              <Header variant="h1" info={<Link>Info</Link>} description="Form header description">
+              <Header variant="h1" info={<Link variant="info">Info</Link>} description="Form header description">
                 Form Header
               </Header>
             }
@@ -218,11 +218,7 @@ export default function StaticSinglePageCreatePage() {
                     />
                   </FormField>
                   <FormField
-                    info={
-                      <Link variant="info" href="#">
-                        Info
-                      </Link>
-                    }
+                    info={<Link variant="info">Info</Link>}
                     description="expandToViewport={true}"
                     label="Dropdown field"
                   >

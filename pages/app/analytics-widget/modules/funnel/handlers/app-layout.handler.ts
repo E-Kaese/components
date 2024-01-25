@@ -7,6 +7,7 @@ import { getFunnels } from '../funnel';
 
 export const mount: Handler = () => {
   const funnels = getFunnels();
+  console.log(funnels);
   for (const funnel of funnels) {
     funnel.start();
   }

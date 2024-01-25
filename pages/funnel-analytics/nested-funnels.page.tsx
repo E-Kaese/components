@@ -5,7 +5,6 @@ import React from 'react';
 import { i18nStrings } from '../wizard/common';
 
 import {
-  Box,
   BreadcrumbGroup,
   Form,
   Wizard,
@@ -15,7 +14,13 @@ import {
   Header,
   SpaceBetween,
   FormField,
+  AppLayout,
 } from '~components';
+
+import { setFunnelMetrics } from '~components/internal/analytics';
+import { MockedFunnelMetrics } from './mock-funnel';
+
+setFunnelMetrics(MockedFunnelMetrics);
 
 export default function WizardPage() {
   const steps: WizardProps.Step[] = [
@@ -27,18 +32,24 @@ export default function WizardPage() {
           <Form>
             <Container>
               This page contains funnels nested inside funnels. The code automatically deduplicates them.
+              <Input readOnly={true} value="" />
             </Container>
           </Form>
           <Form>
             <Container header={<Header>Header</Header>}>
-              <Container header={<Header>Another header</Header>}>
-                <Form>
-                  Here is a substep nested inside a substep.
-                  <FormField label="An input field">
-                    <Input readOnly={true} value="" />
-                  </FormField>
-                </Form>
-              </Container>
+              <SpaceBetween size="m">
+                <FormField label="An input field">
+                  <Input readOnly={true} value="" />
+                </FormField>
+                <Container header={<Header>Another header</Header>}>
+                  <Form>
+                    Here is a substep nested inside a substep.
+                    <FormField label="Another input field">
+                      <Input readOnly={true} value="" />
+                    </FormField>
+                  </Form>
+                </Container>
+              </SpaceBetween>
             </Container>
           </Form>
         </SpaceBetween>
@@ -71,22 +82,17 @@ export default function WizardPage() {
   ];
 
   return (
-    <Box padding="xl">
-      <Form>
-        <SpaceBetween size="xxl">
-          <BreadcrumbGroup
-            items={[
-              { text: 'Resources', href: '#example-link' },
-              { text: 'Create resource', href: '#example-link' },
-            ]}
-            onFollow={e => e.preventDefault()}
-          />
-
-          <Form>
-            <Wizard steps={steps} i18nStrings={i18nStrings} activeStepIndex={0} onNavigate={() => {}} />
-          </Form>
-        </SpaceBetween>
-      </Form>
-    </Box>
+    <AppLayout
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: 'Resources', href: '#example-link' },
+            { text: 'Create resource', href: '#example-link' },
+          ]}
+          onFollow={e => e.preventDefault()}
+        />
+      }
+      content={<Wizard steps={steps} i18nStrings={i18nStrings} activeStepIndex={0} onNavigate={() => {}} />}
+    />
   );
 }

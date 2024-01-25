@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import { SUBSTEP_COMPONENTS } from '.';
-import { findUp, getParentFunnelNode } from '../../utils/browser';
+import { getParentFunnelNode } from '../../utils/browser';
 import { getFunnel } from './funnel';
 
 export const getFunnelFromParentNode = (element: HTMLElement, domSnapshot: Document | undefined) => {
@@ -14,9 +13,7 @@ export const getFunnelFromParentNode = (element: HTMLElement, domSnapshot: Docum
 };
 
 export const getFunnelSubstepForElement = (element: HTMLElement, domSnapshot: Document | undefined) => {
-  const [parentContainer] = SUBSTEP_COMPONENTS.map(component => findUp(component, element, domSnapshot)).filter(
-    Boolean
-  );
+  const parentContainer = element.closest('[data-analytics-funnel-substep-number]') as HTMLElement;
 
   if (!parentContainer) {
     return null;

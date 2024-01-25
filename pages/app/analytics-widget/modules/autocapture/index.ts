@@ -7,6 +7,7 @@ import { buildAwsuiNodeTree, getComponentName } from './helpers';
 type EventHandler = (event: Event) => void;
 
 const autoCaptureEvents = [];
+const ENABLE_LOGGING = false;
 
 const debouncedHandler = (handler: EventHandler, timeOutInMs: number) => {
   let timer: ReturnType<typeof setTimeout>;
@@ -37,7 +38,7 @@ const listeners = [
     eventName: 'click',
     handler: (event: Event) => {
       const { componentName, awsuiNodeTree } = collectAwsuiNodeData(event);
-      console.log('click', componentName, awsuiNodeTree, event);
+      ENABLE_LOGGING && console.log('click', componentName, awsuiNodeTree, event);
     },
   },
   {
@@ -51,14 +52,14 @@ const listeners = [
     eventName: 'change',
     handler: (event: Event) => {
       const { componentName, awsuiNodeTree } = collectAwsuiNodeData(event);
-      console.log('change', componentName, awsuiNodeTree, event);
+      ENABLE_LOGGING && console.log('change', componentName, awsuiNodeTree, event);
     },
   },
   {
     eventName: 'mouseup',
     handler: (event: Event) => {
       const { componentName, awsuiNodeTree } = collectAwsuiNodeData(event);
-      console.log('mouseup', componentName, awsuiNodeTree, event);
+      ENABLE_LOGGING && console.log('mouseup', componentName, awsuiNodeTree, event);
     },
   },
   {
@@ -72,14 +73,14 @@ const listeners = [
 
 class AutocaptureAnalyticsModule implements AnalyticsModule {
   onRegister() {
-    console.log('Autocapture module registered');
+    ENABLE_LOGGING && console.log('Autocapture module registered');
     listeners.forEach(listener => {
       document.addEventListener(listener.eventName, listener.handler);
     });
   }
 
   onUnregister() {
-    console.log('Autocapture module unregistered');
+    ENABLE_LOGGING && console.log('Autocapture module unregistered');
     listeners.forEach(listener => {
       document.removeEventListener(listener.eventName, listener.handler);
     });

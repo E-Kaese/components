@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React, { useEffect, useState } from 'react';
-import { BreadcrumbGroup, BreadcrumbGroupProps, Container, Form } from '~components';
+import { AppLayout, BreadcrumbGroup, BreadcrumbGroupProps, Container, Form } from '~components';
 
 import { setFunnelMetrics } from '~components/internal/analytics';
 import { MockedFunnelMetrics } from './mock-funnel';
@@ -21,7 +21,7 @@ export default function DelayedBreadcrumbsPage() {
           href: '#components/breadcrumb-group',
         },
       ]);
-    }, 150);
+    }, 300);
 
     return () => {
       clearTimeout(timeout);
@@ -29,11 +29,14 @@ export default function DelayedBreadcrumbsPage() {
   }, []);
 
   return (
-    <>
-      {items && <BreadcrumbGroup items={items} ariaLabel="Breadcrumbs" />}
-      <Form>
-        <Container />
-      </Form>
-    </>
+    <AppLayout
+      breadcrumbs={<BreadcrumbGroup items={items} ariaLabel="Breadcrumbs" />}
+      contentType="form"
+      content={
+        <Form>
+          <Container />
+        </Form>
+      }
+    />
   );
 }

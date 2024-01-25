@@ -54,6 +54,16 @@ export const stepNavigation: Handler = (event, domSnapshot) => {
   funnel.setActiveStep(`${event.detail.detail.destinationStepNumber}`);
 };
 
+export const cancel: Handler = (event, domSnapshot) => {
+  const funnel = getFunnelFromParentNode(event.target, domSnapshot);
+  if (!funnel) {
+    console.warn('Could not find funnel for wizard step navigation');
+    return;
+  }
+
+  funnel.complete();
+};
+
 export const stepMount: Handler = (event, domSnapshot) => {
   const funnel = getFunnelFromParentNode(event.target, domSnapshot);
   if (!funnel) {

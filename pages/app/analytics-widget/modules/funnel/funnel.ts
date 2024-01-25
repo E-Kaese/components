@@ -3,6 +3,7 @@
 
 import { FunnelMetrics } from '~components/internal/analytics';
 import {
+  FunnelLinkInteractionProps,
   FunnelStartProps,
   FunnelStepCompleteProps,
   FunnelStepErrorProps,
@@ -20,17 +21,25 @@ class FunnelSubstep {
   constructor(private scope: Funnel, public config: FunnelSubStepConfig) {}
 
   start() {
-    this.state = 'started';
+    if (this.state === 'started') {
+      return;
+    }
+
     const funnelSubstepProps = this._getFunnelMetricsProps();
     FunnelMetrics.funnelSubStepStart(funnelSubstepProps);
     console.log('funnelSubStepStart', funnelSubstepProps);
+    this.state = 'started';
   }
 
   complete() {
-    this.state = 'completed';
+    if (this.state === 'completed') {
+      return;
+    }
+
     const funnelSubstepProps = this._getFunnelMetricsProps();
     FunnelMetrics.funnelSubStepComplete(funnelSubstepProps);
     console.log('funnelSubStepComplete', funnelSubstepProps);
+    this.state = 'completed';
   }
 
   error(fieldLabel: string, fieldError: string) {
@@ -302,6 +311,60 @@ class Funnel {
     this.state = 'error';
     FunnelMetrics.funnelError({ funnelInteractionId: this.interactionId, additional: { errorText } } as any);
     console.log('funnelError', { funnelInteractionId: this.interactionId, additional: { errorText } });
+  }
+
+  externalLinkInteraction() {
+    if (!this.interactionId) {
+      console.warn('No interaction id for funnel.');
+      return;
+    }
+
+    if (!this.activeStep) {
+      console.warn('No active step for funnel.');
+      return;
+    }
+
+    const funnelExternalLinkInteractionProps: FunnelLinkInteractionProps = {
+      funnelInteractionId: this.interactionId,
+      stepNumber: parseInt(this.activeStep.config.stepNumber),
+      stepName: this.activeStep.config.stepName,
+      subStepName: this.activeStep.activeSubstep?.config.subStepName,
+      subStepNameSelector: '',
+      elementSelector: '',
+      subStepAllSelector: '',
+      stepNameSelector: '',
+      subStepSelector: '',
+    };
+
+    FunnelMetrics.externalLinkInteracted(funnelExternalLinkInteractionProps);
+    console.log('funnelExternalLinkInteraction', funnelExternalLinkInteractionProps);
+  }
+
+  infoLinkInteraction() {
+    if (!this.interactionId) {
+      console.warn('No interaction id for funnel.');
+      return;
+    }
+
+    if (!this.activeStep) {
+      console.warn('No active step for funnel.');
+      return;
+    }
+
+    const funnelInfoLinkInteractionProps: FunnelLinkInteractionProps = {
+      funnelInteractionId: this.interactionId,
+      stepNumber: parseInt(this.activeStep.config.stepNumber),
+      stepName: this.activeStep.config.stepName,
+      subStepName: this.activeStep.activeSubstep?.config.subStepName,
+      subStepNameSelector: '',
+      elementSelector: '',
+      subStepAllSelector: '',
+      stepNameSelector: '',
+      subStepSelector: '',
+    };
+
+    FunnelMetrics.helpPanelInteracted(funnelInfoLinkInteractionProps);
+    console.log('funnelInfoLinkInteraction', funnelInfoLinkInteractionProps);
   }
 }
 

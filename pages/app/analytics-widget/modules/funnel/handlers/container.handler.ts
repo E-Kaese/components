@@ -1,22 +1,23 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import { Handler } from '../../../types';
+import { isInComponent } from '../../../utils/browser';
 import { getSubStepName } from '../../../utils/funnel';
 import { getFunnelFromParentNode } from '../helpers';
 
 export const mount: Handler = (event, domSnapshot) => {
+  // Ignore if container is nested in another container
+  if (isInComponent(event.target, 'Container') || isInComponent(event.target, 'ExpandableSection')) {
+    return;
+  }
+
   const funnel = getFunnelFromParentNode(event.target, domSnapshot);
   if (!funnel) {
     return;
   }
 
   const [substepName] = getSubStepName(event.target);
-
-  if (!substepName) {
-    return;
-  }
-
-  const substep = funnel.activeStep?.registerSubStep(event.target, substepName);
+  const substep = funnel.activeStep?.registerSubStep(event.target, substepName || '');
 
   if (!substep) {
     return;

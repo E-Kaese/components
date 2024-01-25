@@ -7,8 +7,14 @@ import { createFunnel } from '../funnel';
 import { getFunnelFromParentNode } from '../helpers';
 
 export const mount: Handler = (event, domSnapshot) => {
+  const isEmbeddedFunnel = isInComponent(event.target, 'Form') || isInComponent(event.target, 'Wizard');
+
+  // Ignore embedded funnels
+  if (isEmbeddedFunnel) {
+    return;
+  }
+
   const isInModal = isInComponent(event.target, 'Modal');
-  const funnelType = isInModal ? 'modal' : 'single-page';
   const [funnelName, funnelNameSelector] = isInModal
     ? getModalFunnelName(domSnapshot)
     : getSinglePageFunnelName(event.target, domSnapshot);
@@ -16,7 +22,7 @@ export const mount: Handler = (event, domSnapshot) => {
   createFunnel(
     {
       funnelName: funnelName || 'Unknown funnel',
-      funnelType,
+      funnelType: isInModal ? 'modal' : 'single-page',
       initialStepNumber: '1',
       steps: [{ stepName: funnelName || 'Unknown step', stepNumber: '1', isOptional: false, substeps: [] }],
       optionalSteps: [],
