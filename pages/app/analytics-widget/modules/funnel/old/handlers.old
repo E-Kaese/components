@@ -11,7 +11,7 @@ export const SUBSTEP_COMPONENTS = ['Container', 'ExpandableSection'];
 
 const funnelElementMap = new Map();
 
-function handleWizardMount(event: BufferEvent, domSnapshot: HTMLElement) {
+function handleWizardMount(event: BufferEvent, domSnapshot: Document) {
   const breadcrumbLinksSelector = createWrapper('')
     .findAppLayout()
     .findBreadcrumbs()
@@ -42,7 +42,7 @@ function handleWizardMount(event: BufferEvent, domSnapshot: HTMLElement) {
   funnelElementMap.set(event.target, funnel);
 }
 
-function handleFormMount(event: BufferEvent, domSnapshot: HTMLElement) {
+function handleFormMount(event: BufferEvent, domSnapshot: Document) {
   const isInModal = isInComponent(event.target, 'Modal');
   const funnelNameSelector = isInModal
     ? createWrapper().findModal().findHeader().findHeader().findHeadingText().toSelector()
@@ -107,7 +107,7 @@ function handleSubStepMountEvent(event: BufferEvent, domSnapshot?: HTMLElement) 
   };
 }
 
-export function handleMountEvent(event: BufferEvent, domSnapshot: HTMLElement = document.body) {
+export function handleMountEvent(event: BufferEvent, domSnapshot: Document = document.body) {
   switch (event.detail.componentName) {
     case 'Form':
       handleFormMount(event, domSnapshot);
@@ -123,7 +123,7 @@ export function handleMountEvent(event: BufferEvent, domSnapshot: HTMLElement = 
   }
 }
 
-export function handleUnmountEvent(event: BufferEvent, domSnapshot: HTMLElement = document.body) {
+export function handleUnmountEvent(event: BufferEvent, domSnapshot: Document = document.body) {
   if (!isInFunnel(event.target)) {
     return; // Not in a funnel
   }

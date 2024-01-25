@@ -54,7 +54,21 @@ export const stepNavigation: Handler = (event, domSnapshot) => {
   funnel.setActiveStep(`${event.detail.detail.destinationStepNumber}`);
 };
 
-export const stepMount: Handler = () => {};
+export const stepMount: Handler = (event, domSnapshot) => {
+  const funnel = getFunnelFromParentNode(event.target, domSnapshot);
+  if (!funnel) {
+    console.warn('Could not find funnel for wizard step navigation');
+    return;
+  }
+
+  if (!funnel.activeStep) {
+    console.warn('Could not find active step for wizard step navigation');
+    return;
+  }
+
+  (event.target as any).__analytics__ = funnel.activeStep.config;
+  event.target.setAttribute('data-awsui-funnel-step-number', `${funnel.activeStep.config.stepNumber}`);
+};
 
 export const propertyChange: Handler = (event, domSnapshot) => {
   const funnel = getFunnelFromParentNode(event.target, domSnapshot);

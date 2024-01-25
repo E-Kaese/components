@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import createWrapper from '~components/test-utils/selectors';
 
-export function getLastBreadcrumbText(domSnapshot = document.body) {
+export function getLastBreadcrumbText(domSnapshot = document) {
   const breadcrumbLinksSelector = createWrapper('')
     .findAppLayout()
     .findBreadcrumbs()
@@ -36,9 +36,9 @@ export function getFormHeaderText(element: HTMLElement) {
   return [element.querySelector(formHeaderSlot.toSelector())?.textContent, formHeaderSlot.toSelector()];
 }
 
-export function getModalHeaderText(domSnapshot: HTMLElement) {
+export function getModalHeaderText(domSnapshot: Document) {
   const modalHeaderSlot = createWrapper('').findModal().findHeader();
-  const [modalHeaderText, modalHeaderTextSelector] = getHeaderText(domSnapshot, modalHeaderSlot);
+  const [modalHeaderText, modalHeaderTextSelector] = getHeaderText(domSnapshot.body, modalHeaderSlot);
 
   if (modalHeaderText) {
     return [modalHeaderText, modalHeaderTextSelector];

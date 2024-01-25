@@ -16,7 +16,7 @@ export function findUp(node: AwsuiNode): AwsuiNode | null {
   }
 
   if (node.dataset.awsuiReferrerId) {
-    const referrer = document.querySelector(`[id=${node.dataset.awsuiReferrerId}]`) as HTMLElement;
+    const referrer = document.getElementById(node.dataset.awsuiReferrerId) as HTMLElement;
     if (referrer) {
       return findUp(referrer);
     }

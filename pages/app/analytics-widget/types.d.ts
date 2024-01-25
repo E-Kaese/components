@@ -12,16 +12,16 @@ export interface BufferEvent {
 }
 export interface BufferItem {
   event: BufferEvent;
-  domSnapshot?: HTMLElement;
+  domSnapshot?: Document;
 }
 
 export interface AnalyticsModule {
   onRegister?: () => void;
   onUnregister?: () => void;
-  trackEvent?: (target: HTMLElement, eventName: string, detail: any, domSnapshot?: HTMLElement) => void;
+  trackEvent?: (target: HTMLElement, eventName: string, detail: any, domSnapshot?: Document) => void;
 }
 
-export type Handler = (event: BufferEvent, domSnapshot?: HTMLElement) => void;
+export type Handler = (event: BufferEvent, domSnapshot?: Document) => void;
 export interface Handlers {
   [key: string]: Handler;
 }

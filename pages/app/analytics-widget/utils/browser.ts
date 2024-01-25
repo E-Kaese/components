@@ -52,11 +52,7 @@ export function getAncestors(startNode: Fiber): string[] {
   return ancestors;
 }
 
-export function findUp(
-  componentName: string,
-  node: HTMLElement,
-  domSnapshot: HTMLElement = document.body
-): HTMLElement | null {
+export function findUp(componentName: string, node: HTMLElement, domSnapshot: Document = document): HTMLElement | null {
   if (!node.parentNode) {
     return null;
   }
@@ -66,7 +62,7 @@ export function findUp(
   }
 
   if (node.dataset.awsuiReferrerId) {
-    const referrer = domSnapshot.querySelector(`[id=${node.dataset.awsuiReferrerId}]`) as HTMLElement;
+    const referrer = domSnapshot.getElementById(node.dataset.awsuiReferrerId) as HTMLElement;
     if (referrer) {
       return findUp(componentName, referrer, domSnapshot);
     }
@@ -96,7 +92,7 @@ export function isInComponent(element: HTMLElement, componentName: string) {
   return tree.includes(componentName);
 }
 
-export function getParentFunnelNode(element: HTMLElement, domSnapshot = document.body): HTMLElement | null {
+export function getParentFunnelNode(element: HTMLElement, domSnapshot = document): HTMLElement | null {
   if (isInComponent(element, 'Modal')) {
     return findDown('Form', element);
   }

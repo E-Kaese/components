@@ -43,7 +43,7 @@ class FunnelAnalyticsModules implements AnalyticsModule {
     target: HTMLElement,
     eventNameKebabCase: string,
     detail: { componentName: string },
-    domSnapshot?: HTMLElement
+    domSnapshot?: Document
   ) {
     const eventName = kebabCaseToCamelCase(eventNameKebabCase);
 

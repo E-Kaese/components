@@ -102,6 +102,7 @@ class FunnelStep {
 
     this._substeps.push(newSubstep);
     this.substeps.set(element, newSubstep);
+    return newSubstep;
   }
 
   unregisterSubStep(element: HTMLElement) {
@@ -199,7 +200,7 @@ class Funnel {
   public state: 'intitial' | 'started' | 'submitting' | 'error' | 'completed' = 'intitial';
   public activeStep: FunnelStep | null = null;
 
-  constructor(private config: FunnelConfig) {
+  constructor(private config: FunnelConfig, private rootElement: HTMLElement) {
     config.steps.forEach(step => {
       const funnelStep = new FunnelStep(this, step);
       this._steps[step.stepNumber] = funnelStep;
@@ -255,6 +256,9 @@ class Funnel {
     console.log('funnelStart', funnelStartProps, this.interactionId);
 
     this.activeStep?.start();
+
+    this.rootElement.setAttribute('data-awsui-funnel-interaction-id', this.interactionId);
+    (this.rootElement as any).__analytics__ = this;
   }
 
   complete() {
@@ -305,9 +309,10 @@ const funnels: Funnel[] = [];
 const funnelElementMap = new WeakMap<HTMLElement, Funnel>();
 
 export const createFunnel = (funnelConfig: FunnelConfig, rootElement: HTMLElement) => {
-  const funnel = new Funnel(funnelConfig);
+  const funnel = new Funnel(funnelConfig, rootElement);
   funnels.push(funnel);
   funnelElementMap.set(rootElement, funnel);
+
   return funnel;
 };
 

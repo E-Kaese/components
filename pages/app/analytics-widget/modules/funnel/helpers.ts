@@ -4,7 +4,7 @@ import { SUBSTEP_COMPONENTS } from '.';
 import { findUp, getParentFunnelNode } from '../../utils/browser';
 import { getFunnel } from './funnel';
 
-export const getFunnelFromParentNode = (element: HTMLElement, domSnapshot: HTMLElement | undefined) => {
+export const getFunnelFromParentNode = (element: HTMLElement, domSnapshot: Document | undefined) => {
   const parentFunnelNode = getParentFunnelNode(element, domSnapshot);
   if (!parentFunnelNode) {
     return null;
@@ -13,7 +13,7 @@ export const getFunnelFromParentNode = (element: HTMLElement, domSnapshot: HTMLE
   return getFunnel(parentFunnelNode);
 };
 
-export const getFunnelSubstepForElement = (element: HTMLElement, domSnapshot: HTMLElement | undefined) => {
+export const getFunnelSubstepForElement = (element: HTMLElement, domSnapshot: Document | undefined) => {
   const [parentContainer] = SUBSTEP_COMPONENTS.map(component => findUp(component, element, domSnapshot)).filter(
     Boolean
   );

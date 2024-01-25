@@ -15,7 +15,7 @@ export default class AnalyticsWidget {
     this.modules = [funnelModule, autocaptureModule, performanceModule];
   }
 
-  public trackEvent(target: HTMLElement, eventName: string, detail: any, domSnapshot?: HTMLElement) {
+  public trackEvent(target: HTMLElement, eventName: string, detail: any, domSnapshot?: Document) {
     for (const module of this.modules) {
       module.trackEvent && module.trackEvent(target, eventName, detail, domSnapshot);
     }

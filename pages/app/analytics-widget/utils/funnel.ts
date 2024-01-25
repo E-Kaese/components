@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 import { getContainerHeaderText, getFormHeaderText, getLastBreadcrumbText, getModalHeaderText } from './page';
 
-export function getModalFunnelName(domSnapshot = document.body) {
+export function getModalFunnelName(domSnapshot = document) {
   const [modalHeaderText, modalHeaderSelector] = getModalHeaderText(domSnapshot);
   return [modalHeaderText, modalHeaderSelector];
 }
 
-export function getSinglePageFunnelName(element: HTMLElement, domSnapshot = document.body) {
+export function getSinglePageFunnelName(element: HTMLElement, domSnapshot = document) {
   const [formHeaderText, formHeaderTextSelector] = getFormHeaderText(element);
   if (formHeaderText) {
     return [formHeaderText, formHeaderTextSelector];
@@ -16,7 +16,7 @@ export function getSinglePageFunnelName(element: HTMLElement, domSnapshot = docu
   return getLastBreadcrumbText(domSnapshot);
 }
 
-export function getMultiPageFunnelName(domSnapshot = document.body) {
+export function getMultiPageFunnelName(domSnapshot = document) {
   return getLastBreadcrumbText(domSnapshot);
 }
 

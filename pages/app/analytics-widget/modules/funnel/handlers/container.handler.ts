@@ -16,7 +16,14 @@ export const mount: Handler = (event, domSnapshot) => {
     return;
   }
 
-  funnel.activeStep?.registerSubStep(event.target, substepName);
+  const substep = funnel.activeStep?.registerSubStep(event.target, substepName);
+
+  if (!substep) {
+    return;
+  }
+
+  (event.target as any).__analytics__ = substep.config;
+  event.target.setAttribute('data-analytics-funnel-substep-number', substep.config.subStepNumber);
 };
 
 export const unmount: Handler = (event, domSnapshot) => {

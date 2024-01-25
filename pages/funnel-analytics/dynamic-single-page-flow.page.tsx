@@ -50,11 +50,13 @@ export default function DynamicSingleFlowPage() {
               </Button>
             </SpaceBetween>
 
+            <DynamicContainer index={1} />
             {Array(containerCount)
               .fill(0)
               .map((_, i) => (
-                <DynamicContainer key={i} index={i + 1} />
+                <DynamicContainer key={i} index={i + 2} />
               ))}
+            <DynamicContainer index={containerCount + 2} />
           </SpaceBetween>
         </Form>
       }
