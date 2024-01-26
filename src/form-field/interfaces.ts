@@ -6,6 +6,17 @@ import { InternalBaseComponentProps } from '../internal/hooks/use-base-component
 
 export interface FormFieldProps extends BaseComponentProps {
   /**
+   * Optional metadata to associate with the form. This metadata is not displayed.
+   *
+   * - `instanceId` - A unique identifier for the form field instance.
+   * - `fieldErrorContextId`: A unique identifier for the form field error context. Use this with `errorText` to add an optional reason for the error.
+   */
+  metadata?: {
+    instanceId?: string;
+    fieldErrorContextId?: string;
+  };
+
+  /**
    * The ID of the primary form control. You can use this to set the
    * `for` attribute of a label for accessibility.
    *

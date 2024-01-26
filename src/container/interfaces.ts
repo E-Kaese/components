@@ -5,6 +5,15 @@ import React from 'react';
 
 export interface ContainerProps extends BaseComponentProps {
   /**
+   * Optional metadata to associate with the container. This metadata is not displayed.
+   *
+   * - `instanceId` - A unique identifier for the container instance.
+   */
+  metadata?: {
+    instanceId?: string;
+  };
+
+  /**
    * Heading element of the container. Use the [header component](/components/header/).
    */
   header?: React.ReactNode;

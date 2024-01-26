@@ -6,6 +6,10 @@ import { ButtonProps } from '../button/interfaces';
 
 export namespace FlashbarProps {
   export interface MessageDefinition {
+    metadata?: {
+      instanceId?: string;
+      contextId?: string;
+    };
     header?: React.ReactNode;
     content?: React.ReactNode;
     dismissible?: boolean;

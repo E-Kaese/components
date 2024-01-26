@@ -5,6 +5,19 @@ import { BaseComponentProps } from '../internal/base-component';
 
 export interface FormProps extends BaseComponentProps {
   /**
+   * Optional metadata to associate with the form. This metadata is not displayed.
+   *
+   * - `instanceId` - A unique identifier for the form instance.
+   * - `flowType`: The type of form flow.
+   * - `flowErrorContextId`: A unique identifier for the form flow error context. Use this with `errorText` to add an optional reason for the error.
+   */
+  metadata?: {
+    instanceId?: string;
+    flowType?: 'create' | 'edit';
+    flowErrorContextId?: string;
+  };
+
+  /**
    * Specifies the main form content.
    */
   children?: React.ReactNode;
