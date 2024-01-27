@@ -15,7 +15,7 @@
 .header {
   @include styles.font-panel-header;
   margin: 0;
-  padding: awsui.$space-scaled-l awsui.$space-panel-nav-left;
+  padding: awsui.$space-panel-header-vertical awsui.$space-panel-nav-left;
   // Additional xl space to prevent text from overlapping the close button.
   padding-right: calc(#{awsui.$space-scaled-xxl} + #{awsui.$space-xl});
 }
@@ -48,7 +48,7 @@
 }
 
 .list-container {
-  margin-top: awsui.$space-scaled-l;
+  margin-top: awsui.$space-panel-content-top;
 }
 
 .list {
@@ -160,13 +160,14 @@
 
 .divider {
   border: none;
-  border-top: awsui.$border-divider-section-width solid awsui.$color-border-divider-default;
 }
 
 .divider-default {
   margin: awsui.$space-scaled-2x-xl calc(-1 * #{awsui.$space-s});
+  border-top: awsui.$border-divider-section-width solid awsui.$color-border-divider-default;
 }
 
 .divider-header {
-  margin-top: 0;
+  margin: 0;
+  border-top: awsui.$border-panel-header-width solid awsui.$color-border-divider-default;
 }

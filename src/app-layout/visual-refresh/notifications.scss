@@ -9,14 +9,20 @@
 
 .notifications {
   color: awsui.$color-text-body-default;
-  grid-area: notifications;
-  z-index: 850;
+  // grid-area: notifications;
+  z-index: 900;
 
-  @include styles.media-breakpoint-up(styles.$breakpoint-x-small) {
-    &.sticky-notifications {
-      #{custom-props.$flashbarStickyBottomMargin}: #{awsui.$space-xxl};
-      position: sticky;
-      top: calc(var(#{custom-props.$offsetTop}) + #{awsui.$space-xs});
-    }
-  }
+  // @include styles.media-breakpoint-up(styles.$breakpoint-x-small) {
+  //   &.sticky-notifications {
+  //     #{custom-props.$flashbarStickyBottomMargin}: #{awsui.$space-xxl};
+  //     position: sticky;
+  //     top: calc(var(#{custom-props.$offsetTop}) + #{awsui.$space-xs});
+  //   }
+  // }
+  bottom: calc(var(#{custom-props.$footerHeight}) + var(#{custom-props.$splitPanelHeight}) + #{awsui.$space-scaled-s});
+  grid-column: 3 / 4;
+  grid-row: 9;
+  display: grid;
+  position: sticky;
+  justify-content: center;
 }

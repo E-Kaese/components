@@ -75,7 +75,7 @@ section.split-panel-bottom {
   refactored with an adjustment to the split panel design token.
   */
   &:not(.is-split-panel-open).position-bottom {
-    box-shadow: rgba(0, 7, 22, 0.1) 0px -32px 32px -24px;
+    // box-shadow: rgba(0, 7, 22, 0.1) 0px -32px 32px -24px;
   }
 
   /*

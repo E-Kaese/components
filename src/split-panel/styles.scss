@@ -197,7 +197,7 @@ $app-layout-drawer-width: calc(#{awsui.$space-layout-toggle-diameter} + 2 * #{aw
 
 .content-bottom {
   padding: 0 awsui.$space-layout-content-horizontal;
-  margin-top: awsui.$space-panel-split-top;
+  margin-top: 0px;
   position: relative;
   z-index: 0; // the content inside .content-bottom should not be above pane-header-wrapper-bottom
   .drawer-mobile > .drawer-content-bottom > & {
@@ -242,7 +242,7 @@ $app-layout-drawer-width: calc(#{awsui.$space-layout-toggle-diameter} + 2 * #{aw
   }
   > .pane-content-wrapper-side {
     padding: 0 awsui.$space-panel-side-right 0 awsui.$space-panel-side-left;
-    margin-top: awsui.$space-panel-split-top;
+    margin-top: 0px;
   }
 }
 

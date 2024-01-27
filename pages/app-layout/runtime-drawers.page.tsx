@@ -62,6 +62,7 @@ export default function WithDrawers() {
               },
               content: <ProHelp />,
               id: 'pro-help',
+              badge: true,
               trigger: {
                 iconName: 'contact',
               },

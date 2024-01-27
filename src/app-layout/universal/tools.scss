@@ -8,4 +8,19 @@
 section.tools {
   grid-area: tools;
   width: 200px;
+  border-left: awsui.$border-divider-section-width solid awsui.$color-border-divider-default;
+  background-color: awsui.$color-background-layout-panel-content;
+  animation: toolsEnter awsui.$motion-duration-expressive;
+}
+
+@keyframes toolsEnter {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  100% {
+    opacity: 100%;
+    transform: translateX(0%);
+  }
 }

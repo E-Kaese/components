@@ -20,7 +20,7 @@
   &-sticky {
     border-bottom: awsui.$border-table-sticky-width solid awsui.$color-border-divider-default;
   }
-  &-stuck:not(.header-cell-variant-full-page) {
+  &-stuck {
     border-bottom-color: transparent;
   }
   &-variant-full-page.header-cell-hidden {

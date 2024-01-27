@@ -1,30 +1,33 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React, { useState } from 'react';
-import { 
-  Alert, 
+import {
   AppLayout,
   BreadcrumbGroup,
-  Button, 
+  Button,
   Container,
   ContentLayout,
+  Flashbar,
   Header,
-  Link, 
-  SpaceBetween
+  Link,
+  SpaceBetween,
 } from '~components';
 
 export default function EC2Dashboard() {
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [isToolsVisible, setIsToolsVisible] = useState(false);
+
   return (
     <AppLayout
-      {...{ 
+      {...{
         hideToolbar: true,
-        universalAppLayout: true
+        universalAppLayout: true,
       }}
       content={
         <AppLayout
-          {...{ 
+          {...{
             hideToolbar: false,
-            universalAppLayout: true
+            universalAppLayout: true,
           }}
           breadcrumbs={
             <BreadcrumbGroup
@@ -37,41 +40,65 @@ export default function EC2Dashboard() {
           content={
             <ContentLayout
               header={
-                <SpaceBetween size='m'>
+                <SpaceBetween size="m">
                   <Header
-                    actions={
-                      <Button variant='primary'>
-                        Launch instance
-                      </Button>
-                    }
+                    actions={<Button variant="primary">Launch instance</Button>}
                     info={<Link>Info</Link>}
-                    variant='h1'
+                    variant="h1"
                   >
                     EC2 Dashboard
                   </Header>
                 </SpaceBetween>
               }
             >
-              <Container
-                header={
-                  <Header
-                    description='Viewing data from N. Virginia region'
-                    variant='h2'
-                  >
-                    Service overview
-                  </Header>
-                }
-              />
+              <SpaceBetween size="l">
+                {[...Array(8)].map((_, index) => {
+                  return (
+                    <Container
+                      key={index}
+                      header={
+                        <Header description="Viewing data from N. Virginia region" variant="h2">
+                          Service overview
+                        </Header>
+                      }
+                    />
+                  );
+                })}
+              </SpaceBetween>
             </ContentLayout>
           }
-          tools={
-            <span>I'm in the child app layout!</span>
+          tools={isToolsVisible && <span>I'm in the child app layout!</span>}
+          onToolsChange={() => setIsToolsVisible(!isToolsVisible)}
+          onNavigationChange={() => setIsNavVisible(!isNavVisible)}
+          notifications={
+            <Flashbar
+              items={[
+                {
+                  type: 'success',
+                  header: 'Great notification message',
+                  statusIconAriaLabel: 'success',
+                },
+                {
+                  type: 'info',
+                  header: 'Neat notification message',
+                  statusIconAriaLabel: 'info',
+                },
+                {
+                  type: 'warning',
+                  header: 'Uh oh notification message',
+                  statusIconAriaLabel: 'warning',
+                },
+                {
+                  type: 'error',
+                  header: 'Oops notification message',
+                  statusIconAriaLabel: 'error',
+                },
+              ]}
+            />
           }
         />
       }
-      navigation={
-        <span>I'm in the parent app layout!</span>
-      }
+      navigation={isNavVisible && <span>I'm in the parent app layout!</span>}
     />
   );
 }

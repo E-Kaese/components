@@ -51,6 +51,7 @@ interface AppLayoutInternals extends AppLayoutProps {
   handleSplitPanelPreferencesChange: (detail: AppLayoutProps.SplitPanelPreferences) => void;
   handleSplitPanelResize: (newSize: number) => void;
   handleToolsClick: (value: boolean, skipFocusControl?: boolean) => void;
+  handleNotificationsClick: (isOpen: boolean) => void;
   hasBackgroundOverlap: boolean;
   hasDefaultToolsWidth: boolean;
   hasDrawerViewportOverlay: boolean;
@@ -63,6 +64,7 @@ interface AppLayoutInternals extends AppLayoutProps {
   isSplitPanelForcedPosition: boolean;
   isSplitPanelOpen?: boolean;
   isToolsOpen: boolean;
+  isNotificationsOpen: boolean;
   layoutElement: React.Ref<HTMLElement>;
   layoutWidth: number;
   loseToolsFocus: () => void;
@@ -88,6 +90,8 @@ interface AppLayoutInternals extends AppLayoutProps {
   setSplitPanelToggle: (toggle: SplitPanelSideToggleProps) => void;
   splitPanelDisplayed: boolean;
   splitPanelRefs: SplitPanelFocusControlRefs;
+  toolbarRef: React.Ref<HTMLElement>;
+  toolbarHeight: number;
   toolsControlId: string;
   toolsRefs: FocusControlRefs;
   __embeddedViewMode?: boolean;
@@ -188,8 +192,13 @@ export const AppLayoutInternalsProvider = React.forwardRef(
 
     const handleNavigationClick = useStableCallback(function handleNavigationChange(isOpen: boolean) {
       setIsNavigationOpen(isOpen);
+      !isOpen && setToolbarHeight(48);
       focusNavButtons();
       fireNonCancelableEvent(props.onNavigationChange, { open: isOpen });
+    });
+
+    const handleNotificationsClick = useStableCallback(function handleNotificationsChange(isOpen: boolean) {
+      setIsNotificationsOpen(isOpen);
     });
 
     useEffect(() => {
@@ -220,6 +229,8 @@ export const AppLayoutInternalsProvider = React.forwardRef(
       { componentName: 'AppLayout', controlledProp: 'toolsOpen', changeHandler: 'onToolsChange' }
     );
 
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
     const {
       refs: toolsRefs,
       setFocus: focusToolsButtons,
@@ -229,6 +240,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
     const handleToolsClick = useCallback(
       function handleToolsChange(isOpen: boolean, skipFocusControl?: boolean) {
         setIsToolsOpen(isOpen);
+        !isOpen && setToolbarHeight(48);
         !skipFocusControl && focusToolsButtons();
         fireNonCancelableEvent(props.onToolsChange, { open: isOpen });
       },
@@ -494,6 +506,13 @@ export const AppLayoutInternalsProvider = React.forwardRef(
 
     const notificationsHeight = notificationsContainerQuery ?? 0;
     const hasNotificationsContent = notificationsHeight > 0;
+    const [toolbarContainerQuery, toolbarRef] = useContainerQuery(rect => rect.borderBoxHeight);
+    const [toolbarHeight, setToolbarHeight] = useState(0);
+
+    useEffect(() => {
+      setToolbarHeight(toolbarContainerQuery ?? 0);
+    }, [toolbarContainerQuery]);
+
     /**
      * Determine the offsetBottom value based on the presence of a footer element and
      * the SplitPanel component. Ignore the SplitPanel if it is not in the bottom
@@ -632,6 +651,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
           handleSplitPanelPreferencesChange,
           handleSplitPanelResize,
           handleToolsClick,
+          handleNotificationsClick,
           hasBackgroundOverlap,
           hasNotificationsContent,
           hasOpenDrawer,
@@ -642,6 +662,7 @@ export const AppLayoutInternalsProvider = React.forwardRef(
           isSplitPanelForcedPosition,
           isSplitPanelOpen,
           isToolsOpen,
+          isNotificationsOpen,
           layoutElement,
           layoutWidth,
           loseToolsFocus,
@@ -671,6 +692,8 @@ export const AppLayoutInternalsProvider = React.forwardRef(
           splitPanelToggle,
           setSplitPanelToggle,
           splitPanelRefs,
+          toolbarRef,
+          toolbarHeight,
           toolsControlId,
           toolsHide,
           toolsOpen: isToolsOpen,

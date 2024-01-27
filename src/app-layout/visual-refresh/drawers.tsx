@@ -31,7 +31,6 @@ export default function Drawers() {
     hasOpenDrawer,
     isNavigationOpen,
     navigationHide,
-    isMobile,
   } = useAppLayoutInternals();
 
   const isUnfocusable = hasDrawerViewportOverlay && isNavigationOpen && !navigationHide;
@@ -50,7 +49,6 @@ export default function Drawers() {
     >
       <SplitPanel.Side />
       <ActiveDrawer />
-      {!isMobile && <DesktopTriggers />}
     </div>
   );
 }
@@ -153,7 +151,7 @@ function ActiveDrawer() {
  * tracked by the previousActiveDrawerId property in order to appropriately apply
  * the ref required to manage focus control.
  */
-function DesktopTriggers() {
+export function DesktopTriggers() {
   const {
     activeDrawerId,
     drawers,
@@ -164,6 +162,7 @@ function DesktopTriggers() {
     drawersTriggerCount,
     handleDrawersClick,
     handleSplitPanelClick,
+    hasDrawerViewportOverlay,
     hasOpenDrawer,
     isSplitPanelOpen,
     splitPanel,
@@ -172,32 +171,27 @@ function DesktopTriggers() {
     splitPanelPosition,
     splitPanelRefs,
     splitPanelToggle,
-    splitPanelReportedHeaderHeight,
-    splitPanelReportedSize,
   } = useAppLayoutInternals();
 
   const hasMultipleTriggers = drawersTriggerCount > 1;
   const hasSplitPanel = splitPanel && splitPanelDisplayed && splitPanelPosition === 'side';
 
   const previousActiveDrawerId = useRef(activeDrawerId);
-  const [containerHeight, triggersContainerRef] = useContainerQuery(rect => rect.contentBoxHeight);
+  const [containerWidth, triggersContainerRef] = useContainerQuery(rect => rect.contentBoxWidth);
+  if (!drawers && !hasSplitPanel) {
+    return null;
+  }
 
   if (activeDrawerId) {
     previousActiveDrawerId.current = activeDrawerId;
   }
 
-  const splitPanelHeight =
-    isSplitPanelOpen && splitPanelPosition === 'bottom' ? splitPanelReportedSize : splitPanelReportedHeaderHeight;
-
   const getIndexOfOverflowItem = () => {
-    if (containerHeight) {
-      const ITEM_HEIGHT = 48;
-      const overflowSpot =
-        activeDrawerId && isSplitPanelOpen
-          ? (containerHeight - splitPanelReportedHeaderHeight) / 1.5
-          : (containerHeight - splitPanelHeight) / 1.5;
+    if (containerWidth) {
+      const ITEM_WIDTH = 51;
+      const overflowSpot = containerWidth;
 
-      const index = Math.floor(overflowSpot / ITEM_HEIGHT);
+      const index = Math.floor(overflowSpot / ITEM_WIDTH);
 
       let splitPanelItem = 0;
       if (hasSplitPanel && splitPanelToggle.displayed) {
@@ -205,7 +199,6 @@ function DesktopTriggers() {
       }
       return index - splitPanelItem;
     }
-
     return 0;
   };
 
@@ -217,8 +210,10 @@ function DesktopTriggers() {
       className={clsx(styles['drawers-desktop-triggers-container'], {
         [styles['has-multiple-triggers']]: hasMultipleTriggers,
         [styles['has-open-drawer']]: hasOpenDrawer,
+        [styles.unfocusable]: hasDrawerViewportOverlay,
       })}
       aria-label={drawersAriaLabel}
+      aria-hidden={hasDrawerViewportOverlay}
       ref={triggersContainerRef}
       role="region"
     >
@@ -228,7 +223,7 @@ function DesktopTriggers() {
           [styles['has-open-drawer']]: hasOpenDrawer,
         })}
         role="toolbar"
-        aria-orientation="vertical"
+        aria-orientation="horizontal"
       >
         {visibleItems.map(item => {
           return (
@@ -241,6 +236,7 @@ function DesktopTriggers() {
                 testutilStyles['drawers-trigger'],
                 item.id === TOOLS_DRAWER_ID && testutilStyles['tools-toggle']
               )}
+              disabled={hasDrawerViewportOverlay}
               iconName={item.trigger.iconName}
               iconSvg={item.trigger.iconSvg}
               key={item.id}
@@ -306,6 +302,7 @@ export function MobileTriggers() {
     drawersRefs,
     handleDrawersClick,
     hasDrawerViewportOverlay,
+    isMobile,
   } = useAppLayoutInternals();
 
   const previousActiveDrawerId = useRef(activeDrawerId);
@@ -318,7 +315,9 @@ export function MobileTriggers() {
     previousActiveDrawerId.current = activeDrawerId;
   }
 
-  const { visibleItems, overflowItems } = splitItems(drawers, 2, activeDrawerId);
+  const splitIndex = isMobile ? 2 : 7;
+
+  const { visibleItems, overflowItems } = splitItems(drawers, splitIndex, activeDrawerId);
   const overflowMenuHasBadge = !!overflowItems.find(item => item.badge);
 
   return (

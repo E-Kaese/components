@@ -31,7 +31,7 @@ viewport size and state of the Tools drawer.
   max-width: var(#{custom-props.$toolsMaxWidth});
   position: sticky;
   top: var(#{custom-props.$offsetTop});
-  z-index: 830;
+  z-index: 850;
 
   pointer-events: none;
 

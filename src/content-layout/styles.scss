@@ -6,13 +6,46 @@
 @use '../internal/styles/tokens' as awsui;
 @use '../internal/generated/custom-css-properties/index.scss' as custom-props;
 
+// .layout {
+//   display: grid;
+//   grid-template-columns: minmax(0, 1fr);
+//   grid-template-rows: minmax(0, auto) #{awsui.$space-dark-header-overlap-distance} minmax(0, 1fr);
+//   min-height: 100%;
+//   row-gap: #{awsui.$space-scaled-s};
+
+//   &.is-overlap-disabled {
+//     grid-template-rows: 0 minmax(0, auto) 0 minmax(0, 1fr);
+//   }
+
+//   > .background {
+//     background-color: awsui.$color-background-layout-main;
+//     grid-column: 1;
+//     grid-row: 1 / 4;
+//     color: awsui.$color-text-body-default;
+
+//     &.is-overlap-disabled {
+//       grid-row: 1 / 2;
+//     }
+//   }
+
+//   > .header {
+//     grid-column: 1;
+//     grid-row: 1;
+//   }
+
+//   > .content {
+//     grid-column: 1;
+//     grid-row: 2 / 4;
+//   }
+// }
+
 .layout {
   display: grid;
-  grid-template-columns: #{awsui.$space-scaled-m} minmax(0, 1fr) #{awsui.$space-scaled-m};
-  grid-template-rows: 
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows:
     minmax(0, auto)
     #{awsui.$space-scaled-s}
-    #{awsui.$space-dark-header-overlap-distance} 
+    #{awsui.$space-dark-header-overlap-distance}
     minmax(0, 1fr);
   min-height: 100%;
 
@@ -28,12 +61,12 @@
   }
 
   > .header {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 1;
   }
 
   > .content {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 3 / 5;
   }
 }

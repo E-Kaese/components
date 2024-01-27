@@ -9,19 +9,21 @@ import Main from './main';
 import Navigation from './navigation';
 import Toolbar from './toolbar';
 import Tools from './tools';
+import Notifications from './notifications';
 
 const AppLayoutWithRef = React.forwardRef(function AppLayout(
   props: AppLayoutProps,
   ref: React.Ref<AppLayoutProps.Ref>
 ) {
   const hideToolbar = { ...(props as any) }.hideToolbar;
-  
+
   return (
     <AppLayoutInternalsProvider {...props} ref={ref}>
       <Main>
         <Background />
-        {!hideToolbar && <Toolbar /> }
+        {!hideToolbar && <Toolbar />}
         <Navigation />
+        <Notifications />
         <Content />
         <Tools />
       </Main>
