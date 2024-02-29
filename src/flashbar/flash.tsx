@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import { FlashbarProps } from './interfaces';
-import React from 'react';
+import React, { useRef } from 'react';
 import InternalSpinner from '../spinner/internal';
 import InternalIcon from '../icon/internal';
 import clsx from 'clsx';
@@ -14,13 +14,13 @@ import LiveRegion from '../internal/components/live-region';
 import { ButtonProps } from '../button/interfaces';
 import { getVisualContextClassname } from '../internal/components/visual-context';
 
-import { sendDismissMetric } from './internal/analytics';
-
 import { FOCUS_THROTTLE_DELAY } from './utils';
-import { DATA_ATTR_ANALYTICS_FLASHBAR } from '../internal/analytics/selectors';
 import { createUseDiscoveredAction } from '../internal/plugins/helpers';
 import { awsuiPluginsInternal } from '../internal/plugins/api';
 import { ActionsWrapper } from '../alert/actions-wrapper';
+import { useComponentTracking } from '../internal/component-tracking';
+import { useMergeRefs } from '../internal/hooks/use-merge-refs';
+import { trackEvent } from '../internal/analytics';
 
 const ICON_TYPES = {
   success: 'status-positive',
@@ -103,6 +103,10 @@ export const Flash = React.forwardRef(
       }
     }
 
+    const trackingRef = useRef<HTMLDivElement>(null);
+    const mergedRef = useMergeRefs<HTMLDivElement | null>(ref, trackingRef);
+
+    useComponentTracking(trackingRef, 'Flash', { analytics: { type, loading, dismissible } });
     const { discoveredActions, headerRef, contentRef } = useDiscoveredAction(type);
 
     const iconType = ICON_TYPES[type];
@@ -112,12 +116,8 @@ export const Flash = React.forwardRef(
     const effectiveType = loading ? 'info' : type;
 
     const handleDismiss: ButtonProps['onClick'] = event => {
-      sendDismissMetric(effectiveType);
+      trackEvent(event.target as HTMLElement, 'dismiss', { componentName: 'Flash', detail: { type: effectiveType } });
       onDismiss && onDismiss(event);
-    };
-
-    const analyticsAttributes = {
-      [DATA_ATTR_ANALYTICS_FLASHBAR]: effectiveType,
     };
 
     const statusIconAriaLabel =
@@ -128,7 +128,7 @@ export const Flash = React.forwardRef(
       // We're not using "polite" or "assertive" here, just turning default behavior off.
       // eslint-disable-next-line @cloudscape-design/prefer-live-region
       <div
-        ref={ref}
+        ref={mergedRef}
         role={ariaRole}
         aria-live={ariaRole ? 'off' : undefined}
         data-itemid={id}
@@ -146,7 +146,6 @@ export const Flash = React.forwardRef(
           },
           getVisualContextClassname(type === 'warning' && !loading ? 'flashbar-warning' : 'flashbar')
         )}
-        {...analyticsAttributes}
       >
         <div className={styles['flash-body']}>
           <div className={styles['flash-focus-container']} tabIndex={-1}>

@@ -1,35 +1,56 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-/* istanbul ignore file */
 
-import { IFunnelMetrics } from './interfaces';
+import { MutableRefObject, useEffect, useLayoutEffect } from 'react';
+import { Handler, TrackEventDetail } from './interfaces';
+import { kebabCaseToCamelCase } from './utils';
 
-export function setFunnelMetrics(funnelMetrics: IFunnelMetrics) {
-  FunnelMetrics = funnelMetrics;
+import * as handlers from './handlers';
+
+export function trackEvent(target: HTMLElement, eventName: string, { componentName, detail = {} }: TrackEventDetail) {
+  const normalizedEventName = kebabCaseToCamelCase(eventName);
+
+  const componentHandlers = (handlers as any)[componentName] || handlers.fallback;
+  if (componentHandlers) {
+    const componentHandler: Handler =
+      componentHandlers[normalizedEventName] || (handlers.fallback as any)[normalizedEventName];
+    if (componentHandler) {
+      componentHandler({ target, eventName, componentName, detail });
+    }
+  }
 }
 
-/**
- * This is a stub implementation of the FunnelMetrics interface and will be replaced during
- * build time with the actual implementation.
- */
-export let FunnelMetrics: IFunnelMetrics = {
-  funnelStart(): string {
-    return '';
-  },
+export function useTrackPropertyLayoutEffect(
+  ref: MutableRefObject<any> | null | undefined,
+  componentName: string,
+  propertyName: string,
+  propertyValue: any
+) {
+  useLayoutEffect(() => {
+    ref &&
+      trackEvent(ref.current, 'property-change', {
+        componentName,
+        detail: {
+          [propertyName]: propertyValue,
+        },
+      } as TrackEventDetail);
+  }, [ref, propertyValue, propertyName, componentName]);
+}
 
-  funnelError(): void {},
-  funnelComplete(): void {},
-  funnelSuccessful(): void {},
-  funnelCancelled(): void {},
-  funnelChange(): void {},
-  funnelStepStart(): void {},
-  funnelStepComplete(): void {},
-  funnelStepNavigation(): void {},
-  funnelStepError(): void {},
-  funnelStepChange(): void {},
-  funnelSubStepStart(): void {},
-  funnelSubStepComplete(): void {},
-  funnelSubStepError(): void {},
-  helpPanelInteracted(): void {},
-  externalLinkInteracted(): void {},
-};
+export function useTrackPropertyEffect(
+  ref: MutableRefObject<any> | null | undefined,
+  componentName: string,
+  propertyName: string,
+  propertyValue: any
+) {
+  useEffect(() => {
+    ref &&
+      trackEvent(ref.current, 'property-change', {
+        componentName,
+        detail: {
+          name: propertyName,
+          value: propertyValue,
+        },
+      } as TrackEventDetail);
+  }, [ref, propertyValue, propertyName, componentName]);
+}

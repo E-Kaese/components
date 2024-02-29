@@ -10,6 +10,7 @@ import { FlashbarProps } from './interfaces';
 import { focusFlashById } from './flash';
 import { isDevelopment } from '../internal/is-development';
 import { useReducedMotion, warnOnce } from '@cloudscape-design/component-toolkit/internal';
+import { getFlashTypeCount } from './utils';
 
 // Common logic for collapsible and non-collapsible Flashbar
 export function useFlashbar({
@@ -23,8 +24,10 @@ export function useFlashbar({
   onItemsRemoved?: (items: FlashbarProps.MessageDefinition[]) => void;
   onItemsChanged?: (options?: { allItemsHaveId?: boolean; isReducedMotion?: boolean }) => void;
 }) {
+  const countByType = getFlashTypeCount(items);
   const { __internalRootRef } = useBaseComponent('Flashbar', {
     props: { stackItems: restProps.stackItems },
+    analytics: { items, countByType, stackItems: restProps.stackItems },
   });
   const allItemsHaveId = useMemo(() => items.every(item => 'id' in item), [items]);
   const baseProps = getBaseProps(restProps);

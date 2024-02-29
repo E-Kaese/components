@@ -1,6 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import clsx from 'clsx';
 import styles from './styles.css.js';
 import { ButtonDropdownProps, InternalButtonDropdownProps } from './interfaces';
@@ -18,8 +18,7 @@ import InternalBox from '../box/internal';
 import { checkSafeUrl } from '../internal/utils/check-safe-url';
 import { isDevelopment } from '../internal/is-development';
 import { warnOnce } from '@cloudscape-design/component-toolkit/internal';
-import { useVisualRefresh } from '../internal/hooks/use-visual-mode/index.js';
-import { useFunnel } from '../internal/analytics/hooks/use-funnel.js';
+import { useVisualRefresh } from '../internal/hooks/use-visual-mode';
 
 const InternalButtonDropdown = React.forwardRef(
   (
@@ -229,17 +228,6 @@ const InternalButtonDropdown = React.forwardRef(
     const headerId = useUniqueId('awsui-button-dropdown__header');
 
     const shouldLabelWithTrigger = !ariaLabel && !mainAction && variant !== 'icon' && variant !== 'inline-icon';
-
-    const { loadingButtonCount } = useFunnel();
-    useEffect(() => {
-      if (loading) {
-        loadingButtonCount.current++;
-        return () => {
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-          loadingButtonCount.current--;
-        };
-      }
-    }, [loading, loadingButtonCount]);
 
     return (
       <div

@@ -13,8 +13,6 @@ import { useMergeRefs } from '../internal/hooks/use-merge-refs';
 import { useMobile } from '../internal/hooks/use-mobile';
 import { useVisualRefresh } from '../internal/hooks/use-visual-mode';
 import styles from './styles.css.js';
-import { useFunnelSubStep } from '../internal/analytics/hooks/use-funnel';
-import { useModalContext } from '../internal/context/modal-context';
 import { useUniqueId } from '../internal/hooks/use-unique-id';
 import { shouldRemoveHighContrastHeader } from '../internal/utils/content-header-utils';
 
@@ -35,22 +33,6 @@ export interface InternalContainerProps extends Omit<ContainerProps, 'variant'>,
    * * `full-page` – Only for internal use in table, cards and other components
    */
   variant?: ContainerProps['variant'] | 'embedded' | 'full-page' | 'cards';
-
-  __funnelSubStepProps?: ReturnType<typeof useFunnelSubStep>['funnelSubStepProps'];
-  __subStepRef?: ReturnType<typeof useFunnelSubStep>['subStepRef'];
-}
-
-export function InternalContainerAsSubstep(props: InternalContainerProps) {
-  const { subStepRef, funnelSubStepProps } = useFunnelSubStep();
-  const modalContext = useModalContext();
-
-  return (
-    <InternalContainer
-      {...props}
-      __subStepRef={modalContext?.isInModal ? { current: null } : subStepRef}
-      __funnelSubStepProps={modalContext?.isInModal ? {} : funnelSubStepProps}
-    />
-  );
 }
 
 export default function InternalContainer({
@@ -72,8 +54,6 @@ export default function InternalContainer({
   __headerRef,
   __darkHeader = false,
   __disableStickyMobile = true,
-  __funnelSubStepProps,
-  __subStepRef,
   ...restProps
 }: InternalContainerProps) {
   const isMobile = useMobile();
@@ -125,7 +105,6 @@ export default function InternalContainer({
   return (
     <div
       {...baseProps}
-      {...__funnelSubStepProps}
       className={clsx(
         baseProps.className,
         styles.root,
@@ -136,6 +115,7 @@ export default function InternalContainer({
         isRefresh && styles.refresh
       )}
       ref={mergedRef}
+      data-analytics-component="container"
     >
       {hasMedia && (
         <div
@@ -147,12 +127,12 @@ export default function InternalContainer({
       )}
       <div
         id={contentId}
-        ref={__subStepRef}
         className={clsx(styles['content-wrapper'], fitHeight && styles['content-wrapper-fit-height'])}
       >
         {header && (
           <StickyHeaderContext.Provider value={{ isStuck }}>
             <div
+              data-analytics-selector="container-header"
               className={clsx(
                 isRefresh && styles.refresh,
                 styles.header,

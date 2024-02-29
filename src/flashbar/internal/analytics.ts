@@ -9,6 +9,7 @@ import { getFlashTypeCount } from '../utils';
 const metrics = new Metrics(PACKAGE_SOURCE, PACKAGE_VERSION);
 const eventContext = 'csa_flashbar';
 
+// TODO: Move over to internal/analytics/handlers/flashbar.handler.ts
 export const sendRenderMetric = (items: FlashbarProps['items']) => {
   const countByType = getFlashTypeCount(items);
 

@@ -13,7 +13,6 @@ import { counterTypes, getFlashTypeCount, getItemColor, getVisibleCollapsedItems
 import { animate, getDOMRects } from '../internal/animate';
 import { useUniqueId } from '../internal/hooks/use-unique-id';
 import { IconProps } from '../icon/interfaces';
-import { sendToggleMetric } from './internal/analytics';
 import { useFlashbar } from './common';
 import { throttle } from '../internal/utils/throttle';
 import { scrollElementIntoView } from '../internal/utils/scrollable-containers';
@@ -21,6 +20,7 @@ import { findUpUntil } from '../internal/utils/dom';
 import { useInternalI18n } from '../i18n/context';
 import { getVisualContextClassname } from '../internal/components/visual-context';
 import { useEffectOnUpdate } from '../internal/hooks/use-effect-on-update';
+import { trackEvent } from '../internal/analytics';
 
 export { FlashbarProps };
 
@@ -79,8 +79,12 @@ export default function CollapsibleFlashbar({ items, ...restProps }: FlashbarPro
 
   const animateFlash = !isReducedMotion;
 
-  function toggleCollapseExpand() {
-    sendToggleMetric(items.length, !isFlashbarStackExpanded);
+  function toggleCollapseExpand(event: React.MouseEvent) {
+    trackEvent(event.target as HTMLElement, 'toggle', {
+      componentName: 'Flashbar',
+      detail: { numofItems: items.length, expanded: !isFlashbarStackExpanded },
+    });
+
     if (!isReducedMotion) {
       prepareAnimations();
     }

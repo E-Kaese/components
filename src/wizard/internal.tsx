@@ -3,9 +3,10 @@
 import React, { useRef } from 'react';
 import clsx from 'clsx';
 
+import { warnOnce } from '@cloudscape-design/component-toolkit/internal';
+
 import { getBaseProps } from '../internal/base-component';
 import { fireNonCancelableEvent } from '../internal/events';
-import { warnOnce } from '@cloudscape-design/component-toolkit/internal';
 
 import { useContainerBreakpoints } from '../internal/hooks/container-queries';
 import { useControllable } from '../internal/hooks/use-controllable';
@@ -16,18 +17,14 @@ import { getContentHeaderClassName } from '../internal/utils/content-header-util
 
 import { useInternalI18n } from '../i18n/context';
 
-import { FunnelMetrics } from '../internal/analytics';
-import { useFunnel } from '../internal/analytics/hooks/use-funnel';
-import { getNameFromSelector, getSubStepAllSelector } from '../internal/analytics/selectors';
-
-import WizardForm, { STEP_NAME_SELECTOR } from './wizard-form';
+import WizardForm from './wizard-form';
 import WizardNavigation from './wizard-navigation';
 
 import { WizardProps } from './interfaces';
 
 import styles from './styles.css.js';
-import { useFunnelChangeEvent } from './analytics';
 import { shouldRemoveHighContrastHeader } from '../internal/utils/content-header-utils';
+import { trackEvent, useTrackPropertyEffect } from '../internal/analytics';
 
 type InternalWizardProps = WizardProps & InternalBaseComponentProps;
 
@@ -56,7 +53,7 @@ export default function InternalWizard({
     controlledProp: 'activeStepIndex',
     changeHandler: 'onNavigate',
   });
-  const { funnelInteractionId, funnelSubmit, funnelCancel, funnelProps, funnelNextOrSubmitAttempt } = useFunnel();
+
   const actualActiveStepIndex = activeStepIndex ? Math.min(activeStepIndex, steps.length - 1) : 0;
 
   const farthestStepIndex = useRef<number>(actualActiveStepIndex);
@@ -66,19 +63,14 @@ export default function InternalWizard({
   const isLastStep = actualActiveStepIndex >= steps.length - 1;
 
   const navigationEvent = (requestedStepIndex: number, reason: WizardProps.NavigationReason) => {
-    if (funnelInteractionId) {
-      const stepName = getNameFromSelector(STEP_NAME_SELECTOR);
-
-      FunnelMetrics.funnelStepNavigation({
-        navigationType: reason,
-        funnelInteractionId,
+    trackEvent(__internalRootRef?.current, 'step-navigation', {
+      componentName: 'Wizard',
+      detail: {
         stepNumber: actualActiveStepIndex + 1,
-        stepName,
-        stepNameSelector: STEP_NAME_SELECTOR,
         destinationStepNumber: requestedStepIndex + 1,
-        subStepAllSelector: getSubStepAllSelector(),
-      });
-    }
+        navigationType: reason,
+      },
+    });
 
     setActiveStepIndex(requestedStepIndex);
     fireNonCancelableEvent(onNavigate, { requestedStepIndex, reason });
@@ -86,22 +78,19 @@ export default function InternalWizard({
   const onStepClick = (stepIndex: number) => navigationEvent(stepIndex, 'step');
   const onSkipToClick = (stepIndex: number) => navigationEvent(stepIndex, 'skip');
   const onCancelClick = () => {
-    funnelCancel();
+    trackEvent(__internalRootRef?.current, 'cancel', { componentName: 'Wizard' });
+
     fireNonCancelableEvent(onCancel);
   };
   const onPreviousClick = () => navigationEvent(actualActiveStepIndex - 1, 'previous');
   const onPrimaryClick = () => {
-    funnelNextOrSubmitAttempt();
-
     if (isLastStep) {
-      funnelSubmit();
+      trackEvent(__internalRootRef?.current, 'submit', { componentName: 'Wizard' });
       fireNonCancelableEvent(onSubmit);
     } else {
       navigationEvent(actualActiveStepIndex + 1, 'next');
     }
   };
-
-  useFunnelChangeEvent(funnelInteractionId, steps);
 
   const i18n = useInternalI18n('wizard');
   const skipToButtonLabel = i18n(
@@ -139,6 +128,8 @@ export default function InternalWizard({
     );
   }
 
+  useTrackPropertyEffect(__internalRootRef, 'Wizard', 'activeStepIndex', actualActiveStepIndex);
+
   if (allowSkipTo && !skipToButtonLabel) {
     warnOnce(
       'Wizard',
@@ -147,7 +138,7 @@ export default function InternalWizard({
   }
 
   return (
-    <div {...baseProps} {...funnelProps} ref={ref} className={clsx(styles.root, baseProps.className)}>
+    <div {...baseProps} ref={ref} className={clsx(styles.root, baseProps.className)}>
       <div
         className={clsx(
           styles.wizard,

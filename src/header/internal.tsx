@@ -13,7 +13,6 @@ import { useMobile } from '../internal/hooks/use-mobile';
 import { InfoLinkLabelContext } from '../internal/context/info-link-label-context';
 import { CollectionLabelContext } from '../internal/context/collection-label-context';
 import { useUniqueId } from '../internal/hooks/use-unique-id';
-import { DATA_ATTR_FUNNEL_KEY, FUNNEL_KEY_SUBSTEP_NAME } from '../internal/analytics/selectors';
 
 interface InternalHeaderProps extends SomeRequired<HeaderProps, 'variant'>, InternalBaseComponentProps {
   __disableActionsWrapping?: boolean;
@@ -69,7 +68,6 @@ export default function InternalHeader({
         <div className={clsx(styles.title, styles[`title-variant-${variantOverride}`], isRefresh && styles.refresh)}>
           <HeadingTag className={clsx(styles.heading, styles[`heading-variant-${variantOverride}`])}>
             <span
-              {...(HeadingTag === 'h2' ? { [DATA_ATTR_FUNNEL_KEY]: FUNNEL_KEY_SUBSTEP_NAME } : {})}
               className={clsx(styles['heading-text'], styles[`heading-text-variant-${variantOverride}`])}
               id={headingId}
             >

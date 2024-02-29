@@ -7,7 +7,14 @@ import { i18nStrings } from '../wizard/common';
 import Container from '~components/container';
 import Header from '~components/header';
 import Link from '~components/link';
-import { Button, SpaceBetween } from '~components';
+import Input from '~components/input';
+import { AppLayout, BreadcrumbGroup, Button, SpaceBetween } from '~components';
+
+function UncontrolledInput() {
+  const [value, setValue] = useState('');
+
+  return <Input value={value} onChange={e => setValue(e.detail.value)} />;
+}
 
 export default function WizardPage() {
   const [subStepCount1, setSubStepCount1] = useState(2);
@@ -32,7 +39,7 @@ export default function WizardPage() {
               .fill(0)
               .map((_, i) => (
                 <Container key={i} header={<Header>A container in step 1 for substep {i + 1}</Header>}>
-                  This is a text on the substep level
+                  <UncontrolledInput />
                 </Container>
               ))}
           </SpaceBetween>
@@ -55,7 +62,7 @@ export default function WizardPage() {
               .fill(0)
               .map((_, i) => (
                 <Container key={i} header={<Header>A container in step 2 for substep {i + 1}</Header>}>
-                  This is a text on the substep level
+                  <UncontrolledInput />
                 </Container>
               ))}
           </SpaceBetween>
@@ -84,16 +91,32 @@ export default function WizardPage() {
     }));
 
   return (
-    <>
-      <SpaceBetween size="l">
-        <SpaceBetween direction="horizontal" size="xs">
-          <Button onClick={() => setExtraStepCount(c => c + 1)}>Increase step count</Button>
-          <Button onClick={() => setExtraStepCount(c => c - 1)} disabled={extraStepCount <= 0}>
-            Decrease step count
-          </Button>
+    <AppLayout
+      contentType="wizard"
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: 'System', href: '#' },
+            { text: 'Components', href: '#components' },
+            {
+              text: 'Create Resource',
+              href: '#components/breadcrumb-group',
+            },
+          ]}
+          ariaLabel="Breadcrumbs"
+        />
+      }
+      content={
+        <SpaceBetween size="l">
+          <SpaceBetween direction="horizontal" size="xs">
+            <Button onClick={() => setExtraStepCount(c => c + 1)}>Increase step count</Button>
+            <Button onClick={() => setExtraStepCount(c => c - 1)} disabled={extraStepCount <= 0}>
+              Decrease step count
+            </Button>
+          </SpaceBetween>
+          <Wizard steps={[...steps, ...extraSteps]} i18nStrings={i18nStrings} />
         </SpaceBetween>
-        <Wizard steps={[...steps, ...extraSteps]} i18nStrings={i18nStrings} />
-      </SpaceBetween>
-    </>
+      }
+    />
   );
 }

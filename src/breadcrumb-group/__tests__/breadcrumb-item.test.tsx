@@ -6,7 +6,6 @@ import { ElementWrapper } from '@cloudscape-design/test-utils-core/dom';
 
 import BreadcrumbGroup, { BreadcrumbGroupProps } from '../../../lib/components/breadcrumb-group';
 import createWrapper, { BreadcrumbGroupWrapper } from '../../../lib/components/test-utils/dom';
-import { DATA_ATTR_FUNNEL_KEY, FUNNEL_KEY_FUNNEL_NAME } from '../../../lib/components/internal/analytics/selectors';
 
 const renderBreadcrumbGroup = (props: BreadcrumbGroupProps) => {
   const { container } = render(<BreadcrumbGroup {...props} />);
@@ -122,12 +121,6 @@ describe('BreadcrumbGroup Item', () => {
     test('should not trigger follow event', () => {
       lastLink.click();
       expect(onFollowSpy).not.toHaveBeenCalled();
-    });
-
-    test('should add a data-analytics attribute for the funnel name to the last item', () => {
-      const expectedFunnelName = items[items.length - 1].text;
-      const element = wrapper.find(`[${DATA_ATTR_FUNNEL_KEY}="${FUNNEL_KEY_FUNNEL_NAME}"]`)!.getElement();
-      expect(element.innerHTML).toBe(expectedFunnelName);
     });
   });
 });

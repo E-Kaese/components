@@ -15,7 +15,7 @@ import {
   useSelectionFocusMove,
   useSelection,
 } from '../table/selection';
-import { InternalContainerAsSubstep } from '../container/internal';
+import InternalContainer from '../container/internal';
 import InternalStatusIndicator from '../status-indicator/internal';
 import { applyDisplayName } from '../internal/utils/apply-display-name';
 import stickyScrolling from '../table/sticky-scrolling';
@@ -28,7 +28,6 @@ import { useMobile } from '../internal/hooks/use-mobile';
 import { supportsStickyPosition } from '../internal/utils/dom';
 import { useInternalI18n } from '../i18n/context';
 import { useContainerQuery } from '@cloudscape-design/component-toolkit';
-import { AnalyticsFunnelSubStep } from '../internal/analytics/components/analytics-funnel';
 import { CollectionLabelContext } from '../internal/context/collection-label-context';
 import { LinkDefaultVariantContext } from '../internal/context/link-default-variant-context';
 import { shouldRemoveHighContrastHeader } from '../internal/utils/content-header-utils';
@@ -141,71 +140,67 @@ const Cards = React.forwardRef(function <T = any>(
 
   return (
     <LinkDefaultVariantContext.Provider value={{ defaultVariant: 'primary' }}>
-      <AnalyticsFunnelSubStep>
-        <div {...baseProps} className={clsx(baseProps.className, styles.root)} ref={mergedRef}>
-          <InternalContainerAsSubstep
-            header={
-              hasToolsHeader && (
-                <div
-                  className={clsx(
-                    styles.header,
-                    isRefresh && styles['header-refresh'],
-                    styles[`header-variant-${computedVariant}`],
-                    shouldRemoveHighContrastHeader() && styles['remove-high-contrast-header']
-                  )}
-                >
-                  <CollectionLabelContext.Provider value={{ assignId: setHeaderRef }}>
-                    <ToolsHeader header={header} filter={filter} pagination={pagination} preferences={preferences} />
-                  </CollectionLabelContext.Provider>
-                </div>
-              )
-            }
-            footer={hasFooterPagination && <div className={styles['footer-pagination']}>{pagination}</div>}
-            disableContentPaddings={true}
-            disableHeaderPaddings={computedVariant === 'full-page'}
-            variant={computedVariant === 'container' ? 'cards' : computedVariant}
-            __stickyHeader={stickyHeader}
-            __stickyOffset={stickyHeaderVerticalOffset}
-            __headerRef={headerRef}
-            __darkHeader={computedVariant === 'full-page'}
-            __disableFooterDivider={true}
+      <div {...baseProps} className={clsx(baseProps.className, styles.root)} ref={mergedRef}>
+        <InternalContainer
+          header={
+            hasToolsHeader && (
+              <div
+                className={clsx(
+                  styles.header,
+                  isRefresh && styles['header-refresh'],
+                  styles[`header-variant-${computedVariant}`],
+                  shouldRemoveHighContrastHeader() && styles['remove-high-contrast-header']
+                )}
+              >
+                <CollectionLabelContext.Provider value={{ assignId: setHeaderRef }}>
+                  <ToolsHeader header={header} filter={filter} pagination={pagination} preferences={preferences} />
+                </CollectionLabelContext.Provider>
+              </div>
+            )
+          }
+          footer={hasFooterPagination && <div className={styles['footer-pagination']}>{pagination}</div>}
+          disableContentPaddings={true}
+          disableHeaderPaddings={computedVariant === 'full-page'}
+          variant={computedVariant === 'container' ? 'cards' : computedVariant}
+          __stickyHeader={stickyHeader}
+          __stickyOffset={stickyHeaderVerticalOffset}
+          __headerRef={headerRef}
+          __darkHeader={computedVariant === 'full-page'}
+          __disableFooterDivider={true}
+        >
+          <div
+            className={clsx(
+              hasToolsHeader && styles['has-header'],
+              isRefresh && styles.refresh,
+              styles[`header-variant-${computedVariant}`],
+              shouldRemoveHighContrastHeader() && styles['remove-high-contrast-header']
+            )}
           >
-            <div
-              className={clsx(
-                hasToolsHeader && styles['has-header'],
-                isRefresh && styles.refresh,
-                styles[`header-variant-${computedVariant}`],
-                shouldRemoveHighContrastHeader() && styles['remove-high-contrast-header']
-              )}
-            >
-              {!!renderAriaLive && !!firstIndex && (
-                <LiveRegion>
-                  <span>
-                    {renderAriaLive({ totalItemsCount, firstIndex, lastIndex: firstIndex + items.length - 1 })}
-                  </span>
-                </LiveRegion>
-              )}
-              {status ?? (
-                <CardsList
-                  items={items}
-                  cardDefinition={cardDefinition}
-                  trackBy={trackBy}
-                  selectionType={selectionType}
-                  columns={columns}
-                  isItemSelected={isItemSelected}
-                  getItemSelectionProps={getItemSelectionProps}
-                  visibleSections={visibleSections}
-                  updateShiftToggle={updateShiftToggle}
-                  onFocus={onCardFocus}
-                  ariaLabel={ariaLabels?.cardsLabel}
-                  ariaLabelledby={isLabelledByHeader && headerIdRef.current ? headerIdRef.current : undefined}
-                  entireCardClickable={entireCardClickable}
-                />
-              )}
-            </div>
-          </InternalContainerAsSubstep>
-        </div>
-      </AnalyticsFunnelSubStep>
+            {!!renderAriaLive && !!firstIndex && (
+              <LiveRegion>
+                <span>{renderAriaLive({ totalItemsCount, firstIndex, lastIndex: firstIndex + items.length - 1 })}</span>
+              </LiveRegion>
+            )}
+            {status ?? (
+              <CardsList
+                items={items}
+                cardDefinition={cardDefinition}
+                trackBy={trackBy}
+                selectionType={selectionType}
+                columns={columns}
+                isItemSelected={isItemSelected}
+                getItemSelectionProps={getItemSelectionProps}
+                visibleSections={visibleSections}
+                updateShiftToggle={updateShiftToggle}
+                onFocus={onCardFocus}
+                ariaLabel={ariaLabels?.cardsLabel}
+                ariaLabelledby={isLabelledByHeader && headerIdRef.current ? headerIdRef.current : undefined}
+                entireCardClickable={entireCardClickable}
+              />
+            )}
+          </div>
+        </InternalContainer>
+      </div>
     </LinkDefaultVariantContext.Provider>
   );
 }) as CardsForwardRefType;

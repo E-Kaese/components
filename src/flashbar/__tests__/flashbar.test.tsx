@@ -2,14 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
 import { render as reactRender, waitFor } from '@testing-library/react';
+
+import { disableMotion } from '@cloudscape-design/global-styles';
+
 import Flashbar, { FlashbarProps } from '../../../lib/components/flashbar';
-import { mockInnerText } from '../../internal/analytics/__tests__/mocks';
 import Button from '../../../lib/components/button';
 import createWrapper from '../../../lib/components/test-utils/dom';
 import styles from '../../../lib/components/flashbar/styles.css.js';
+
+import { mockInnerText } from '../../internal/__tests__/mocks';
+
 import { createFlashbarWrapper, findList, testFlashDismissal } from './common';
-import { DATA_ATTR_ANALYTICS_FLASHBAR } from '../../../lib/components/internal/analytics/selectors';
-import { disableMotion } from '@cloudscape-design/global-styles';
 
 // The non-collapsible flashbar only uses animations in Visual Refresh,
 // so in order to enable them, we need to mock `useVisualRefresh`
@@ -706,17 +709,5 @@ describe('Analytics', () => {
         timestamp: expect.any(Number),
       })
     );
-  });
-
-  describe('analytics', () => {
-    test(`adds ${DATA_ATTR_ANALYTICS_FLASHBAR} attribute with the flashbar type`, () => {
-      const { container } = reactRender(<Flashbar items={[{ id: '0', type: 'success' }]} />);
-      expect(container.querySelector(`[${DATA_ATTR_ANALYTICS_FLASHBAR}="success"]`)).toBeInTheDocument();
-    });
-
-    test(`adds ${DATA_ATTR_ANALYTICS_FLASHBAR} attribute with the effective flashbar type when loading`, () => {
-      const { container } = reactRender(<Flashbar items={[{ id: '0', type: 'success', loading: true }]} />);
-      expect(container.querySelector(`[${DATA_ATTR_ANALYTICS_FLASHBAR}="info"]`)).toBeInTheDocument();
-    });
   });
 });

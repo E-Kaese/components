@@ -6,7 +6,6 @@ import Alert, { AlertProps } from '../../../lib/components/alert';
 import Button from '../../../lib/components/button';
 import createWrapper from '../../../lib/components/test-utils/dom';
 import styles from '../../../lib/components/alert/styles.css.js';
-import { DATA_ATTR_ANALYTICS_ALERT } from '../../../lib/components/internal/analytics/selectors';
 import '../../__a11y__/to-validate-a11y';
 
 function renderAlert(props: AlertProps = {}) {
@@ -138,17 +137,5 @@ describe('Alert Component', () => {
       action: <button type="button">Action</button>,
     });
     await expect(container).toValidateA11y();
-  });
-
-  describe('analytics', () => {
-    test(`adds ${DATA_ATTR_ANALYTICS_ALERT} attribute with the alert type`, () => {
-      const { container } = renderAlert({
-        type: 'success',
-        children: 'Message body',
-      });
-
-      const wrapper = createWrapper(container).findAlert()!;
-      expect(wrapper.getElement()).toHaveAttribute(DATA_ATTR_ANALYTICS_ALERT, 'success');
-    });
   });
 });

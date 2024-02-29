@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import React, { useCallback, useImperativeHandle, useRef } from 'react';
 import { TableForwardRefType, TableProps } from './interfaces';
 import { getVisualContextClassname } from '../internal/components/visual-context';
-import InternalContainer, { InternalContainerProps } from '../container/internal';
+import InternalContainer from '../container/internal';
 import { getBaseProps } from '../internal/base-component';
 import ToolsHeader from './tools-header';
 import Thead, { TheadProps } from './thead';
@@ -44,7 +44,6 @@ import {
 import { useCellEditing } from './use-cell-editing';
 import { LinkDefaultVariantContext } from '../internal/context/link-default-variant-context';
 import { CollectionLabelContext } from '../internal/context/collection-label-context';
-import { useFunnelSubStep } from '../internal/analytics/hooks/use-funnel';
 import { NoDataCell } from './no-data-cell';
 import { usePerformanceMarks } from '../internal/hooks/use-performance-marks';
 import { getContentHeaderClassName } from '../internal/utils/content-header-utils';
@@ -54,22 +53,7 @@ const SELECTION_COLUMN_WIDTH = 54;
 const selectionColumnId = Symbol('selection-column-id');
 
 type InternalTableProps<T> = SomeRequired<TableProps<T>, 'items' | 'selectedItems' | 'variant'> &
-  InternalBaseComponentProps & {
-    __funnelSubStepProps?: InternalContainerProps['__funnelSubStepProps'];
-  };
-
-export const InternalTableAsSubstep = React.forwardRef(
-  <T,>(props: InternalTableProps<T>, ref: React.Ref<TableProps.Ref>) => {
-    const { funnelSubStepProps } = useFunnelSubStep();
-
-    const tableProps: InternalTableProps<T> = {
-      ...props,
-      __funnelSubStepProps: funnelSubStepProps,
-    };
-
-    return <InternalTable {...tableProps} ref={ref} />;
-  }
-) as TableForwardRefType;
+  InternalBaseComponentProps;
 
 const InternalTable = React.forwardRef(
   <T,>(
@@ -114,7 +98,6 @@ const InternalTable = React.forwardRef(
       stickyColumns,
       columnDisplay,
       enableKeyboardNavigation = false,
-      __funnelSubStepProps,
       ...rest
     }: InternalTableProps<T>,
     ref: React.Ref<TableProps.Ref>
@@ -301,7 +284,6 @@ const InternalTable = React.forwardRef(
             {...baseProps}
             __internalRootRef={__internalRootRef}
             className={clsx(baseProps.className, styles.root)}
-            __funnelSubStepProps={__funnelSubStepProps}
             header={
               <>
                 {hasHeader && (

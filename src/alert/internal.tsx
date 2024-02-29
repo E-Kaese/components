@@ -2,26 +2,30 @@
 // SPDX-License-Identifier: Apache-2.0
 import React, { useRef } from 'react';
 import clsx from 'clsx';
+
 import { InternalButton } from '../button/internal';
 import { IconProps } from '../icon/interfaces';
 import InternalIcon from '../icon/internal';
+
 import { getBaseProps } from '../internal/base-component';
 import VisualContext from '../internal/components/visual-context';
-import styles from './styles.css.js';
 import { fireNonCancelableEvent } from '../internal/events';
 import { useContainerBreakpoints } from '../internal/hooks/container-queries';
 import { useVisualRefresh } from '../internal/hooks/use-visual-mode';
 import useForwardFocus from '../internal/hooks/forward-focus';
-import { AlertProps } from './interfaces';
 import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
 import { useMergeRefs } from '../internal/hooks/use-merge-refs';
 import { SomeRequired } from '../internal/types';
-import { useInternalI18n } from '../i18n/context';
-import { DATA_ATTR_ANALYTICS_ALERT } from '../internal/analytics/selectors';
+
 import { LinkDefaultVariantContext } from '../internal/context/link-default-variant-context';
 import { createUseDiscoveredAction } from '../internal/plugins/helpers';
 import { awsuiPluginsInternal } from '../internal/plugins/api';
+
 import { ActionsWrapper } from './actions-wrapper';
+import { useInternalI18n } from '../i18n/context';
+
+import { AlertProps } from './interfaces';
+import styles from './styles.css.js';
 
 const typeToIcon: Record<AlertProps.Type, IconProps['name']> = {
   error: 'status-negative',
@@ -69,14 +73,9 @@ const InternalAlert = React.forwardRef(
 
     const hasAction = Boolean(action || buttonText || discoveredActions.length);
 
-    const analyticsAttributes = {
-      [DATA_ATTR_ANALYTICS_ALERT]: type,
-    };
-
     return (
       <div
         {...baseProps}
-        {...analyticsAttributes}
         aria-hidden={!visible}
         className={clsx(styles.root, { [styles.hidden]: !visible }, baseProps.className)}
         ref={mergedRef}

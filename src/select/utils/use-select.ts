@@ -1,6 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React, { RefObject } from 'react';
+
 import { DropdownProps } from '../../internal/components/dropdown/interfaces';
 import { DropdownOption, OptionDefinition, OptionGroup } from '../../internal/components/option/interfaces';
 import { isInteractive, isGroupInteractive, isGroup } from '../../internal/components/option/utils/filter-options';
@@ -19,6 +20,7 @@ import { NonCancelableEventHandler, fireNonCancelableEvent } from '../../interna
 import { useUniqueId } from '../../internal/hooks/use-unique-id';
 import { DropdownStatusProps } from '../../internal/components/dropdown-status';
 import { ButtonTriggerProps } from '../../internal/components/button-trigger';
+import { trackEvent } from '../../internal/analytics';
 
 export type MenuProps = Omit<OptionsListProps, 'children'> & { ref: React.RefObject<HTMLUListElement> };
 export type GetOptionProps = (option: DropdownOption, index: number) => ItemProps;
@@ -93,10 +95,14 @@ export function useSelect({
   });
 
   const handleFocus = () => {
+    // TODO: Is the componentName correct here? Since this is a hook can it be a different component using it?
+    triggerRef?.current && trackEvent(triggerRef.current, 'focus', { componentName: 'Select' });
     fireNonCancelableEvent(onFocus, {});
   };
 
   const handleBlur = () => {
+    // TODO: Is the componentName correct here? Since this is a hook can it be a different component using it?
+    triggerRef?.current && trackEvent(triggerRef.current, 'blur', { componentName: 'Select' });
     fireNonCancelableEvent(onBlur, {});
     closeDropdown();
   };

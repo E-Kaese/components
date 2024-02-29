@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import React, { useState } from 'react';
 import {
-  Box,
+  AppLayout,
   BreadcrumbGroup,
   Button,
   Container,
@@ -12,29 +12,41 @@ import {
   Input,
   Link,
   Modal,
+  Select,
   NonCancelableCustomEvent,
   S3ResourceSelector,
   S3ResourceSelectorProps,
   SpaceBetween,
+  SelectProps,
+  ExpandableSection,
+  RadioGroup,
+  Box,
+  Toggle,
 } from '~components';
 
 import { fetchBuckets, fetchObjects, fetchVersions } from '../s3-resource-selector/data/request';
 import { i18nStrings } from '../s3-resource-selector/data/i18n-strings';
 import { SelfDismissibleAlert, uriToConsoleUrl } from '../s3-resource-selector/shared';
 
-import { setFunnelMetrics } from '~components/internal/analytics';
-import { MockedFunnelMetrics } from './mock-funnel';
-
-setFunnelMetrics(MockedFunnelMetrics);
-
 export default function StaticSinglePageCreatePage() {
   const [mounted, setUnmounted] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [value, setValue] = useState('');
+  const [value2, setValue2] = useState('');
+  const [value3, setValue3] = useState('');
+  const [value4, setValue4] = useState('');
   const [errorText, setErrorText] = useState('');
   const [validationError, setValidationError] = useState<string | undefined>();
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [resource, setResource] = useState<S3ResourceSelectorProps.Resource>({ uri: '' });
+  const [selectedOption, setSelectedOption] = useState<SelectProps['selectedOption']>({
+    label: 'Option 1',
+    value: '1',
+  });
+  const [radioValue, setRadioValue] = React.useState('second');
+  const [hideContainer, setHideContainer] = React.useState(false);
+
+  const [loading, setLoading] = useState(false);
 
   function wrapWithErrorHandler<T extends (...args: any[]) => Promise<unknown>>(callback: T): T {
     return ((...args) => {
@@ -69,112 +81,223 @@ export default function StaticSinglePageCreatePage() {
   };
 
   return (
-    <Box>
-      <BreadcrumbGroup
-        items={[
-          { text: 'System', href: '#' },
-          { text: 'Components', href: '#components' },
-          {
-            text: 'Create Resource',
-            href: '#components/breadcrumb-group',
-          },
-        ]}
-        ariaLabel="Breadcrumbs"
-      />
-      {mounted && (
-        <Form
-          errorText={errorText}
-          actions={
-            <SpaceBetween size="xs" direction="horizontal">
-              <Button data-testid="unmount" onClick={() => setUnmounted(false)}>
-                Unmount component
-              </Button>
-              <Button data-testid="embedded-form-modal" onClick={() => setModalVisible(true)}>
-                Open Modal
-              </Button>
-              {modalVisible && (
-                <Modal header="Modal title" visible={modalVisible}>
-                  <Form>I am a form</Form>
-                </Modal>
-              )}
-              <Button data-testid="cancel" onClick={() => setUnmounted(false)}>
-                Cancel
-              </Button>
-              <Button
-                data-testid="submit"
-                variant="primary"
-                onClick={() => {
-                  if (value === 'error') {
-                    setErrorText('There is an error');
-                  } else {
+    <AppLayout
+      contentType="form"
+      breadcrumbs={
+        <BreadcrumbGroup
+          items={[
+            { text: 'System', href: '#' },
+            { text: 'Components', href: '#components' },
+            {
+              text: 'Create Resource',
+              href: '#components/breadcrumb-group',
+            },
+          ]}
+          ariaLabel="Breadcrumbs"
+        />
+      }
+      content={
+        mounted && (
+          <Form
+            errorText={errorText}
+            actions={
+              <SpaceBetween size="xs" direction="horizontal">
+                <Button data-testid="unmount" onClick={() => setUnmounted(false)}>
+                  Unmount component
+                </Button>
+                <Button data-testid="embedded-form-modal" onClick={() => setModalVisible(true)}>
+                  Open Modal
+                </Button>
+                {modalVisible && (
+                  <Modal
+                    header="Modal title"
+                    visible={modalVisible}
+                    onDismiss={() => setModalVisible(false)}
+                    footer={
+                      <Box float="right">
+                        <SpaceBetween direction="horizontal" size="xs">
+                          <Button
+                            variant="link"
+                            onClick={() => {
+                              setModalVisible(false);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="primary"
+                            onClick={() => {
+                              setModalVisible(false);
+                            }}
+                          >
+                            Submit Feedback
+                          </Button>
+                        </SpaceBetween>
+                      </Box>
+                    }
+                  >
+                    <Form>
+                      <SpaceBetween size="m">
+                        <FormField label="Modal input field">
+                          <Input value={value3} onChange={event => setValue3(event.detail.value)} />
+                        </FormField>
+                        <FormField label="Modal input field 2">
+                          <Input value={value4} onChange={event => setValue4(event.detail.value)} />
+                        </FormField>
+                      </SpaceBetween>
+                    </Form>
+                  </Modal>
+                )}
+                <Button data-testid="cancel" onClick={() => setUnmounted(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  data-testid="submit"
+                  variant="primary"
+                  loading={loading}
+                  onClick={() => {
                     setErrorText('');
-                    setUnmounted(false);
+                    setLoading(true);
+                    setTimeout(() => {
+                      if (value === 'error') {
+                        setErrorText('There is an error');
+                      } else {
+                        setErrorText('');
+                        setUnmounted(false);
+                      }
+                      setLoading(false);
+                    }, 3000);
+                  }}
+                >
+                  Submit
+                </Button>
+              </SpaceBetween>
+            }
+            header={
+              <Header variant="h1" info={<Link variant="info">Info</Link>} description="Form header description">
+                Form Header
+              </Header>
+            }
+          >
+            <SpaceBetween size="m">
+              <Toggle checked={hideContainer} onChange={({ detail }) => setHideContainer(detail.checked)}>
+                Hide Container
+              </Toggle>
+              {!hideContainer && (
+                <Container
+                  header={
+                    <Header variant="h2" description="Container 1 - description">
+                      Container 1 - header
+                    </Header>
                   }
-                }}
-              >
-                Submit
-              </Button>
-            </SpaceBetween>
-          }
-          header={
-            <Header variant="h1" info={<Link>Info</Link>} description="Form header description">
-              Form Header
-            </Header>
-          }
-        >
-          <SpaceBetween size="m">
-            <Container
-              header={
-                <Header variant="h2" description="Container 1 - description">
-                  Container 1 - header
-                </Header>
-              }
-            >
-              <SpaceBetween size="s">
+                >
+                  <SpaceBetween size="s">
+                    <FormField
+                      info={
+                        <Link data-testid="external-link" external={true} href="#">
+                          Learn more
+                        </Link>
+                      }
+                      errorText={value === 'error' ? 'Trigger error' : ''}
+                      label="Input field"
+                    >
+                      <Input
+                        data-testid="field1"
+                        value={value}
+                        onChange={event => {
+                          setValue(event.detail.value);
+                        }}
+                      />
+                    </FormField>
+                    <FormField errorText={value2 === 'error' ? 'Trigger error' : ''} label="Input field 2">
+                      <Input
+                        data-testid="field1"
+                        value={value2}
+                        onChange={event => {
+                          setValue2(event.detail.value);
+                        }}
+                      />
+                    </FormField>
+                    <FormField
+                      info={<Link variant="info">Info</Link>}
+                      description="expandToViewport={true}"
+                      label="Dropdown field"
+                    >
+                      <Select
+                        selectedOption={selectedOption}
+                        onChange={({ detail }) => setSelectedOption(detail.selectedOption)}
+                        options={[
+                          { label: 'Option 1', value: '1' },
+                          { label: 'Option 2', value: '2' },
+                          { label: 'Option 3', value: '3' },
+                          { label: 'Option 4', value: '4' },
+                          { label: 'Option 5', value: '5' },
+                        ]}
+                        expandToViewport={true}
+                      />
+                    </FormField>
+                    <FormField label="Radiogroup field">
+                      <RadioGroup
+                        onChange={({ detail }) => setRadioValue(detail.value)}
+                        value={radioValue}
+                        items={[
+                          { value: 'first', label: 'First choice' },
+                          { value: 'second', label: 'Second choice' },
+                          { value: 'third', label: 'Third choice' },
+                        ]}
+                      />
+                    </FormField>
+                  </SpaceBetween>
+                </Container>
+              )}
+              <ExpandableSection defaultExpanded={true} variant="container" headerText="Additional configuration">
                 <FormField
                   info={
                     <Link data-testid="external-link" external={true} href="#">
                       Learn more
                     </Link>
                   }
-                  errorText={value === 'error' ? 'Trigger error' : ''}
-                  label="This is an ordinary text field"
+                  label="Input field 2"
                 >
                   <Input
-                    data-testid="field1"
-                    value={value}
+                    value={value2}
                     onChange={event => {
-                      setValue(event.detail.value);
+                      setValue2(event.detail.value);
                     }}
                   />
                 </FormField>
-              </SpaceBetween>
-            </Container>
-            <Container
-              header={
-                <Header variant="h2" description="Container 2 - description">
-                  Container 2 - header
-                </Header>
-              }
-            >
-              <FormField
-                info={
-                  <Link data-testid="info-link" variant="info">
-                    Info
-                  </Link>
+              </ExpandableSection>
+              <Container
+                header={
+                  <Header variant="h2" description="Container 2 - description">
+                    Container 2 - header
+                  </Header>
                 }
-                label="Read audio files from S3"
-                description="Choose an audio file in Amazon S3. Amazon S3 is object storage built to store and retrieve data."
-                constraintText="Format: s3://bucket/prefix/object. For objects in a bucket with versioning enabled, you can choose the most recent or a previous version of the object."
-                errorText={validationError}
-                stretch={true}
+                footer={
+                  <ExpandableSection headerText="Additional settings" variant="footer">
+                    Place additional form fields here.
+                  </ExpandableSection>
+                }
               >
-                <S3ResourceSelector {...s3ResourceSelectorProps} />
-              </FormField>
-            </Container>
-          </SpaceBetween>
-        </Form>
-      )}
-    </Box>
+                <FormField
+                  info={
+                    <Link data-testid="info-link" variant="info">
+                      Info
+                    </Link>
+                  }
+                  label="Read audio files from S3"
+                  description="Choose an audio file in Amazon S3. Amazon S3 is object storage built to store and retrieve data."
+                  constraintText="Format: s3://bucket/prefix/object. For objects in a bucket with versioning enabled, you can choose the most recent or a previous version of the object."
+                  errorText={validationError}
+                  stretch={true}
+                >
+                  <S3ResourceSelector {...s3ResourceSelectorProps} />
+                </FormField>
+              </Container>
+            </SpaceBetween>
+          </Form>
+        )
+      }
+    />
   );
 }

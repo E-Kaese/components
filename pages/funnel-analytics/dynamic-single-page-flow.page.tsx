@@ -4,22 +4,38 @@ import React, { useState } from 'react';
 
 import Container from '~components/container';
 import Header from '~components/header';
-import { Box, BreadcrumbGroup, Button, Form, SpaceBetween } from '~components';
+import { AppLayout, BreadcrumbGroup, Button, Form, SpaceBetween, Input } from '~components';
 
-export default function WizardPage() {
+function DynamicContainer({ index }: { index: number }) {
+  const [value, setValue] = useState('');
+  return (
+    <Container header={<Header>A container for substep {index}</Header>}>
+      <Input value={value} onChange={event => setValue(event.detail.value)} />
+    </Container>
+  );
+}
+
+export default function DynamicSingleFlowPage() {
   const [containerCount, setContainerCount] = useState(2);
 
   return (
-    <Box padding="xl">
-      <SpaceBetween size="xxl">
+    <AppLayout
+      contentType="form"
+      breadcrumbs={
         <BreadcrumbGroup
           items={[
-            { text: 'Resources', href: '#example-link' },
-            { text: 'Create resource', href: '#example-link' },
+            { text: 'System', href: '#' },
+            { text: 'Components', href: '#components' },
+            {
+              text: 'Create Resource',
+              href: '#components/breadcrumb-group',
+            },
           ]}
-          onFollow={e => e.preventDefault()}
+          ariaLabel="Breadcrumbs"
         />
-
+      }
+      navigationOpen={false}
+      content={
         <Form header={<Header variant="h1">A form with dynamic substeps</Header>}>
           <SpaceBetween size="l">
             <SpaceBetween direction="horizontal" size="xs">
@@ -29,16 +45,16 @@ export default function WizardPage() {
               </Button>
             </SpaceBetween>
 
+            <DynamicContainer index={1} />
             {Array(containerCount)
               .fill(0)
               .map((_, i) => (
-                <Container key={i} header={<Header>A container for substep {i + 1}</Header>}>
-                  This is a text on the substep level
-                </Container>
+                <DynamicContainer key={i} index={i + 2} />
               ))}
+            <DynamicContainer index={containerCount + 2} />
           </SpaceBetween>
         </Form>
-      </SpaceBetween>
-    </Box>
+      }
+    />
   );
 }

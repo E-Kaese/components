@@ -6,7 +6,7 @@ import IntlMessageFormat from 'intl-messageformat';
 import { MessageFormatElement } from '@formatjs/icu-messageformat-parser';
 import { warnOnce } from '@cloudscape-design/component-toolkit/internal';
 
-import { useTelemetry } from '../internal/hooks/use-telemetry';
+// import { useTelemetry } from '../internal/hooks/use-telemetry';
 import { applyDisplayName } from '../internal/utils/apply-display-name';
 import { InternalI18nContext, FormatFunction, CustomHandler } from './context';
 import { getMatchableLocales } from './get-matchable-locales';
@@ -37,7 +37,7 @@ export namespace I18nProviderProps {
 const I18nMessagesContext = React.createContext<I18nProviderProps.Messages>({});
 
 export function I18nProvider({ messages: messagesArray, locale: providedLocale, children }: I18nProviderProps) {
-  useTelemetry('I18nProvider');
+  // useTelemetry('I18nProvider');
 
   if (typeof document === 'undefined' && !providedLocale) {
     warnOnce(

@@ -17,6 +17,7 @@ import { ExpandableSectionContainer } from './expandable-section-container';
 import { ExpandableSectionHeader } from './expandable-section-header';
 import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
 import { variantSupportsDescription } from './utils';
+import { trackEvent } from '../internal/analytics';
 
 export type InternalExpandableSectionProps = Omit<ExpandableSectionProps, 'variant'> &
   InternalBaseComponentProps & {
@@ -90,6 +91,14 @@ export default function InternalExpandableSection({
     onKeyUp,
     onKeyDown,
     onClick,
+    onFocus: () => {
+      __internalRootRef?.current &&
+        trackEvent(__internalRootRef.current as HTMLElement, 'focus', { componentName: 'ExpandableSection' });
+    },
+    onBlur: () => {
+      __internalRootRef?.current &&
+        trackEvent(__internalRootRef.current as HTMLElement, 'blur', { componentName: 'ExpandableSection' });
+    },
   };
 
   // Map stacked variant to container to avoid code duplication

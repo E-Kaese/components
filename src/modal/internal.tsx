@@ -1,8 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React, { useEffect, useRef } from 'react';
-import { useMergeRefs } from '../internal/hooks/use-merge-refs';
 import clsx from 'clsx';
+
+import { useContainerQuery } from '@cloudscape-design/component-toolkit';
+import { trackEvent, useTrackPropertyEffect } from '@cloudscape-design/component-toolkit/internal';
 
 import { getBaseProps } from '../internal/base-component';
 import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
@@ -22,11 +24,10 @@ import { SomeRequired } from '../internal/types';
 import FocusLock from '../internal/components/focus-lock';
 import { useInternalI18n } from '../i18n/context';
 import { useIntersectionObserver } from '../internal/hooks/use-intersection-observer';
-import { useContainerQuery } from '@cloudscape-design/component-toolkit';
-import { FunnelNameSelectorContext } from '../internal/analytics/context/analytics-context';
 import { ModalContext } from '../internal/context/modal-context';
-import { useFunnelSubStep } from '../internal/analytics/hooks/use-funnel';
 import ResetContextsForModal from '../internal/context/reset-contexts-for-modal';
+import { useMergeRefs } from '../internal/hooks/use-merge-refs';
+import { ButtonContext } from '../internal/context/button-context';
 
 type InternalModalProps = SomeRequired<ModalProps, 'size'> & InternalBaseComponentProps;
 
@@ -65,6 +66,7 @@ function InnerModal({
   const isRefresh = useVisualRefresh();
 
   const baseProps = getBaseProps(rest);
+  useTrackPropertyEffect(__internalRootRef, 'Modal', 'visible', visible);
 
   // enable body scroll and restore focus if unmounting while visible
   useEffect(() => {
@@ -116,75 +118,78 @@ function InnerModal({
   // Add extra scroll padding to account for the height of the sticky footer,
   // to prevent it from covering focused elements.
   const [footerHeight, footerRef] = useContainerQuery(rect => rect.borderBoxHeight);
-  const { subStepRef } = useFunnelSubStep();
 
   return (
-    <FunnelNameSelectorContext.Provider value={`.${styles['header--text']}`}>
-      <ResetContextsForModal>
-        <ModalContext.Provider value={{ isInModal: true }}>
-          <div
-            {...baseProps}
-            className={clsx(
-              styles.root,
-              { [styles.hidden]: !visible },
-              baseProps.className,
-              isRefresh && styles.refresh
-            )}
-            role="dialog"
-            aria-modal={true}
-            aria-labelledby={headerId}
-            onMouseDown={onOverlayMouseDown}
-            onClick={onOverlayClick}
-            ref={mergedRef}
-            style={footerHeight ? { scrollPaddingBottom: footerHeight } : undefined}
-            data-awsui-referrer-id={subStepRef.current?.id}
-          >
-            <FocusLock disabled={!visible} autoFocus={true} restoreFocus={true} className={styles['focus-lock']}>
-              <div
-                className={clsx(
-                  styles.dialog,
-                  styles[size],
-                  styles[`breakpoint-${breakpoint}`],
-                  isRefresh && styles.refresh
-                )}
-                onKeyDown={escKeyHandler}
-              >
-                <div className={styles.container}>
-                  <div className={styles.header}>
-                    <InternalHeader
-                      variant="h2"
-                      __disableActionsWrapping={true}
-                      actions={
-                        <InternalButton
-                          ariaLabel={closeAriaLabel}
-                          className={styles['dismiss-control']}
-                          variant="modal-dismiss"
-                          iconName="close"
-                          formAction="none"
-                          onClick={onCloseButtonClick}
-                        />
-                      }
-                    >
-                      <span id={headerId} className={styles['header--text']}>
-                        {header}
-                      </span>
-                    </InternalHeader>
-                  </div>
-                  <div className={clsx(styles.content, { [styles['no-paddings']]: disableContentPaddings })}>
-                    {children}
-                    <div ref={stickySentinelRef} />
-                  </div>
-                  {footer && (
+    <ResetContextsForModal>
+      <ModalContext.Provider value={{ isInModal: true }}>
+        <div
+          {...baseProps}
+          className={clsx(styles.root, { [styles.hidden]: !visible }, baseProps.className, isRefresh && styles.refresh)}
+          role="dialog"
+          aria-modal={true}
+          aria-labelledby={headerId}
+          onMouseDown={onOverlayMouseDown}
+          onClick={onOverlayClick}
+          ref={mergedRef}
+          style={footerHeight ? { scrollPaddingBottom: footerHeight } : undefined}
+          // data-awsui-referrer-id={subStepRef.current?.id}
+        >
+          <FocusLock disabled={!visible} autoFocus={true} restoreFocus={true} className={styles['focus-lock']}>
+            <div
+              className={clsx(
+                styles.dialog,
+                styles[size],
+                styles[`breakpoint-${breakpoint}`],
+                isRefresh && styles.refresh
+              )}
+              onKeyDown={escKeyHandler}
+            >
+              <div className={styles.container}>
+                <div className={styles.header}>
+                  <InternalHeader
+                    variant="h2"
+                    __disableActionsWrapping={true}
+                    actions={
+                      <InternalButton
+                        ariaLabel={closeAriaLabel}
+                        className={styles['dismiss-control']}
+                        variant="modal-dismiss"
+                        iconName="close"
+                        formAction="none"
+                        onClick={onCloseButtonClick}
+                      />
+                    }
+                  >
+                    <span id={headerId} className={styles['header--text']} data-analytics-selector="modal-header">
+                      {header}
+                    </span>
+                  </InternalHeader>
+                </div>
+                <div className={clsx(styles.content, { [styles['no-paddings']]: disableContentPaddings })}>
+                  {children}
+                  <div ref={stickySentinelRef} />
+                </div>
+                {footer && (
+                  <ButtonContext.Provider
+                    value={{
+                      onClick: ({ variant }) => {
+                        if (variant === 'primary') {
+                          __internalRootRef?.current &&
+                            trackEvent(__internalRootRef.current, 'submit', { componentName: 'Modal' });
+                        }
+                      },
+                    }}
+                  >
                     <div ref={footerRef} className={clsx(styles.footer, footerStuck && styles['footer--stuck'])}>
                       {footer}
                     </div>
-                  )}
-                </div>
+                  </ButtonContext.Provider>
+                )}
               </div>
-            </FocusLock>
-          </div>
-        </ModalContext.Provider>
-      </ResetContextsForModal>
-    </FunnelNameSelectorContext.Provider>
+            </div>
+          </FocusLock>
+        </div>
+      </ModalContext.Provider>
+    </ResetContextsForModal>
   );
 }

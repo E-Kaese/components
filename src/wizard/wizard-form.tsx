@@ -1,17 +1,19 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import clsx from 'clsx';
+
 import InternalForm from '../form/internal';
 import InternalHeader from '../header/internal';
-import { useMobile } from '../internal/hooks/use-mobile';
 import WizardActions from './wizard-actions';
-import { WizardProps } from './interfaces';
 import WizardFormHeader from './wizard-form-header';
-import styles from './styles.css.js';
+
+import { useMobile } from '../internal/hooks/use-mobile';
 import { useEffectOnUpdate } from '../internal/hooks/use-effect-on-update';
-import { AnalyticsFunnelStep } from '../internal/analytics/components/analytics-funnel';
-import { DATA_ATTR_FUNNEL_KEY, FUNNEL_KEY_STEP_NAME } from '../internal/analytics/selectors';
+
+import { WizardProps } from './interfaces';
+import styles from './styles.css.js';
+import { trackEvent } from '../internal/analytics';
 
 interface WizardFormProps {
   steps: ReadonlyArray<WizardProps.Step>;
@@ -29,8 +31,6 @@ interface WizardFormProps {
   onSkipToClick: (stepIndex: number) => void;
 }
 
-export const STEP_NAME_SELECTOR = `[${DATA_ATTR_FUNNEL_KEY}=${FUNNEL_KEY_STEP_NAME}]`;
-
 export default function WizardForm({
   steps,
   activeStepIndex,
@@ -46,6 +46,7 @@ export default function WizardForm({
   onPrimaryClick,
   onSkipToClick,
 }: WizardFormProps) {
+  const ref = useRef<HTMLDivElement | null>(null);
   const { title, info, description, content, errorText, isOptional } = steps[activeStepIndex] || {};
   const isLastStep = activeStepIndex >= steps.length - 1;
   const skipToTargetIndex = findSkipToTargetIndex(steps, activeStepIndex);
@@ -58,65 +59,80 @@ export default function WizardForm({
     }
   }, [activeStepIndex]);
 
+  useEffect(() => {
+    if (ref.current && errorText) {
+      trackEvent(ref.current, 'error', {
+        componentName: 'Wizard',
+        detail: { errorText: 'error-text' },
+      });
+    }
+  }, [ref, errorText]);
+
   const showSkipTo = allowSkipTo && skipToTargetIndex !== -1;
   const skipToButtonText =
     skipToTargetIndex !== -1 && i18nStrings.skipToButtonLabel
       ? i18nStrings.skipToButtonLabel(steps[skipToTargetIndex], skipToTargetIndex + 1)
       : undefined;
 
-  return (
-    <>
-      <AnalyticsFunnelStep stepNameSelector={STEP_NAME_SELECTOR} stepNumber={activeStepIndex + 1}>
-        {({ funnelStepProps }) => (
-          <>
-            <WizardFormHeader isMobile={isMobile || showCollapsedSteps} isVisualRefresh={isVisualRefresh}>
-              <div className={clsx(styles['collapsed-steps'], !showCollapsedSteps && styles['collapsed-steps-hidden'])}>
-                {i18nStrings.collapsedStepsLabel?.(activeStepIndex + 1, steps.length)}
-              </div>
-              <InternalHeader
-                className={styles['form-header-component']}
-                variant="h1"
-                description={description}
-                info={info}
-              >
-                <span className={styles['form-header-component-wrapper']} tabIndex={-1} ref={stepHeaderRef}>
-                  <span {...{ [DATA_ATTR_FUNNEL_KEY]: FUNNEL_KEY_STEP_NAME }}>{title}</span>
-                  {isOptional && <i>{` - ${i18nStrings.optional}`}</i>}
-                </span>
-              </InternalHeader>
-            </WizardFormHeader>
+  useEffect(() => {
+    if (ref.current) {
+      const currentRef = ref.current;
+      setTimeout(() => {
+        trackEvent(currentRef, 'step-mount', {
+          componentName: 'Wizard',
+          detail: {
+            name: steps[activeStepIndex]?.title,
+            number: activeStepIndex + 1,
+            isOptional: !!steps[activeStepIndex].isOptional,
+          },
+        });
+      }, 0);
+    }
 
-            <InternalForm
-              className={clsx(styles['form-component'])}
-              actions={
-                <WizardActions
-                  cancelButtonText={i18nStrings.cancelButton}
-                  primaryButtonText={isLastStep ? submitButtonText ?? i18nStrings.submitButton : i18nStrings.nextButton}
-                  primaryButtonLoadingText={
-                    isLastStep ? i18nStrings.submitButtonLoadingAnnouncement : i18nStrings.nextButtonLoadingAnnouncement
-                  }
-                  previousButtonText={i18nStrings.previousButton}
-                  onCancelClick={onCancelClick}
-                  onPreviousClick={onPreviousClick}
-                  onPrimaryClick={onPrimaryClick}
-                  onSkipToClick={() => onSkipToClick(skipToTargetIndex)}
-                  showPrevious={activeStepIndex !== 0}
-                  isPrimaryLoading={isPrimaryLoading}
-                  showSkipTo={showSkipTo}
-                  skipToButtonText={skipToButtonText}
-                />
-              }
-              secondaryActions={secondaryActions}
-              errorText={errorText}
-              errorIconAriaLabel={i18nStrings.errorIconAriaLabel}
-              {...funnelStepProps}
-            >
-              {content}
-            </InternalForm>
-          </>
-        )}
-      </AnalyticsFunnelStep>
-    </>
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeStepIndex]);
+
+  return (
+    <div ref={ref}>
+      <WizardFormHeader isMobile={isMobile || showCollapsedSteps} isVisualRefresh={isVisualRefresh}>
+        <div className={clsx(styles['collapsed-steps'], !showCollapsedSteps && styles['collapsed-steps-hidden'])}>
+          {i18nStrings.collapsedStepsLabel?.(activeStepIndex + 1, steps.length)}
+        </div>
+        <InternalHeader className={styles['form-header-component']} variant="h1" description={description} info={info}>
+          <span className={styles['form-header-component-wrapper']} tabIndex={-1} ref={stepHeaderRef}>
+            <span>{title}</span>
+            {isOptional && <i>{` - ${i18nStrings.optional}`}</i>}
+          </span>
+        </InternalHeader>
+      </WizardFormHeader>
+
+      <InternalForm
+        className={clsx(styles['form-component'])}
+        actions={
+          <WizardActions
+            cancelButtonText={i18nStrings.cancelButton}
+            primaryButtonText={isLastStep ? submitButtonText ?? i18nStrings.submitButton : i18nStrings.nextButton}
+            primaryButtonLoadingText={
+              isLastStep ? i18nStrings.submitButtonLoadingAnnouncement : i18nStrings.nextButtonLoadingAnnouncement
+            }
+            previousButtonText={i18nStrings.previousButton}
+            onCancelClick={onCancelClick}
+            onPreviousClick={onPreviousClick}
+            onPrimaryClick={onPrimaryClick}
+            onSkipToClick={() => onSkipToClick(skipToTargetIndex)}
+            showPrevious={activeStepIndex !== 0}
+            isPrimaryLoading={isPrimaryLoading}
+            showSkipTo={showSkipTo}
+            skipToButtonText={skipToButtonText}
+          />
+        }
+        secondaryActions={secondaryActions}
+        errorText={errorText}
+        errorIconAriaLabel={i18nStrings.errorIconAriaLabel}
+      >
+        {content}
+      </InternalForm>
+    </div>
   );
 }
 

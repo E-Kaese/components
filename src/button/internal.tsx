@@ -1,7 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+import React, { useRef } from 'react';
 import clsx from 'clsx';
-import React, { useEffect, useRef } from 'react';
+
 import { fireCancelableEvent, isPlainLeftClick } from '../internal/events';
 import useForwardFocus from '../internal/hooks/forward-focus';
 import styles from './styles.css.js';
@@ -12,17 +13,10 @@ import { checkSafeUrl } from '../internal/utils/check-safe-url';
 import { useMergeRefs } from '../internal/hooks/use-merge-refs';
 import LiveRegion from '../internal/components/live-region';
 import { useButtonContext } from '../internal/context/button-context';
-import { useFunnel, useFunnelStep, useFunnelSubStep } from '../internal/analytics/hooks/use-funnel';
-import {
-  DATA_ATTR_FUNNEL_VALUE,
-  getFunnelValueSelector,
-  getNameFromSelector,
-  getSubStepAllSelector,
-} from '../internal/analytics/selectors';
-import { FunnelMetrics } from '../internal/analytics';
-import { useUniqueId } from '../internal/hooks/use-unique-id';
 import { usePerformanceMarks } from '../internal/hooks/use-performance-marks';
 import { useSingleTabStopNavigation } from '../internal/context/single-tab-stop-navigation-context';
+
+import { trackEvent } from '../internal/analytics';
 
 export type InternalButtonProps = Omit<ButtonProps, 'variant'> & {
   variant?: ButtonProps['variant'] | 'flashbar-icon' | 'breadcrumb-group' | 'menu-trigger' | 'modal-dismiss';
@@ -81,11 +75,6 @@ export const InternalButton = React.forwardRef(
 
     const buttonContext = useButtonContext();
 
-    const uniqueId = useUniqueId('button');
-    const { funnelInteractionId } = useFunnel();
-    const { stepNumber, stepNameSelector } = useFunnelStep();
-    const { subStepSelector, subStepNameSelector } = useFunnelSubStep();
-
     usePerformanceMarks(
       'primaryButton',
       variant === 'primary',
@@ -106,27 +95,24 @@ export const InternalButton = React.forwardRef(
       if (isAnchor && isPlainLeftClick(event)) {
         fireCancelableEvent(onFollow, { href, target }, event);
 
-        if ((iconName === 'external' || target === '_blank') && funnelInteractionId) {
-          const stepName = getNameFromSelector(stepNameSelector);
-          const subStepName = getNameFromSelector(subStepNameSelector);
-
-          FunnelMetrics.externalLinkInteracted({
-            funnelInteractionId,
-            stepNumber,
-            stepName,
-            stepNameSelector,
-            subStepSelector,
-            subStepName,
-            subStepNameSelector,
-            elementSelector: getFunnelValueSelector(uniqueId),
-            subStepAllSelector: getSubStepAllSelector(),
-          });
+        if (iconName === 'external' || target === '_blank') {
+          buttonRef.current &&
+            trackEvent(buttonRef.current, 'external-link', { componentName: 'Button', detail: { variant } });
         }
       }
 
       const { altKey, button, ctrlKey, metaKey, shiftKey } = event;
       fireCancelableEvent(onClick, { altKey, button, ctrlKey, metaKey, shiftKey }, event);
       buttonContext.onClick({ variant });
+      buttonRef.current && trackEvent(buttonRef.current, 'click', { componentName: 'Button', detail: { variant } });
+    };
+
+    const handleFocus = () => {
+      buttonRef.current && trackEvent(buttonRef.current, 'focus', { componentName: 'Button' });
+    };
+
+    const handleBlur = () => {
+      buttonRef.current && trackEvent(buttonRef.current, 'blur', { componentName: 'Button' });
     };
 
     const buttonClass = clsx(props.className, styles.button, styles[`variant-${variant}`], {
@@ -156,7 +142,8 @@ export const InternalButton = React.forwardRef(
       title: ariaLabel,
       className: buttonClass,
       onClick: handleClick,
-      [DATA_ATTR_FUNNEL_VALUE]: uniqueId,
+      onFocus: handleFocus,
+      onBlur: handleBlur,
     } as const;
 
     const iconProps: ButtonIconProps = {
@@ -178,17 +165,6 @@ export const InternalButton = React.forwardRef(
         <RightIcon {...iconProps} />
       </>
     );
-
-    const { loadingButtonCount } = useFunnel();
-    useEffect(() => {
-      if (loading) {
-        loadingButtonCount.current++;
-        return () => {
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-          loadingButtonCount.current--;
-        };
-      }
-    }, [loading, loadingButtonCount]);
 
     if (isAnchor) {
       return (

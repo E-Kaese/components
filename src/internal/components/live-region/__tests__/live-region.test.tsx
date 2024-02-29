@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
+
 import createWrapper from '../../../../../lib/components/test-utils/dom';
 import LiveRegion from '../../../../../lib/components/internal/components/live-region';
-import { mockInnerText } from '../../../../internal/analytics/__tests__/mocks';
+
+import { mockInnerText } from '../../../../internal/__tests__/mocks';
 
 mockInnerText();
 

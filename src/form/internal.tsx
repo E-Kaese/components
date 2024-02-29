@@ -1,7 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import clsx from 'clsx';
+
 import { getBaseProps } from '../internal/base-component';
 import InternalAlert from '../alert/internal';
 import InternalBox from '../box/internal';
@@ -11,17 +12,49 @@ import { FormLayoutProps, FormProps } from './interfaces';
 import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
 import LiveRegion from '../internal/components/live-region';
 import { useInternalI18n } from '../i18n/context';
+import { trackEvent } from '../internal/analytics';
 
-import { useFunnel } from '../internal/analytics/hooks/use-funnel';
-import { FunnelMetrics } from '../internal/analytics';
+export type InternalFormProps = FormProps & InternalBaseComponentProps;
 
-type InternalFormProps = FormProps & InternalBaseComponentProps;
+function FormError({
+  children,
+  errorIconAriaLabelOverride,
+}: {
+  children: React.ReactNode;
+  errorIconAriaLabelOverride?: InternalFormProps['errorIconAriaLabel'];
+}) {
+  const ref = useRef<HTMLElement | null>(null);
+  const i18n = useInternalI18n('form');
+  const errorIconAriaLabel = i18n('errorIconAriaLabel', errorIconAriaLabelOverride);
+
+  useEffect(() => {
+    const currentRef = ref.current as HTMLElement;
+    trackEvent(currentRef, 'error', {
+      componentName: 'Form',
+      detail: { errorText: currentRef.textContent },
+    });
+
+    return () => {
+      trackEvent(currentRef, 'error-cleared', {
+        componentName: 'Form',
+      });
+    };
+  }, []);
+
+  return (
+    <InternalBox __internalRootRef={ref} margin={{ top: 'l' }}>
+      <InternalAlert type="error" statusIconAriaLabel={errorIconAriaLabel}>
+        <div className={styles.error}>{children}</div>
+      </InternalAlert>
+    </InternalBox>
+  );
+}
 
 export default function InternalForm({
   children,
   header,
   errorText,
-  errorIconAriaLabel: errorIconAriaLabelOverride,
+  errorIconAriaLabel,
   actions,
   secondaryActions,
   variant,
@@ -29,38 +62,24 @@ export default function InternalForm({
   ...props
 }: InternalFormProps) {
   const baseProps = getBaseProps(props);
-  const i18n = useInternalI18n('form');
-  const errorIconAriaLabel = i18n('errorIconAriaLabel', errorIconAriaLabelOverride);
-
-  const { funnelInteractionId, submissionAttempt, errorCount } = useFunnel();
-
-  useEffect(() => {
-    if (funnelInteractionId && errorText) {
-      errorCount.current++;
-      FunnelMetrics.funnelError({ funnelInteractionId });
-      return () => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        errorCount.current--;
-      };
-    }
-  }, [funnelInteractionId, errorText, submissionAttempt, errorCount]);
 
   return (
     <div {...baseProps} ref={__internalRootRef} className={clsx(styles.root, baseProps.className)}>
       <FormLayout
         header={
-          header && <div className={clsx(styles.header, variant === 'full-page' && styles['full-page'])}>{header}</div>
+          header && (
+            <div
+              data-analytics-selector="form-header"
+              className={clsx(styles.header, variant === 'full-page' && styles['full-page'])}
+            >
+              {header}
+            </div>
+          )
         }
         variant={variant}
       >
         {children && <div className={styles.content}>{children}</div>}
-        {errorText && (
-          <InternalBox margin={{ top: 'l' }}>
-            <InternalAlert type="error" statusIconAriaLabel={errorIconAriaLabel}>
-              <div className={styles.error}>{errorText}</div>
-            </InternalAlert>
-          </InternalBox>
-        )}
+        {errorText && <FormError errorIconAriaLabelOverride={errorIconAriaLabel}>{errorText}</FormError>}
         {(actions || secondaryActions) && (
           <div className={styles.footer}>
             <div className={styles['actions-section']}>

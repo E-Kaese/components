@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import React, { Ref, useRef } from 'react';
 import clsx from 'clsx';
+
 import { useMergeRefs } from '../internal/hooks/use-merge-refs';
 import { IconProps } from '../icon/interfaces';
 import InternalIcon from '../icon/internal';
@@ -15,6 +16,7 @@ import { FormFieldValidationControlProps, useFormFieldContext } from '../interna
 import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
 import styles from './styles.css.js';
 import { useInternalI18n } from '../i18n/context';
+import { trackEvent } from '../internal/analytics';
 
 export interface InternalInputProps
   extends BaseComponentProps,
@@ -134,10 +136,15 @@ function InternalInput(
     value: value ?? '',
     onChange: onChange && (event => handleChange(event.target.value)),
     onBlur: e => {
+      inputRef?.current && trackEvent(inputRef.current, 'blur', { componentName: 'Input' });
+
       onBlur && fireNonCancelableEvent(onBlur);
       __onBlurWithDetail && fireNonCancelableEvent(__onBlurWithDetail, { relatedTarget: e.relatedTarget });
     },
-    onFocus: onFocus && (() => fireNonCancelableEvent(onFocus)),
+    onFocus: () => {
+      inputRef?.current && trackEvent(inputRef.current, 'focus', { componentName: 'Input' });
+      onFocus && (() => fireNonCancelableEvent(onFocus));
+    },
     ...__nativeAttributes,
   };
 

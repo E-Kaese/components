@@ -1,7 +1,68 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-export type FunnelType = 'single-page' | 'multi-page';
+import { ComponentConfiguration } from '@cloudscape-design/component-toolkit/internal';
+import { PackageSettings } from '@cloudscape-design/component-toolkit/lib/internal/base-component/metrics/interfaces';
+
+export interface AwsUiMetadata {
+  name: string;
+  version: string;
+  props?: ComponentConfiguration['props'];
+}
+
+export interface AwsUiNode extends HTMLElement {
+  __awsuiMetadata__: AwsUiMetadata;
+}
+
+export interface AnalyticsElement extends HTMLElement {
+  __analytics__: FunnelConfig | FunnelStepConfig | FunnelSubStepConfig;
+}
+
+export interface TrackEventDetail<T = { [key: string]: any }> {
+  componentName: string;
+  detail?: T;
+}
+
+export interface TrackEvent<T> {
+  target: HTMLElement;
+  eventName: string;
+  componentName: string;
+  detail: TrackEventDetail<T>['detail'];
+}
+
+export interface BufferEvent<T> {
+  event: TrackEvent<T>;
+  domSnapshot: HTMLElement;
+}
+
+export interface FunnelStepConfig {
+  name: string;
+  number: number;
+  isOptional: boolean;
+}
+
+export interface FunnelSubStepConfig {
+  name: string;
+  number?: number;
+}
+
+export type FunnelType = 'single-page' | 'multi-page' | 'modal' | undefined;
+export type FunnelState = 'initial' | 'started' | 'completed' | 'submitting' | 'error';
+export interface FunnelConfig {
+  name: string;
+  type: FunnelType;
+  stepConfiguration: FunnelStepConfig[];
+}
+
+export type Handler<T = { [key: string]: any }> = (event: TrackEvent<T>) => void;
+export interface Handlers {
+  [key: string]: Handler<any>;
+}
+
+export type CreateHandlersFactory = (handlers: Handlers) => Handler<any>;
+
+// Funnel Interfaces
+// export type FunnelType = 'single-page' | 'multi-page';
 
 // Common properties for all funnels
 export interface BaseFunnelProps {
@@ -124,4 +185,33 @@ export interface IFunnelMetrics {
 
   helpPanelInteracted: FunnelMethod<FunnelLinkInteractionProps>;
   externalLinkInteracted: FunnelMethod<FunnelLinkInteractionProps>;
+}
+
+export interface FormFieldErrorDetail {
+  fieldLabel: string;
+  fieldError: string;
+}
+
+export interface LinkDetail {
+  external: boolean;
+  variant: string;
+}
+
+export interface ModalPropertyChangeDetail {
+  visible: boolean;
+}
+
+export interface MountDetail {
+  packageSettings: PackageSettings;
+  configuration: ComponentConfiguration;
+}
+
+export interface WizardMountConfig {
+  stepConfiguration: FunnelStepConfig[];
+  activeStepIndex: number;
+}
+
+export interface PropertyChangeDetail {
+  name: string;
+  value: any;
 }

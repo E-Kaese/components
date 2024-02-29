@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import React, { useContext, useRef } from 'react';
 import clsx from 'clsx';
+
 import InternalIcon from '../icon/internal';
 import styles from './styles.css.js';
 import { getBaseProps } from '../internal/base-component';
@@ -15,18 +16,11 @@ import { useVisualRefresh } from '../internal/hooks/use-visual-mode';
 import { checkSafeUrl } from '../internal/utils/check-safe-url';
 import { useInternalI18n } from '../i18n/context';
 import { InfoLinkLabelContext } from '../internal/context/info-link-label-context';
-import { useFunnel, useFunnelStep, useFunnelSubStep } from '../internal/analytics/hooks/use-funnel';
 
-import { FunnelMetrics } from '../internal/analytics';
 import { useUniqueId } from '../internal/hooks/use-unique-id';
-import {
-  DATA_ATTR_FUNNEL_VALUE,
-  getFunnelValueSelector,
-  getNameFromSelector,
-  getSubStepAllSelector,
-} from '../internal/analytics/selectors';
 import { LinkDefaultVariantContext } from '../internal/context/link-default-variant-context';
 import { useSingleTabStopNavigation } from '../internal/context/single-tab-stop-navigation-context';
+import { trackEvent } from '../internal/analytics';
 
 type InternalLinkProps = InternalBaseComponentProps<HTMLAnchorElement> &
   Omit<LinkProps, 'variant'> & {
@@ -63,55 +57,13 @@ const InternalLink = React.forwardRef(
     const baseProps = getBaseProps(props);
     const anchorTarget = target ?? (external ? '_blank' : undefined);
     const anchorRel = rel ?? (anchorTarget === '_blank' ? 'noopener noreferrer' : undefined);
-    const uniqueId = useUniqueId('link');
     const linkId = useUniqueId('link-self');
     const infoId = useUniqueId('link-info');
 
     const infoLinkLabelFromContext = useContext(InfoLinkLabelContext);
 
-    const { funnelInteractionId } = useFunnel();
-    const { stepNumber, stepNameSelector } = useFunnelStep();
-    const { subStepSelector, subStepNameSelector } = useFunnelSubStep();
-
-    const fireFunnelEvent = (funnelInteractionId: string) => {
-      if (variant === 'info') {
-        const stepName = getNameFromSelector(stepNameSelector);
-        const subStepName = getNameFromSelector(subStepNameSelector);
-
-        FunnelMetrics.helpPanelInteracted({
-          funnelInteractionId,
-          stepNumber,
-          stepName,
-          stepNameSelector,
-          subStepSelector,
-          subStepName,
-          subStepNameSelector,
-          elementSelector: getFunnelValueSelector(uniqueId),
-          subStepAllSelector: getSubStepAllSelector(),
-        });
-      } else if (external) {
-        const stepName = getNameFromSelector(stepNameSelector);
-        const subStepName = getNameFromSelector(subStepNameSelector);
-
-        FunnelMetrics.externalLinkInteracted({
-          funnelInteractionId,
-          stepNumber,
-          stepName,
-          stepNameSelector,
-          subStepSelector,
-          subStepName,
-          subStepNameSelector,
-          elementSelector: getFunnelValueSelector(uniqueId),
-          subStepAllSelector: getSubStepAllSelector(),
-        });
-      }
-    };
-
     const fireFollowEvent = (event: React.SyntheticEvent) => {
-      if (funnelInteractionId) {
-        fireFunnelEvent(funnelInteractionId);
-      }
-
+      linkRef.current && trackEvent(linkRef.current, 'click', { componentName: 'Link', detail: { variant, external } });
       fireCancelableEvent(onFollow, { href, external, target: anchorTarget }, event);
     };
 
@@ -138,6 +90,13 @@ const InternalLink = React.forwardRef(
 
     // Visual refresh should only add styles to buttons that don't already have unique styles (e.g. primary/secondary variants)
     const applyButtonStyles = isButton && isVisualRefresh && !hasSpecialStyle;
+    const handleFocus = () => {
+      linkRef.current && trackEvent(linkRef.current, 'focus', { componentName: 'Link' });
+    };
+
+    const handleBlur = () => {
+      linkRef.current && trackEvent(linkRef.current, 'blur', { componentName: 'Link' });
+    };
 
     const sharedProps = {
       id: linkId,
@@ -154,7 +113,8 @@ const InternalLink = React.forwardRef(
       ),
       'aria-label': ariaLabel,
       'aria-labelledby': '',
-      [DATA_ATTR_FUNNEL_VALUE]: uniqueId,
+      onFocus: handleFocus,
+      onBlur: handleBlur,
     };
 
     if (variant === 'info' && infoLinkLabelFromContext && !ariaLabel) {
