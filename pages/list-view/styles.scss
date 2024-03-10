@@ -1,0 +1,16 @@
+/*
+ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0
+*/
+
+.item {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+}
+
+.placeholder {
+  background-color: lightgray;
+  border-radius: 4px;
+  width: 44px;
+  height: 44px;
+}
