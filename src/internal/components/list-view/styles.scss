@@ -5,18 +5,16 @@
 
 @use '../../styles/tokens' as awsui;
 
-.list-grid {
-  display: grid;
-  gap: awsui.$space-grid-gutter;
-}
-
-.list-item {
-  padding-block: calc(awsui.$space-grid-gutter / 2);
-  padding-inline: calc(awsui.$space-grid-gutter / 2);
-
-  &:not(:last-child) {
-    border-block-end-color: awsui.$color-border-divider-default;
-    border-block-end-style: solid;
-    border-block-end-width: 1px;
+.list {
+  margin-block: 0;
+  margin-inline: 0;
+  padding-block: 0;
+  padding-inline: 0;
+  &-item {
+    margin-block: 0;
+    margin-inline: 0;
+    padding-block: 0;
+    padding-inline: 0;
+    list-style-type: none;
   }
 }

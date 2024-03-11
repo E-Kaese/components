@@ -7,7 +7,7 @@ import ScreenshotArea from '../utils/screenshot-area';
 import styles from './styles.scss';
 
 export default function () {
-  const listItem = () => (
+  const renderListItem = () => (
     <div className={styles.item}>
       <div>
         <div className={styles.placeholder}></div>
@@ -19,7 +19,7 @@ export default function () {
   return (
     <ScreenshotArea>
       <h1>Line charts</h1>
-      <ListView items={[listItem(), listItem(), listItem(), listItem()]} />
+      <ListView role="orderedList" renderItem={() => renderListItem()} items={[{}, {}, {}]} />
     </ScreenshotArea>
   );
 }
