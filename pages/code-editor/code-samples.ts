@@ -11,4 +11,7 @@ import awsTemplateSample from './samples/aws-template.yml';
 // @ts-ignore
 import sayHelloSample from './samples/say-hello';
 
-export { buildSample, awsTemplateSample, sayHelloSample };
+// @ts-ignore
+import htmlTest from './samples/test.html';
+
+export { buildSample, awsTemplateSample, sayHelloSample, htmlTest };
