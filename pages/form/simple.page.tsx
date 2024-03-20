@@ -14,6 +14,7 @@ import Container from '~components/container';
 import { range } from 'lodash';
 import Tiles from '~components/tiles';
 import Toggle from '~components/toggle';
+import labels from '../app-layout/utils/labels';
 
 const options: SelectProps['options'] = range(100).map(i => ({
   label: `item ${i}`,
@@ -27,6 +28,7 @@ export default function FormScenario() {
 
   return (
     <AppLayout
+      ariaLabels={labels}
       contentType="form"
       toolsHide={true}
       navigationHide={true}
