@@ -307,6 +307,10 @@ const Dropdown = ({
   useResizeObserver(() => dropdownRef.current, fixStretching);
 
   useLayoutEffect(() => {
+    console.log('------ Layout effect -------');
+    // console.log('dropdownContainer top' + dropdownContainerRef.current?.getBoundingClientRect().top);
+    console.log('Trigger top ' + triggerRef.current?.getBoundingClientRect().top);
+    console.log('----------------------------');
     const onDropdownOpen = () => {
       if (open && dropdownRef.current && triggerRef.current && verticalContainerRef.current) {
         // calculate scroll width only for dropdowns that has a scrollbar and ignore it for date picker components

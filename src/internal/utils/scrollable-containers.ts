@@ -30,6 +30,7 @@ export const getOverflowParentDimensions = ({
   expandToViewport: boolean;
   canExpandOutsideViewport: boolean;
 }): BoundingBox[] => {
+  // debugger
   const parents = expandToViewport
     ? []
     : getOverflowParents(element).map(el => {
