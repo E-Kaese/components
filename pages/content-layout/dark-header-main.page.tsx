@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '~components';
 import Alert from '~components/alert';
 import AppLayout from '~components/app-layout';
-import ContentLayout from '~components/content-layout';
+import ContentLayout from '../../lib/components-copy/content-layout';
 import Header from '~components/header';
 import Link from '~components/link';
 import SpaceBetween from '~components/space-between';
@@ -23,6 +23,7 @@ export default function () {
         breadcrumbs={<Breadcrumbs />}
         content={
           <ContentLayout
+            // disableOverlap={true}
             header={
               <SpaceBetween size="m">
                 <Header

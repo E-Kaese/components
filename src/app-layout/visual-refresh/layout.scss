@@ -63,6 +63,17 @@ explicitly set in script.
     minmax(var(#{custom-props.$defaultMinContentWidth}), var(#{custom-props.$defaultMaxContentWidth}))
     minmax(var(#{custom-props.$contentGapRight}), 1fr)
     min-content;
+  // 1. 0px
+  // 2. 0px
+  // 3. 0px
+  // 4. 16px
+  // 5. 28px
+  // 6. 0px
+  // 7. 0px
+  // 8. 4px
+  // 9. 104px
+  // 10. 1020px
+
   grid-template-rows:
     auto // mobileToolbar template area
     var(#{custom-props.$notificationsGap})

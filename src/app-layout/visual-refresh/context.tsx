@@ -54,7 +54,6 @@ interface AppLayoutInternals extends AppLayoutPropsWithDefaults {
   hasNotificationsContent: boolean;
   hasOpenDrawer?: boolean;
   hasStickyBackground: boolean;
-  isBackgroundOverlapDisabled: boolean;
   isMobile: boolean;
   isSplitPanelForcedPosition: boolean;
   isSplitPanelOpen?: boolean;
@@ -544,7 +543,6 @@ export const AppLayoutInternalsProvider = React.forwardRef(
           hasNotificationsContent,
           hasOpenDrawer,
           hasStickyBackground,
-          isBackgroundOverlapDisabled: props.disableContentHeaderOverlap || !hasBackgroundOverlap,
           isMobile,
           isSplitPanelForcedPosition,
           isSplitPanelOpen,

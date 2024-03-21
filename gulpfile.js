@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 const { series, parallel, watch } = require('gulp');
+const fse = require('fs-extra');
+const { sync: rimrafSync } = require('rimraf');
 const {
   clean,
   docs,
@@ -28,7 +30,8 @@ const quickBuild = series(
   clean,
   parallel(packageJSON, generateI18nMessages, generateEnvironment, generateIcons, generateIndexFile, licenses),
   parallel(generateCustomCssPropertiesMap, styles, typescript, testUtils),
-  bundleVendorFiles
+  bundleVendorFiles,
+  makeCopy
 );
 
 exports.clean = clean;
@@ -41,6 +44,11 @@ exports['test:integ'] = integ;
 exports['test:a11y'] = a11y;
 exports['test:motion'] = motion;
 
+async function makeCopy() {
+  rimrafSync(['lib/components-copy']);
+  await fse.copy('lib/components', 'lib/components-copy');
+}
+
 exports.watch = () => {
   watch(
     [
@@ -52,7 +60,7 @@ exports.watch = () => {
       '!**/__motion__/**',
       '!src/internal/vendor/**/*.ts',
     ],
-    typescript
+    series(typescript, makeCopy)
   );
   watch(['src/i18n/messages/*.json'], generateI18nMessages);
   watch(['src/test-utils/dom/**/*.ts', '!src/test-utils/dom/index.ts'], testUtils);
