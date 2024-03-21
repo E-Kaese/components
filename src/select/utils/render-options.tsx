@@ -12,7 +12,7 @@ export interface RenderOptionProps {
   options: ReadonlyArray<DropdownOption>;
   getOptionProps: any;
   filteringValue: string;
-  highlightType: HighlightType;
+  // highlightType: HighlightType;
   checkboxes?: boolean;
   hasDropdownStatus?: boolean;
   virtualItems?: VirtualItem[];
@@ -25,7 +25,7 @@ export const renderOptions = ({
   options,
   getOptionProps,
   filteringValue,
-  highlightType,
+  // highlightType,
   checkboxes = false,
   hasDropdownStatus,
   virtualItems,
@@ -58,7 +58,7 @@ export const renderOptions = ({
         screenReaderContent={screenReaderContent}
         ariaPosinset={globalIndex + 1}
         ariaSetsize={ariaSetsize}
-        highlightType={highlightType.type}
+        // highlightType={highlightType.type}
       />
     );
   });

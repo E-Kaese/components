@@ -13,7 +13,7 @@ import { useUniqueId } from '../internal/hooks/use-unique-id';
 import { getBaseProps } from '../internal/base-component';
 import { SelectProps } from './interfaces';
 import { prepareOptions } from '../internal/components/option/utils/prepare-options';
-import { useSelect } from './utils/use-select';
+import { useSelect } from './utils/use-select-copy';
 import { checkOptionValueField } from './utils/check-option-value-field';
 import { useNativeSearch } from './utils/use-native-search';
 import { fireNonCancelableEvent } from '../internal/events';
@@ -75,20 +75,20 @@ const InternalSelect = React.forwardRef(
     const baseProps = getBaseProps(restProps);
     const formFieldContext = useFormFieldContext(restProps);
 
-    const i18n = useInternalI18n('select');
-    const errorIconAriaLabel = i18n('errorIconAriaLabel', restProps.errorIconAriaLabel);
-    const selectedAriaLabel = i18n('selectedAriaLabel', restProps.selectedAriaLabel);
-    const recoveryText = i18n('recoveryText', restProps.recoveryText);
+    // const i18n = useInternalI18n('select');
+    // const errorIconAriaLabel = i18n('errorIconAriaLabel', restProps.errorIconAriaLabel);
+    // const selectedAriaLabel = i18n('selectedAriaLabel', restProps.selectedAriaLabel);
+    // const recoveryText = i18n('recoveryText', restProps.recoveryText);
 
     if (restProps.recoveryText && !onLoadItems) {
       warnOnce('Select', '`onLoadItems` must be provided for `recoveryText` to be displayed.');
     }
 
-    const { handleLoadMore, handleRecoveryClick, fireLoadItems } = useLoadItems({
-      onLoadItems,
-      options,
-      statusType,
-    });
+    // const { handleLoadMore, handleRecoveryClick, fireLoadItems } = useLoadItems({
+    //   onLoadItems,
+    //   options,
+    //   statusType,
+    // });
 
     checkControlled('Select', 'selectedOption', selectedOption, 'onChange', onChange);
 
@@ -111,17 +111,17 @@ const InternalSelect = React.forwardRef(
     const scrollToIndex = useRef<SelectListProps.SelectListRef>(null);
     const {
       isOpen,
-      highlightType,
-      highlightedOption,
-      highlightedIndex,
+      // highlightType,
+      // highlightedOption,
+      // highlightedIndex,
       getTriggerProps,
-      getDropdownProps,
-      getFilterProps,
+      // getDropdownProps,
+      // getFilterProps,
       getMenuProps,
       getOptionProps,
-      highlightOption,
+      // highlightOption,
       selectOption,
-      announceSelected,
+      // announceSelected,
     } = useSelect({
       selectedOptions: selectedOption ? [selectedOption] : [],
       updateSelectedOption: option => fireNonCancelableEvent(onChange, { selectedOption: option }),
@@ -130,36 +130,36 @@ const InternalSelect = React.forwardRef(
       onBlur,
       onFocus,
       externalRef,
-      fireLoadItems,
+      // fireLoadItems,
       setFilteringValue,
       statusType,
     });
-
-    const handleNativeSearch = useNativeSearch({
-      isEnabled: filteringType === 'none',
-      options: filteredOptions,
-      highlightOption: !isOpen ? selectOption : highlightOption,
-      highlightedOption: !isOpen ? selectedOption : highlightedOption?.option,
-    });
+    //
+    // const handleNativeSearch = useNativeSearch({
+    //   isEnabled: filteringType === 'none',
+    //   options: filteredOptions,
+    //   highlightOption: !isOpen ? selectOption : highlightOption,
+    //   highlightedOption: !isOpen ? selectedOption : highlightedOption?.option,
+    // });
 
     const selectAriaLabelId = useUniqueId('select-arialabel-');
     const footerId = useUniqueId('footer');
 
-    useEffect(() => {
-      scrollToIndex.current?.(highlightedIndex);
-    }, [highlightedIndex]);
+    // useEffect(() => {
+    //   scrollToIndex.current?.(highlightedIndex);
+    // }, [highlightedIndex]);
 
-    const filter = (
-      <Filter
-        clearAriaLabel={filteringClearAriaLabel}
-        filteringType={filteringType}
-        placeholder={filteringPlaceholder}
-        ariaLabel={filteringAriaLabel}
-        ariaRequired={ariaRequired}
-        value={filteringValue}
-        {...getFilterProps()}
-      />
-    );
+    // const filter = (
+    //   <Filter
+    //     clearAriaLabel={filteringClearAriaLabel}
+    //     filteringType={filteringType}
+    //     placeholder={filteringPlaceholder}
+    //     ariaLabel={filteringAriaLabel}
+    //     ariaRequired={ariaRequired}
+    //     value={filteringValue}
+    //     {...getFilterProps()}
+    //   />
+    // );
 
     const trigger = (
       <Trigger
@@ -177,43 +177,43 @@ const InternalSelect = React.forwardRef(
       />
     );
 
-    const isEmpty = !options || options.length === 0;
-    const isNoMatch = filteredOptions && filteredOptions.length === 0;
-    const isFiltered =
-      filteringType !== 'none' && filteringValue.length > 0 && filteredOptions && filteredOptions.length > 0;
-    const filteredText = isFiltered ? filteringResultsText?.(matchesCount, totalCount) : undefined;
+    // const isEmpty = !options || options.length === 0;
+    // const isNoMatch = filteredOptions && filteredOptions.length === 0;
+    // const isFiltered =
+    //   filteringType !== 'none' && filteringValue.length > 0 && filteredOptions && filteredOptions.length > 0;
+    // const filteredText = isFiltered ? filteringResultsText?.(matchesCount, totalCount) : undefined;
 
-    const dropdownStatus = useDropdownStatus({
-      statusType,
-      empty,
-      loadingText,
-      finishedText,
-      errorText,
-      recoveryText,
-      isEmpty,
-      isNoMatch,
-      noMatch,
-      isFiltered,
-      filteringResultsText: filteredText,
-      errorIconAriaLabel,
-      onRecoveryClick: handleRecoveryClick,
-      hasRecoveryCallback: !!onLoadItems,
-    });
+    // const dropdownStatus = useDropdownStatus({
+    //   statusType,
+    //   empty,
+    //   loadingText,
+    //   finishedText,
+    //   errorText,
+    //   recoveryText,
+    //   // isEmpty,
+    //   // isNoMatch,
+    //   noMatch,
+    //   // isFiltered,
+    //   // filteringResultsText: filteredText,
+    //   errorIconAriaLabel,
+    //   // onRecoveryClick: handleRecoveryClick,
+    //   hasRecoveryCallback: !!onLoadItems,
+    // });
 
     const menuProps = {
       ...getMenuProps(),
-      onLoadMore: handleLoadMore,
+      // onLoadMore: handleLoadMore,
       ariaLabelledby: joinStrings(selectAriaLabelId, controlId),
-      ariaDescribedby: dropdownStatus.content ? footerId : undefined,
+      // ariaDescribedby: dropdownStatus.content ? footerId : undefined,
     };
-
-    const announcement = useAnnouncement({
-      announceSelected,
-      highlightedOption,
-      getParent: option => parentMap.get(option)?.option as undefined | OptionGroup,
-      selectedAriaLabel,
-      renderHighlightedAriaLive,
-    });
+    //
+    // const announcement = useAnnouncement({
+    //   announceSelected,
+    //   highlightedOption,
+    //   getParent: option => parentMap.get(option)?.option as undefined | OptionGroup,
+    //   selectedAriaLabel,
+    //   renderHighlightedAriaLive,
+    // });
 
     const ListComponent = virtualScroll ? VirtualList : PlainList;
 
@@ -228,48 +228,47 @@ const InternalSelect = React.forwardRef(
 
     const mergedRef = useMergeRefs(rootRef, __internalRootRef);
 
-    const dropdownProps = getDropdownProps();
+    // const dropdownProps = getDropdownProps();
 
     return (
       <div
         {...baseProps}
         ref={mergedRef}
         className={clsx(styles.root, baseProps.className)}
-        onKeyPress={handleNativeSearch}
+        // onKeyPress={handleNativeSearch}
       >
         <Dropdown
-          {...dropdownProps}
-          ariaLabelledby={dropdownProps.dropdownContentRole ? joinStrings(selectAriaLabelId, controlId) : undefined}
-          ariaDescribedby={
-            dropdownProps.dropdownContentRole ? (dropdownStatus.content ? footerId : undefined) : undefined
-          }
+          // ariaLabelledby={dropdownProps.dropdownContentRole ? joinStrings(selectAriaLabelId, controlId) : undefined}
+          // ariaDescribedby={
+          //   dropdownProps.dropdownContentRole ? (dropdownStatus.content ? footerId : undefined) : undefined
+          // }
           open={isOpen}
           stretchTriggerHeight={__inFilteringToken}
           stretchBeyondTriggerWidth={true}
           trigger={trigger}
-          header={filter}
+          // header={filter}
           onMouseDown={handleMouseDown}
-          footer={
-            dropdownStatus.isSticky ? (
-              <DropdownFooter content={isOpen ? dropdownStatus.content : null} id={footerId} />
-            ) : null
-          }
+          // footer={
+          //   dropdownStatus.isSticky ? (
+          //     <DropdownFooter content={isOpen ? dropdownStatus.content : null} id={footerId} />
+          //   ) : null
+          // }
           expandToViewport={expandToViewport}
         >
           <ListComponent
-            listBottom={
-              !dropdownStatus.isSticky ? (
-                <DropdownFooter content={isOpen ? dropdownStatus.content : null} id={footerId} />
-              ) : null
-            }
+            // listBottom={
+            //   !dropdownStatus.isSticky ? (
+            //     <DropdownFooter content={isOpen ? dropdownStatus.content : null} id={footerId} />
+            //   ) : null
+            // }
             menuProps={menuProps}
             getOptionProps={getOptionProps}
             filteredOptions={filteredOptions}
             filteringValue={filteringValue}
             ref={scrollToIndex}
-            hasDropdownStatus={dropdownStatus.content !== null}
-            screenReaderContent={announcement}
-            highlightType={highlightType}
+            // hasDropdownStatus={dropdownStatus.content !== null}
+            // screenReaderContent={announcement}
+            // highlightType={highlightType}
           />
         </Dropdown>
         <ScreenreaderOnly id={selectAriaLabelId}>{ariaLabel}</ScreenreaderOnly>

@@ -15,7 +15,7 @@ export interface SelectListProps {
   getOptionProps: GetOptionProps;
   filteredOptions: ReadonlyArray<DropdownOption>;
   filteringValue: string;
-  highlightType: HighlightType;
+  // highlightType: HighlightType;
   checkboxes?: boolean;
   hasDropdownStatus?: boolean;
   listBottom?: React.ReactNode;
@@ -33,7 +33,7 @@ const PlainList = (
     getOptionProps,
     filteredOptions,
     filteringValue,
-    highlightType,
+    // highlightType,
     checkboxes,
     hasDropdownStatus,
     listBottom,
@@ -43,16 +43,16 @@ const PlainList = (
   ref: React.Ref<SelectListProps.SelectListRef>
 ) => {
   const menuRef = menuProps.ref;
-  useImperativeHandle(
-    ref,
-    () => (index: number) => {
-      const item = menuRef.current?.querySelector<HTMLElement>(`[data-mouse-target="${index}"]`);
-      if (highlightType.moveFocus && item) {
-        scrollElementIntoView(item);
-      }
-    },
-    [highlightType, menuRef]
-  );
+  // useImperativeHandle(
+  //   ref,
+  //   () => (index: number) => {
+  //     const item = menuRef.current?.querySelector<HTMLElement>(`[data-mouse-target="${index}"]`);
+  //     if (highlightType.moveFocus && item) {
+  //       scrollElementIntoView(item);
+  //     }
+  //   },
+  //   [highlightType, menuRef]
+  // );
 
   return (
     <OptionsList {...menuProps}>
@@ -60,7 +60,7 @@ const PlainList = (
         options: filteredOptions,
         getOptionProps,
         filteringValue,
-        highlightType,
+        // highlightType,
         checkboxes,
         hasDropdownStatus,
         useInteractiveGroups,

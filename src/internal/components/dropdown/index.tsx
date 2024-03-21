@@ -52,8 +52,8 @@ const DropdownContainer = ({ children, renderWithPortal = false, id, referrerId,
 };
 
 interface TransitionContentProps {
-  state: TransitionStatus;
-  transitionRef: React.MutableRefObject<any>;
+  // state: TransitionStatus;
+  // transitionRef: React.MutableRefObject<any>;
   dropdownClasses: string;
   stretchWidth: boolean;
   interior: boolean;
@@ -75,8 +75,8 @@ interface TransitionContentProps {
 }
 
 const TransitionContent = ({
-  state,
-  transitionRef,
+  // state,
+  // transitionRef,
   dropdownClasses,
   stretchWidth,
   interior,
@@ -96,36 +96,36 @@ const TransitionContent = ({
   ariaLabelledby,
   ariaDescribedby,
 }: TransitionContentProps) => {
-  const contentRef = useMergeRefs(dropdownRef, transitionRef);
+  // const contentRef = useMergeRefs(dropdownRef, transitionRef);
   return (
     <div
       className={clsx(styles.dropdown, dropdownClasses, {
         [styles.open]: open,
         [styles['with-limited-width']]: !stretchWidth,
-        [styles['hide-block-start-border']]: stretchWidth && position?.includes('bottom'),
-        [styles['hide-block-end-border']]: stretchWidth && position?.includes('top'),
+        // [styles['hide-block-start-border']]: stretchWidth && position?.includes('bottom'),
+        // [styles['hide-block-end-border']]: stretchWidth && position?.includes('top'),
         [styles.interior]: interior,
         [styles.refresh]: isRefresh,
-        [styles['use-portal']]: expandToViewport && !interior,
-        [styles['stretch-beyond-trigger-width']]: stretchBeyondTriggerWidth,
+        // [styles['use-portal']]: expandToViewport && !interior,
+        // [styles['stretch-beyond-trigger-width']]: stretchBeyondTriggerWidth,
       })}
-      ref={contentRef}
+      ref={dropdownRef}
       id={id}
       role={role}
       aria-labelledby={ariaLabelledby}
       aria-describedby={ariaDescribedby}
       data-open={open}
-      data-animating={state !== 'exited'}
+      // data-animating={state !== 'exited'}
       aria-hidden={!open}
-      style={
-        stretchBeyondTriggerWidth ? { [customCssProps.dropdownDefaultMaxWidth]: `${defaultMaxDropdownWidth}px` } : {}
-      }
+      // style={
+      //   stretchBeyondTriggerWidth ? { [customCssProps.dropdownDefaultMaxWidth]: `${defaultMaxDropdownWidth}px` } : {}
+      // }
       onMouseDown={onMouseDown}
     >
       <div
         className={clsx(
           styles['dropdown-content-wrapper'],
-          !header && !children && styles['is-empty'],
+          // !header && !children && styles['is-empty'],
           isRefresh && styles.refresh
         )}
       >
@@ -200,13 +200,13 @@ const Dropdown = ({
       verticalContainer.style.maxHeight = position.height;
     }
 
-    if (entireWidth && !expandToViewport) {
-      if (stretchToTriggerWidth) {
-        target.classList.add(styles['occupy-entire-width']);
-      }
-    } else {
-      target.style.width = position.width;
-    }
+    // if (entireWidth && !expandToViewport) {
+    //   if (stretchToTriggerWidth) {
+    //     target.classList.add(styles['occupy-entire-width']);
+    //   }
+    // } else {
+    //   target.style.width = position.width;
+    // }
 
     // Using styles for main dropdown to adjust its position as preferred alternative
     if (position.dropUp && !interior) {
@@ -223,36 +223,36 @@ const Dropdown = ({
       target.style.left = position.left;
     }
 
-    // Position normal overflow dropdowns with fixed positioning relative to viewport
-    if (expandToViewport && !interior) {
-      target.style.position = 'fixed';
-      if (position.dropUp) {
-        target.style.bottom = `calc(100% - ${triggerBox.top}px)`;
-      } else {
-        target.style.top = `${triggerBox.bottom}px`;
-      }
-      if (position.dropLeft) {
-        target.style.left = `calc(${triggerBox.right}px - ${position.width})`;
-      } else {
-        target.style.left = `${triggerBox.left}px`;
-      }
-      // Keep track of the initial dropdown position and direction.
-      // Dropdown direction doesn't need to change as the user scrolls, just needs to stay attached to the trigger.
-      fixedPosition.current = position;
-      return;
-    }
+    // // Position normal overflow dropdowns with fixed positioning relative to viewport
+    // if (expandToViewport && !interior) {
+    //   target.style.position = 'fixed';
+    //   if (position.dropUp) {
+    //     target.style.bottom = `calc(100% - ${triggerBox.top}px)`;
+    //   } else {
+    //     target.style.top = `${triggerBox.bottom}px`;
+    //   }
+    //   if (position.dropLeft) {
+    //     target.style.left = `calc(${triggerBox.right}px - ${position.width})`;
+    //   } else {
+    //     target.style.left = `${triggerBox.left}px`;
+    //   }
+    //   // Keep track of the initial dropdown position and direction.
+    //   // Dropdown direction doesn't need to change as the user scrolls, just needs to stay attached to the trigger.
+    //   fixedPosition.current = position;
+    //   return;
+    // }
 
     // For an interior dropdown (the fly out) we need exact values for positioning
     // and classes are not enough
     // usage of relative position is impossible due to overwrite of overflow-x
-    if (interior && isInteriorPosition(position)) {
-      if (position.dropUp) {
-        target.style.bottom = position.bottom;
-      } else {
-        target.style.top = position.top;
-      }
-      target.style.left = position.left;
-    }
+    // if (interior && isInteriorPosition(position)) {
+    //   if (position.dropUp) {
+    //     target.style.bottom = position.bottom;
+    //   } else {
+    //     target.style.top = position.top;
+    //   }
+    //   target.style.left = position.left;
+    // }
 
     if (position.dropUp && position.dropLeft) {
       setPosition('top-left');
@@ -265,47 +265,47 @@ const Dropdown = ({
     }
   };
 
-  const isOutsideDropdown = (element: Element) =>
-    (!wrapperRef.current || !nodeBelongs(wrapperRef.current, element)) &&
-    (!dropdownContainerRef.current || !nodeBelongs(dropdownContainerRef.current, element));
-
-  const focusHandler = (event: React.FocusEvent) => {
-    if (!event.relatedTarget || isOutsideDropdown(event.relatedTarget)) {
-      fireNonCancelableEvent(onFocus, event);
-    }
-  };
-
-  const blurHandler = (event: React.FocusEvent) => {
-    if (!event.relatedTarget || isOutsideDropdown(event.relatedTarget)) {
-      fireNonCancelableEvent(onBlur, event);
-    }
-  };
+  // const isOutsideDropdown = (element: Element) =>
+  //   (!wrapperRef.current || !nodeBelongs(wrapperRef.current, element)) &&
+  //   (!dropdownContainerRef.current || !nodeBelongs(dropdownContainerRef.current, element));
+  //
+  // const focusHandler = (event: React.FocusEvent) => {
+  //   if (!event.relatedTarget || isOutsideDropdown(event.relatedTarget)) {
+  //     fireNonCancelableEvent(onFocus, event);
+  //   }
+  // };
+  //
+  // const blurHandler = (event: React.FocusEvent) => {
+  //   if (!event.relatedTarget || isOutsideDropdown(event.relatedTarget)) {
+  //     fireNonCancelableEvent(onBlur, event);
+  //   }
+  // };
 
   // Prevent the dropdown width from stretching beyond the trigger width
   // if that is going to cause the dropdown to be cropped because of overflow
-  const fixStretching = () => {
-    const classNameToRemove = styles['stretch-beyond-trigger-width'];
-    if (
-      open &&
-      stretchBeyondTriggerWidth &&
-      dropdownRef.current &&
-      triggerRef.current &&
-      dropdownRef.current.classList.contains(classNameToRemove) &&
-      !hasEnoughSpaceToStretchBeyondTriggerWidth({
-        triggerElement: triggerRef.current,
-        dropdownElement: dropdownRef.current,
-        desiredMinWidth: minWidth,
-        expandToViewport,
-        stretchWidth,
-        stretchHeight,
-        isMobile,
-      })
-    ) {
-      dropdownRef.current.classList.remove(classNameToRemove);
-    }
-  };
-
-  useResizeObserver(() => dropdownRef.current, fixStretching);
+  // const fixStretching = () => {
+  //   const classNameToRemove = styles['stretch-beyond-trigger-width'];
+  //   if (
+  //     open &&
+  //     stretchBeyondTriggerWidth &&
+  //     dropdownRef.current &&
+  //     triggerRef.current &&
+  //     dropdownRef.current.classList.contains(classNameToRemove) &&
+  //     !hasEnoughSpaceToStretchBeyondTriggerWidth({
+  //       triggerElement: triggerRef.current,
+  //       dropdownElement: dropdownRef.current,
+  //       desiredMinWidth: minWidth,
+  //       expandToViewport,
+  //       stretchWidth,
+  //       stretchHeight,
+  //       isMobile,
+  //     })
+  //   ) {
+  //     dropdownRef.current.classList.remove(classNameToRemove);
+  //   }
+  // };
+  //
+  // useResizeObserver(() => dropdownRef.current, fixStretching);
 
   useLayoutEffect(() => {
     console.log('------ Layout effect -------');
@@ -315,9 +315,10 @@ const Dropdown = ({
     const onDropdownOpen = () => {
       if (open && dropdownRef.current && triggerRef.current && verticalContainerRef.current) {
         // calculate scroll width only for dropdowns that has a scrollbar and ignore it for date picker components
-        if (scrollable) {
-          dropdownRef.current.classList.add(styles.nowrap);
-        }
+        // if (scrollable) {
+        //   dropdownRef.current.classList.add(styles.nowrap);
+        // }
+
         setDropdownPosition(
           ...calculatePosition(
             dropdownRef.current,
@@ -335,81 +336,87 @@ const Dropdown = ({
           dropdownRef.current,
           verticalContainerRef.current
         );
-        if (scrollable) {
-          dropdownRef.current.classList.remove(styles.nowrap);
-        }
+        // if (scrollable) {
+        //   dropdownRef.current.classList.remove(styles.nowrap);
+        // }
       }
     };
     onDropdownOpen();
 
-    if (open) {
-      // window may scroll when dropdown opens, for example when soft keyboard shows up
-      window.addEventListener('scroll', onDropdownOpen);
-      // only listen to window scroll within very short time after the dropdown opens
-      // do not want to interfere dropdown position on scroll afterwards
-      const timeoutId = setTimeout(() => {
-        window.removeEventListener('scroll', onDropdownOpen);
-      }, 500);
-
-      return () => {
-        clearTimeout(timeoutId);
-        window.removeEventListener('scroll', onDropdownOpen);
-      };
-    }
+    // if (open) {
+    //   // window may scroll when dropdown opens, for example when soft keyboard shows up
+    //   window.addEventListener('scroll', onDropdownOpen);
+    //   // only listen to window scroll within very short time after the dropdown opens
+    //   // do not want to interfere dropdown position on scroll afterwards
+    //   const timeoutId = setTimeout(() => {
+    //     window.removeEventListener('scroll', onDropdownOpen);
+    //   }, 500);
+    //
+    //   return () => {
+    //     clearTimeout(timeoutId);
+    //     window.removeEventListener('scroll', onDropdownOpen);
+    //   };
+    // }
     // See AWSUI-13040
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, dropdownRef, triggerRef, verticalContainerRef, interior, stretchWidth, isMobile, contentKey]);
 
   // subscribe to outside click
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    const clickListener = (e: MouseEvent) => {
-      if (!nodeBelongs(dropdownRef.current, e.target) && !nodeBelongs(triggerRef.current, e.target)) {
-        fireNonCancelableEvent(onDropdownClose);
-      }
-    };
-    window.addEventListener('click', clickListener, true);
-
-    return () => {
-      window.removeEventListener('click', clickListener, true);
-    };
-  }, [open, onDropdownClose]);
+  // useEffect(() => {
+  //   if (!open) {
+  //     return;
+  //   }
+  //   const clickListener = (e: MouseEvent) => {
+  //     if (!nodeBelongs(dropdownRef.current, e.target) && !nodeBelongs(triggerRef.current, e.target)) {
+  //       fireNonCancelableEvent(onDropdownClose);
+  //     }
+  //   };
+  //   window.addEventListener('click', clickListener, true);
+  //
+  //   return () => {
+  //     window.removeEventListener('click', clickListener, true);
+  //   };
+  // }, [open, onDropdownClose]);
 
   // sync dropdown position on scroll and resize
-  useLayoutEffect(() => {
-    if (!expandToViewport || !open) {
-      return;
-    }
-    const updateDropdownPosition = () => {
-      if (triggerRef.current && dropdownRef.current && verticalContainerRef.current) {
-        const triggerRect = triggerRef.current.getBoundingClientRect();
-        const target = dropdownRef.current;
-        if (fixedPosition.current) {
-          if (fixedPosition.current.dropUp) {
-            dropdownRef.current.style.bottom = `calc(100% - ${triggerRect.top}px)`;
-          } else {
-            target.style.top = `${triggerRect.bottom}px`;
-          }
-          if (fixedPosition.current.dropLeft) {
-            target.style.left = `calc(${triggerRect.right}px - ${fixedPosition.current.width})`;
-          } else {
-            target.style.left = `${triggerRect.left}px`;
-          }
-        }
-      }
-    };
+  // useLayoutEffect(() => {
+  //   if (!expandToViewport || !open) {
+  //     return;
+  //   }
+  //   const updateDropdownPosition = () => {
+  //     if (triggerRef.current && dropdownRef.current && verticalContainerRef.current) {
+  //       const triggerRect = triggerRef.current.getBoundingClientRect();
+  //       const target = dropdownRef.current;
+  //       if (fixedPosition.current) {
+  //         if (fixedPosition.current.dropUp) {
+  //           dropdownRef.current.style.bottom = `calc(100% - ${triggerRect.top}px)`;
+  //         } else {
+  //           target.style.top = `${triggerRect.bottom}px`;
+  //         }
+  //         if (fixedPosition.current.dropLeft) {
+  //           target.style.left = `calc(${triggerRect.right}px - ${fixedPosition.current.width})`;
+  //         } else {
+  //           target.style.left = `${triggerRect.left}px`;
+  //         }
+  //       }
+  //     }
+  //   };
+  //
+  //   updateDropdownPosition();
+  //
+  //   window.addEventListener('scroll', updateDropdownPosition, true);
+  //   window.addEventListener('resize', updateDropdownPosition, true);
+  //   return () => {
+  //     window.removeEventListener('scroll', updateDropdownPosition, true);
+  //     window.removeEventListener('resize', updateDropdownPosition, true);
+  //   };
+  // }, [open, expandToViewport]);
 
-    updateDropdownPosition();
-
-    window.addEventListener('scroll', updateDropdownPosition, true);
-    window.addEventListener('resize', updateDropdownPosition, true);
-    return () => {
-      window.removeEventListener('scroll', updateDropdownPosition, true);
-      window.removeEventListener('resize', updateDropdownPosition, true);
-    };
-  }, [open, expandToViewport]);
+  // const onScroll = () => {
+  //   debugger
+  //   console.log('scroll');
+  // };
+  // window.addEventListener('scroll', onScroll, true);
 
   const referrerId = useUniqueId();
 
@@ -417,21 +424,21 @@ const Dropdown = ({
     <div
       className={clsx(
         styles.root,
-        interior && styles.interior,
+        // interior && styles.interior,
         stretchTriggerHeight && styles['stretch-trigger-height']
       )}
       ref={wrapperRef}
-      onFocus={focusHandler}
-      onBlur={blurHandler}
+      // onFocus={focusHandler}
+      // onBlur={blurHandler}
     >
       <div id={referrerId} className={clsx(stretchTriggerHeight && styles['stretch-trigger-height'])} ref={triggerRef}>
         {trigger}
       </div>
 
-      <TabTrap
-        focusNextCallback={() => dropdownRef.current && getFirstFocusable(dropdownRef.current)?.focus()}
-        disabled={!open || !loopFocus}
-      />
+      {/*<TabTrap*/}
+      {/*  focusNextCallback={() => dropdownRef.current && getFirstFocusable(dropdownRef.current)?.focus()}*/}
+      {/*  disabled={!open || !loopFocus}*/}
+      {/*/>*/}
 
       <DropdownContainer
         renderWithPortal={expandToViewport && !interior}
@@ -439,17 +446,17 @@ const Dropdown = ({
         referrerId={referrerId}
         open={open}
       >
-        <Transition in={open ?? false} exit={false}>
-          {(state, ref) => (
+        {/*<Transition in={open ?? false} exit={false}>*/}
+        {/*  {(state, ref) => (*/}
             <div ref={dropdownContainerRef}>
-              <TabTrap
-                focusNextCallback={() => triggerRef.current && getLastFocusable(triggerRef.current)?.focus()}
-                disabled={!open || !loopFocus}
-              />
+              {/*<TabTrap*/}
+              {/*  focusNextCallback={() => triggerRef.current && getLastFocusable(triggerRef.current)?.focus()}*/}
+              {/*  disabled={!open || !loopFocus}*/}
+              {/*/>*/}
 
               <TransitionContent
-                state={state}
-                transitionRef={ref}
+                // state={state}
+                // transitionRef={ref}
                 dropdownClasses={dropdownClasses}
                 open={open}
                 stretchWidth={stretchWidth}
@@ -471,20 +478,20 @@ const Dropdown = ({
                 {children}
               </TransitionContent>
 
-              <TabTrap
-                focusNextCallback={() => triggerRef.current && getFirstFocusable(triggerRef.current)?.focus()}
-                disabled={!open || !loopFocus}
-              />
+              {/*<TabTrap*/}
+              {/*  focusNextCallback={() => triggerRef.current && getFirstFocusable(triggerRef.current)?.focus()}*/}
+              {/*  disabled={!open || !loopFocus}*/}
+              {/*/>*/}
             </div>
-          )}
-        </Transition>
+        {/*  )}*/}
+        {/*</Transition>*/}
       </DropdownContainer>
     </div>
   );
 };
 
-const isInteriorPosition = (
-  position: DropdownPosition | InteriorDropdownPosition
-): position is InteriorDropdownPosition => (position as InteriorDropdownPosition).bottom !== undefined;
+// const isInteriorPosition = (
+//   position: DropdownPosition | InteriorDropdownPosition
+// ): position is InteriorDropdownPosition => (position as InteriorDropdownPosition).bottom !== undefined;
 
 export default Dropdown;

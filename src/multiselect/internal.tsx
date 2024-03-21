@@ -345,7 +345,7 @@ const InternalMultiselect = React.forwardRef(
             checkboxes={true}
             useInteractiveGroups={useInteractiveGroups}
             screenReaderContent={announcement}
-            highlightType={highlightType}
+            // highlightType={highlightType}
           />
         </Dropdown>
         {showTokens && (
