@@ -50,18 +50,20 @@ const optionsSemiExtended: SelectProps['options'] = [
 export default function SelectPage() {
   return (
     <article>
-      <Box variant="h1">Overflow test</Box>
-      <Box variant="p">Dropdown should not be rendered beyond the container with overflow hidden</Box>
-      <div style={{ height: '600px' }}>Placeholder</div>
-      <div style={{ overflow: 'hidden', height: '200px', width: '300px' }}>
-        <Select
-          id="select_overflow"
-          placeholder="Choose option"
-          selectedOption={null}
-          options={optionsSemiExtended}
-          expandToViewport={true}
-        />
-      </div>
+      <Box margin="l">
+        <Box variant="h1">Overflow test</Box>
+        <Box variant="p">Dropdown should not be rendered beyond the container with overflow hidden</Box>
+        <div style={{ height: '600px' }}>Placeholder</div>
+        <div style={{ overflow: 'hidden', height: '200px', width: '300px' }}>
+          <Select
+            id="select_overflow"
+            placeholder="Choose option"
+            selectedOption={null}
+            options={optionsSemiExtended}
+            expandToViewport={true}
+          />
+        </div>
+      </Box>
     </article>
   );
 }
