@@ -21,7 +21,7 @@ const VirtualListOpen = forwardRef(
       getOptionProps,
       filteredOptions,
       filteringValue,
-      // highlightType,
+      highlightType,
       checkboxes,
       hasDropdownStatus,
       listBottom,
@@ -46,20 +46,20 @@ const VirtualListOpen = forwardRef(
       estimateSize: useCallback(() => 31, [width, filteringValue]),
     });
 
-    // useImperativeHandle(
-    //   ref,
-    //   () => (index: number) => {
-    //     if (highlightType.moveFocus) {
-    //       scrollToIndex(index);
-    //     }
-    //   },
-    //   [highlightType, scrollToIndex]
-    // );
+    useImperativeHandle(
+      ref,
+      () => (index: number) => {
+        if (highlightType.moveFocus) {
+          scrollToIndex(index);
+        }
+      },
+      [highlightType, scrollToIndex]
+    );
     const finalOptions = renderOptions({
       options: virtualItems.map(({ index }) => filteredOptions[index]),
       getOptionProps,
       filteringValue,
-      // highlightType,
+      highlightType,
       checkboxes,
       hasDropdownStatus,
       virtualItems,

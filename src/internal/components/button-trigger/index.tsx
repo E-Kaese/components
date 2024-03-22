@@ -82,8 +82,8 @@ const ButtonTrigger = (
     onKeyUp: onKeyUp && (event => fireKeyboardEvent(onKeyUp, event)),
     onMouseDown: onMouseDown && (event => fireCancelableEvent(onMouseDown, {}, event)),
     onClick: onClick && (event => fireCancelableEvent(onClick, {}, event)),
-    // onFocus: onFocus && (event => fireCancelableEvent(onFocus, {}, event)),
-    // onBlur: onBlur && (event => fireCancelableEvent(onBlur, { relatedTarget: event.relatedTarget }, event)),
+    onFocus: onFocus && (event => fireCancelableEvent(onFocus, {}, event)),
+    onBlur: onBlur && (event => fireCancelableEvent(onBlur, { relatedTarget: event.relatedTarget }, event)),
     autoFocus,
   };
 
