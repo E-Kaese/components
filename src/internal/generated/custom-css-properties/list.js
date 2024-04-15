@@ -7,6 +7,7 @@
 const customCssPropertiesList = [
   // AppLayout Custom Properties
   'breadcrumbsGap',
+  'contentGap',
   'contentGapLeft',
   'contentGapRight',
   'contentHeight',

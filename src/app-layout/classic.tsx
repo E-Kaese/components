@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } 
 import { useControllable } from '../internal/hooks/use-controllable';
 import { useMobile } from '../internal/hooks/use-mobile';
 import { fireNonCancelableEvent } from '../internal/events';
-import { AppLayoutProps, AppLayoutPropsWithDefaults } from './interfaces';
+import { AppLayoutInternalProps, AppLayoutProps } from './interfaces';
 import { Notifications } from './notifications';
 import { MobileToolbar } from './mobile-toolbar';
 import { useFocusControl } from './utils/use-focus-control';
@@ -73,7 +73,7 @@ const ClassicAppLayout = React.forwardRef(
       onDrawerChange,
       activeDrawerId: controlledActiveDrawerId,
       ...rest
-    }: AppLayoutPropsWithDefaults,
+    }: AppLayoutInternalProps,
     ref: React.Ref<AppLayoutProps.Ref>
   ) => {
     // Private API for embedded view mode

@@ -306,18 +306,32 @@ notifications top margin and some additional vertical space for aesthetics.
   }
 }
 
-/*
-This CSS class is applied to the document body to prevent overflow scrolling
-when the navigation or tools drawers are open in responsive viewports.
-*/
-.block-body-scroll {
-  overflow: hidden;
+.left-panel {
+  grid-column: 1;
+  grid-row: 1 / span 10;
 }
 
-// Prevent content that is visually hidden behind drawers and content area in mobile view from receiving focus
-/* stylelint-disable selector-max-universal, selector-combinator-disallowed-list */
-.unfocusable,
-.unfocusable * {
-  visibility: hidden !important;
+.notifications {
+  grid-area: notifications;
 }
-/* stylelint-enable selector-max-universal, selector-combinator-disallowed-list */
+
+.breadcrumbs {
+  grid-area: breadcrumbs;
+}
+
+.contentHeader {
+  grid-area: header;
+}
+
+.content {
+  grid-area: main;
+}
+
+.right-panel {
+  grid-column: 5;
+  grid-row: 1 / span 10;
+}
+
+.bottom-bar {
+  // TODO support this
+}

@@ -4,11 +4,9 @@ import React from 'react';
 import { useVisualRefresh } from '../internal/hooks/use-visual-mode';
 import ClassicAppLayout from './classic';
 import RefreshedAppLayout from './visual-refresh';
-import { AppLayoutProps, AppLayoutPropsWithDefaults } from './interfaces';
+import { AppLayoutInternalProps, AppLayoutProps } from './interfaces';
 
-export const AppLayoutImplementation = React.forwardRef<AppLayoutProps.Ref, AppLayoutPropsWithDefaults>(
-  (props, ref) => {
-    const isRefresh = useVisualRefresh();
-    return isRefresh ? <RefreshedAppLayout ref={ref} {...props} /> : <ClassicAppLayout ref={ref} {...props} />;
-  }
-);
+export const AppLayoutImplementation = React.forwardRef<AppLayoutProps.Ref, AppLayoutInternalProps>((props, ref) => {
+  const isRefresh = useVisualRefresh();
+  return isRefresh ? <RefreshedAppLayout ref={ref} {...props} /> : <ClassicAppLayout ref={ref} {...props} />;
+});

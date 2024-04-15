@@ -7,7 +7,6 @@
 @use './breadcrumbs.scss';
 @use './drawers.scss';
 @use './header.scss';
-@use './layout.scss';
 @use './main.scss';
 @use './mobile-toolbar.scss';
 @use './navigation.scss';
@@ -15,3 +14,19 @@
 @use './split-panel.scss';
 @use './tools.scss';
 @use './trigger-button.scss';
+
+/*
+This CSS class is applied to the document body to prevent overflow scrolling
+when the navigation or tools drawers are open in responsive viewports.
+*/
+.block-body-scroll {
+  overflow: hidden;
+}
+
+// Prevent content that is visually hidden behind drawers and content area in mobile view from receiving focus
+/* stylelint-disable selector-max-universal, selector-combinator-disallowed-list */
+.unfocusable,
+.unfocusable * {
+  visibility: hidden !important;
+}
+/* stylelint-enable selector-max-universal, selector-combinator-disallowed-list */

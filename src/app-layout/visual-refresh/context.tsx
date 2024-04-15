@@ -12,7 +12,7 @@ import React, {
 } from 'react';
 import { AppLayoutContext } from '../../internal/context/app-layout-context';
 import { DynamicOverlapContext } from '../../internal/context/dynamic-overlap-context';
-import { AppLayoutProps, AppLayoutPropsWithDefaults } from '../interfaces';
+import { AppLayoutInternalProps, AppLayoutProps } from '../interfaces';
 import { fireNonCancelableEvent } from '../../internal/events';
 import { FocusControlRefs, useFocusControl } from '../utils/use-focus-control';
 import { getSplitPanelDefaultSize } from '../../split-panel/utils/size-utils';
@@ -30,7 +30,7 @@ import { useDrawers } from '../utils/use-drawers';
 import { useUniqueId } from '../../internal/hooks/use-unique-id';
 import { SPLIT_PANEL_MIN_WIDTH } from '../split-panel';
 
-interface AppLayoutInternals extends AppLayoutPropsWithDefaults {
+interface AppLayoutInternals extends AppLayoutInternalProps {
   activeDrawerId: string | null;
   drawers: Array<AppLayoutProps.Drawer> | undefined;
   drawersAriaLabel: string | undefined;
@@ -95,7 +95,7 @@ interface AppLayoutInternals extends AppLayoutPropsWithDefaults {
  */
 const AppLayoutInternalsContext = createContext<AppLayoutInternals | null>(null);
 
-interface AppLayoutProviderInternalsProps extends AppLayoutPropsWithDefaults {
+interface AppLayoutProviderInternalsProps extends AppLayoutInternalProps {
   children: React.ReactNode;
 }
 
