@@ -1,9 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
-import { KeyValueProps } from '~components';
 import Box from '~components/box';
 import Button from '~components/button';
+import { KeyValueProps } from '~components/key-value';
 import Link from '~components/link';
 import Popover from '~components/popover';
 import ProgressBar from '~components/progress-bar';

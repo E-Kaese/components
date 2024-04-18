@@ -1,6 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React from 'react';
+import React, { ReactNode } from 'react';
 import clsx from 'clsx';
 import { getBaseProps } from '../../internal/base-component';
 import useBaseComponent from '../../internal/hooks/use-base-component';
@@ -13,15 +13,21 @@ import styles from './styles.css.js';
 
 export { KeyValueProps };
 
+const Term = ({ children }: { children: ReactNode }) => {
+  return <dt className={styles.term}>{children}</dt>;
+};
+
+const Details = ({ children }: { children: ReactNode }) => {
+  return <dd className={styles.details}>{children}</dd>;
+};
+
+const ListItem = ({ children }: { children: ReactNode }) => {
+  return <div className={styles.item}>{children}</div>;
+};
+
 const Pair = ({ label, value }: KeyValueProps.Pair) => (
   <div className={styles.pair}>
-    {label && (
-      <dt>
-        <InternalBox className={styles.label} variant="awsui-key-label">
-          {label}
-        </InternalBox>
-      </dt>
-    )}
+    {label && <dt className={styles.label}>{label}</dt>}
     <dd className={styles.value}>{value || '–'}</dd>
   </div>
 );
@@ -29,11 +35,14 @@ const Pair = ({ label, value }: KeyValueProps.Pair) => (
 const Group = ({ title, pairs }: KeyValueProps.Group) => {
   return (
     <>
-      {title && (
-        <InternalBox className={styles.title} variant="h3" padding={{ top: 'n', bottom: 'l' }}>
-          {title}
-        </InternalBox>
-      )}
+      {title &&
+        (typeof title === 'string' ? (
+          <InternalBox className={styles.title} variant="h3" padding={{ top: 'n', bottom: 'l' }}>
+            {title}
+          </InternalBox>
+        ) : (
+          title
+        ))}
       <dl className={styles.list}>
         {pairs.map((pair: KeyValueProps.Pair, index: number) => (
           <Pair key={index} label={pair.label} value={pair.value} />
@@ -43,14 +52,14 @@ const Group = ({ title, pairs }: KeyValueProps.Group) => {
   );
 };
 
-const List = ({ pairsList, ...restProps }: KeyValueProps.List) => {
+const List = ({ pairs, ...restProps }: KeyValueProps.List) => {
   const baseComponentProps = useBaseComponent('List');
   const baseProps = getBaseProps(restProps);
   const className = clsx(baseProps.className, styles.root);
   const [breakpoint, ref] = useContainerBreakpoints(COLUMN_TRIGGERS);
 
   let columnCount: 1 | 2 | 3 | 4;
-  const nItems = pairsList ? pairsList.length : 0;
+  const nItems = pairs ? pairs.length : 0;
   // Determine the most efficient column layout based on number of pairs provided
   const columnsLookup: Record<number, 1 | 2 | 3 | 4> = {
     0: 1,
@@ -79,7 +88,7 @@ const List = ({ pairsList, ...restProps }: KeyValueProps.List) => {
   const rowsInColumn = columnIndex < remainder ? minRowsInColumn + 1 : minRowsInColumn;
 
   // Build columns
-  pairsList.forEach(pair => {
+  pairs.forEach(pair => {
     if (!columnsConfig[columnIndex]) {
       columnsConfig[columnIndex] = [{ ...pair }];
     } else {
@@ -104,4 +113,4 @@ const List = ({ pairsList, ...restProps }: KeyValueProps.List) => {
   );
 };
 
-export { Pair, Group, List };
+export { Pair, Group, List, ListItem, Term, Details };

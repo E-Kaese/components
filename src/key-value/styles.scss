@@ -2,32 +2,25 @@
  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  SPDX-License-Identifier: Apache-2.0
 */
-@use '../../internal/styles/tokens' as awsui;
-@use '../../internal/styles' as styles;
+@use '../internal/styles/tokens' as awsui;
+@use '../internal/styles' as styles;
 
 .root,
 .group,
 .title,
 .pair,
-.item {
+.label {
   /* used in test-utils */
 }
 
-.term {
-  @include styles.font-label;
-  color: awsui.$color-text-label;
-  margin-bottom: awsui.$space-scaled-xxxs;
-}
-
 .value,
-.list,
-.details {
+.list {
   margin: 0;
 }
 
 .list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   grid-auto-flow: row;
   grid-column-gap: calc(2 * #{awsui.$space-grid-gutter});
   -webkit-column-gap: calc(2 * #{awsui.$space-grid-gutter});
