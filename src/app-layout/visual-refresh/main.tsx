@@ -4,6 +4,7 @@ import React from 'react';
 import clsx from 'clsx';
 import { useAppLayoutInternals } from './context';
 import customCssProps from '../../internal/generated/custom-css-properties';
+import { getStickyOffsetVars } from '../utils/sticky-offsets';
 import styles from './styles.css.js';
 import testutilStyles from '../test-classes/styles.css.js';
 
@@ -14,9 +15,12 @@ export default function Main() {
     footerHeight,
     hasDrawerViewportOverlay,
     navigationOpen,
+    placement,
+    isMobile,
     isSplitPanelOpen,
     isToolsOpen,
     mainElement,
+    notificationsHeight,
     offsetBottom,
     splitPanelDisplayed,
     splitPanelPosition,
@@ -44,6 +48,7 @@ export default function Main() {
       ref={mainElement}
       style={{
         [customCssProps.splitPanelHeight]: `${splitPanelHeight}px`,
+        ...getStickyOffsetVars(placement.top, placement.bottom, notificationsHeight, isMobile),
       }}
     >
       {content}

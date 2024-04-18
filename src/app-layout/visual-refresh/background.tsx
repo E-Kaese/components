@@ -24,13 +24,13 @@ export default function Background() {
     <div className={clsx(styles.background, getContentHeaderClassName())}>
       <div className={styles['scrolling-background']} />
 
-      {/*{!isMobile && hasStickyBackground && (*/}
-      {/*  <div*/}
-      {/*    className={clsx(styles['sticky-background'], {*/}
-      {/*      [styles['has-sticky-notifications']]: stickyNotifications,*/}
-      {/*    })}*/}
-      {/*  />*/}
-      {/*)}*/}
+      {!isMobile && hasStickyBackground && (
+        <div
+          className={clsx(styles['sticky-background'], {
+            [styles['has-sticky-notifications']]: stickyNotifications,
+          })}
+        />
+      )}
     </div>
   );
 }

@@ -33,6 +33,7 @@ import { useStableCallback } from '@cloudscape-design/component-toolkit/internal
 
 import { useSplitPanelFocusControl } from './utils/use-split-panel-focus-control';
 import { TOOLS_DRAWER_ID, useDrawers } from './utils/use-drawers';
+import { getStickyOffsetVars } from './utils/sticky-offsets';
 import { useContainerQuery } from '@cloudscape-design/component-toolkit';
 import { togglesConfig } from './toggles';
 
@@ -481,7 +482,6 @@ const ClassicAppLayout = React.forwardRef(
                 {...contentWrapperProps}
                 ref={mainContentRef}
                 disablePaddings={disableContentPaddings}
-                // eslint-disable-next-line react/forbid-component-props
                 className={clsx(
                   !disableContentPaddings && styles['content-wrapper'],
                   !disableContentPaddings &&
@@ -496,6 +496,7 @@ const ClassicAppLayout = React.forwardRef(
                     !contentHeader &&
                     styles['content-wrapper-first-child']
                 )}
+                style={getStickyOffsetVars(placement.top, placement.bottom, notificationsHeight ?? 0, isMobile)}
               >
                 <AppLayoutContext.Provider
                   value={{

@@ -1,10 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import clsx from 'clsx';
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { ContainerProps } from './interfaces';
 import { getBaseProps } from '../internal/base-component';
-import { useAppLayoutContext } from '../internal/context/app-layout-context';
 import { InternalBaseComponentProps } from '../internal/hooks/use-base-component';
 import { getContentHeaderClassName } from '../internal/utils/content-header-utils';
 import { StickyHeaderContext, useStickyHeader } from './use-sticky-header';
@@ -90,7 +89,6 @@ export default function InternalContainer({
     __disableStickyMobile
   );
   const contentId = useUniqueId();
-  const { setHasStickyBackground } = useAppLayoutContext();
   const isRefresh = useVisualRefresh();
 
   const hasDynamicHeight = isRefresh && variant === 'full-page';
@@ -98,24 +96,6 @@ export default function InternalContainer({
 
   const mergedRef = useMergeRefs(rootRef, __internalRootRef);
   const headerMergedRef = useMergeRefs(headerRef, overlapElement, __headerRef);
-
-  /**
-   * The visual refresh AppLayout component needs to know if a child component
-   * has a high contrast sticky header. This is to make sure the background element
-   * stays in the same vertical position as the header content.
-   */
-  useEffect(() => {
-    const shouldUpdateStickyBackground = isSticky && variant === 'full-page' && setHasStickyBackground;
-    if (shouldUpdateStickyBackground) {
-      setHasStickyBackground(true);
-    }
-
-    return () => {
-      if (shouldUpdateStickyBackground) {
-        setHasStickyBackground(false);
-      }
-    };
-  }, [isSticky, setHasStickyBackground, variant]);
 
   // The container is only sticky on mobile if it is the header for the table.
   // In this case we don't want the container to have sticky styles, as only the table header row will show as stuck on scroll.

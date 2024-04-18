@@ -1,21 +1,16 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useState } from 'react';
-import Alert from '~components/alert';
-import Button from '~components/button';
+import React from 'react';
 // import AppLayout from '~components/app-layout';
 import AppLayout from '../../lib/components-copy/app-layout';
-import ContentLayout from '~components/content-layout';
 import Table from '~components/table';
 
-import { Breadcrumbs } from '../app-layout/utils/content-blocks';
+import { Breadcrumbs, Footer } from '../app-layout/utils/content-blocks';
 import ScreenshotArea from '../utils/screenshot-area';
 import appLayoutLabels from '../app-layout/utils/labels';
 import Header from '~components/header';
 
 export default function () {
-  const [alertVisible, setVisible] = useState(true);
-
   return (
     <ScreenshotArea gutters={false}>
       <AppLayout
@@ -28,10 +23,11 @@ export default function () {
             variant="full-page"
             header={<Header>My resources</Header>}
             stickyHeader={true}
+            resizableColumns={true}
             columnDefinitions={[
               { header: 'Column 1', cell: row => row.column1 },
-              { header: 'Column 2', cell: row => row.column2 },
-              { header: 'Column 3', cell: row => row.column3 },
+              { header: 'Column 2', cell: row => row.column2, width: 800 },
+              { header: 'Column 3', cell: row => row.column3, width: 800 },
             ]}
             items={[
               { column1: 'Row 1, Col 1', column2: 'Row 1, Col 2', column3: 'Row 1, Col 3' },
@@ -62,6 +58,7 @@ export default function () {
           />
         }
       />
+      <Footer legacyConsoleNav={false} />
     </ScreenshotArea>
   );
 }
