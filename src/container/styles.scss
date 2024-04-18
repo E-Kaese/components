@@ -29,6 +29,7 @@
       @include styles.container-style;
     }
 
+    /*
     // Meld container bottom corners into next adjoining container
     &-stacked:not(:last-child),
     &-stacked:not(:last-child)::before,
@@ -37,6 +38,7 @@
       border-end-start-radius: 0;
       border-block-end-width: 0;
     }
+    
     // Meld container top corners into preceding container
     &-stacked + &-stacked,
     &-stacked + &-stacked::before,
@@ -48,6 +50,29 @@
     &-stacked + &-stacked:not(.refresh)::before {
       @include shared.divider;
     }
+    */
+  }
+
+  /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+  &.variant-stacked:has(+ .variant-stacked) {
+    border-end-end-radius: 0;
+    border-end-start-radius: 0;
+    border-block-end-width: 0;
+  }
+
+  /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+  &.variant-stacked + .variant-stacked:has(+ .variant-stacked) {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    border-end-start-radius: 0;
+    border-block-end-width: 0;
+  }
+
+  /* stylelint-disable-next-line plugin/no-unsupported-browser-features */
+  &.variant-stacked + .variant-stacked:not(:has(+ .variant-stacked)) {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
   }
 
   // To ensure the top border/divider is visible on sticky elements which have a higher z-index
