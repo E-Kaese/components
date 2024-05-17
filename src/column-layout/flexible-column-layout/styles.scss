@@ -7,20 +7,16 @@
 .css-grid {
   display: grid;
   gap: awsui.$space-grid-gutter;
-
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fit, minmax(max(var(--min-column-width), 100% / calc(var(--column-count) + 1)), 1fr));
+  
   &.grid-no-gutters {
     gap: 0;
   }
-
-  &.grid-variant-text-grid {
-    > .item {
-      border-inline-start: awsui.$border-divider-section-width solid awsui.$color-border-divider-default;
-      padding-inline: awsui.$space-grid-gutter;
-
-      &.first-column {
-        border-inline-start: 0;
-        padding-inline-start: 0;
-      }
-    }
-  }
 }
+
+/*
+POC code to force even number of columns:
+--computed-column-width: max(var(--min-column-width), 100% / calc(var(--column-count) + 1));
+grid-template-columns: repeat(auto-fill, minmax(var(--computed-column-width), 1fr) minmax(var(--computed-column-width), 1fr));
+*/
