@@ -40,6 +40,7 @@ import { ItemsLoader } from './progressive-loading/items-loader';
 import { useProgressiveLoadingProps } from './progressive-loading/progressive-loading-utils';
 import { ResizeTracker } from './resizer';
 import { focusMarkers, SelectionControl, useSelection, useSelectionFocusMove } from './selection';
+import { useGroupSelection } from './selection/use-group-selection';
 import { useStickyColumns } from './sticky-columns';
 import StickyHeader, { StickyHeaderRef } from './sticky-header';
 import { StickyScrollbar } from './sticky-scrollbar';
@@ -224,7 +225,7 @@ const InternalTable = React.forwardRef(
       visibleColumns,
     });
 
-    const { isItemSelected, getSelectAllProps, getItemSelectionProps } = useSelection({
+    const selectionProps = {
       items: allItems,
       trackBy,
       selectedItems,
@@ -233,7 +234,12 @@ const InternalTable = React.forwardRef(
       onSelectionChange,
       ariaLabels,
       loading,
-    });
+    };
+    const normalSelection = useSelection(selectionProps);
+    const groupSelection = useGroupSelection(selectionProps);
+    const { isItemSelected, getSelectAllProps, getItemSelectionProps } =
+      selectionType === 'group' ? groupSelection : normalSelection;
+
     const isRowSelected = (row: TableRow<T>) => row.type === 'data' && isItemSelected(row.item);
 
     if (isDevelopment) {
