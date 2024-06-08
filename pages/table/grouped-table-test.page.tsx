@@ -390,9 +390,9 @@ function useTableData() {
 
   // Using a special id="ROOT" for progressive loading at the root level.
   const [loadingState, setLoadingState] = useState<LoadingState>(new Map([['ROOT', { status: 'pending', pages: 1 }]]));
-  const resetLoading = (id: string) => (state: LoadingState) => {
-    return new Map([...state, [id, { status: 'loading', pages: 0 }]]) as LoadingState;
-  };
+  // const resetLoading = (id: string) => (state: LoadingState) => {
+  //   return new Map([...state, [id, { status: 'loading', pages: 0 }]]) as LoadingState;
+  // };
   const nextLoading = (id: string) => (state: LoadingState) => {
     return new Map([...state, [id, { status: 'loading', pages: state.get(id)?.pages ?? 0 }]]) as LoadingState;
   };
@@ -431,7 +431,7 @@ function useTableData() {
       if (event.detail.expanded) {
         loadItems(event.detail.item.group);
       } else {
-        setLoadingState(resetLoading(event.detail.item.group));
+        // setLoadingState(resetLoading(event.detail.item.group));
       }
     };
   }
