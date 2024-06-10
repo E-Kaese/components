@@ -27,7 +27,7 @@ import SpaceBetween from '~components/space-between';
 import InternalTable from '~components/table/internal';
 
 import AppContext, { AppContextType } from '../app/app-context';
-import { ariaLabels, getHeaderCounterText, TransactionRow } from './grouped-table/grouped-table-common';
+import { getHeaderCounterText, TransactionRow } from './grouped-table/grouped-table-common';
 import { createColumns, filteringProperties } from './grouped-table/grouped-table-configs';
 import { getGroupedTransactions, GroupDefinition } from './grouped-table/grouped-table-data';
 import { createIdsQuery, createWysiwygQuery, findSelectionIds } from './grouped-table/grouped-table-update-query';
@@ -70,7 +70,7 @@ export default () => {
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const tableData = useTableData();
   const columnDefinitions = createColumns();
-  const selectedIds = findSelectionIds(tableData);
+  const [selectedIds, selectedGroups] = findSelectionIds(tableData);
   return (
     <I18nProvider messages={[messages]} locale="en">
       <AppLayout
@@ -90,7 +90,16 @@ export default () => {
             onSelectionChange={tableData.onSelectionChange}
             columnDefinitions={columnDefinitions}
             items={tableData.items}
-            ariaLabels={ariaLabels}
+            ariaLabels={{
+              tableLabel: 'Transactions table',
+              selectionGroupLabel: 'Transactions selection',
+              allItemsSelectionLabel: () =>
+                `${selectedIds.length} ${selectedIds.length === 1 ? 'item' : 'items'} selected`,
+              itemSelectionLabel: (_, item) => {
+                const isSelected = selectedGroups.some(id => id === item.group);
+                return `${item.group} is ${isSelected ? '' : 'not'} selected`;
+              },
+            }}
             wrapLines={false}
             pagination={settings.usePagination && <Pagination {...tableData.paginationProps} />}
             variant="full-page"
