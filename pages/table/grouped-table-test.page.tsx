@@ -1,53 +1,44 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import React, { useContext, useState, useEffect, useRef } from 'react';
-import Header from '~components/header';
-import SpaceBetween from '~components/space-between';
-import { EmptyState, getMatchesCountText, renderAriaLive } from './shared-configs';
+import React, { useContext, useState } from 'react';
+
 import { useCollection } from '@cloudscape-design/collection-hooks';
+
 import {
-  Alert,
   AppLayout,
   AttributeEditor,
   Box,
   Button,
   Checkbox,
-  CollectionPreferencesProps,
   Drawer,
   ExpandableSection,
-  Form,
   FormField,
   Modal,
   Pagination,
-  Popover,
   PropertyFilter,
   Select,
-  StatusIndicator,
   TableProps,
 } from '~components';
-import AppContext, { AppContextType } from '../app/app-context';
-import { GroupDefinition, getGroupedTransactions } from './grouped-table/grouped-table-data';
-import messages from '~components/i18n/messages/all.en';
+import Header from '~components/header';
 import I18nProvider from '~components/i18n';
-import { createColumns, createPreferences, filteringProperties } from './grouped-table/grouped-table-configs';
-import { TransactionRow, ariaLabels, getHeaderCounterText } from './grouped-table/grouped-table-common';
-import { isEqual } from 'lodash';
-
+import messages from '~components/i18n/messages/all.en';
+import SpaceBetween from '~components/space-between';
 // TODO: replace with Table once progressive loading API becomes public
 import InternalTable from '~components/table/internal';
+
+import AppContext, { AppContextType } from '../app/app-context';
+import { ariaLabels, getHeaderCounterText, TransactionRow } from './grouped-table/grouped-table-common';
+import { createColumns, filteringProperties } from './grouped-table/grouped-table-configs';
+import { getGroupedTransactions, GroupDefinition } from './grouped-table/grouped-table-data';
 import { createIdsQuery, createWysiwygQuery, findSelectionIds } from './grouped-table/grouped-table-update-query';
+import { EmptyState, getMatchesCountText, renderAriaLive } from './shared-configs';
 
 type LoadingState = Map<string, { pages: number; status: TableProps.LoadingStatus }>;
 
 type PageContext = React.Context<
   AppContextType<{
-    resizableColumns: boolean;
-    sortingDisabled: boolean;
-    stripedRows: boolean;
     usePagination: boolean;
     useProgressiveLoading: boolean;
-    useServerMock: boolean;
-    emulateServerError: boolean;
   }>
 >;
 
@@ -77,15 +68,9 @@ export default () => {
   const settings = usePageSettings();
   const [toolsOpen, setToolsOpen] = useState(true);
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
-  const [preferences, setPreferences] = useState<CollectionPreferencesProps.Preferences>({
-    wrapLines: false,
-    stickyColumns: { first: 1, last: 0 },
-  });
-
   const tableData = useTableData();
   const columnDefinitions = createColumns();
   const selectedIds = findSelectionIds(tableData);
-
   return (
     <I18nProvider messages={[messages]} locale="en">
       <AppLayout
@@ -97,38 +82,25 @@ export default () => {
         content={
           <InternalTable
             {...tableData.collectionProps}
-            stickyColumns={preferences.stickyColumns}
-            resizableColumns={settings.resizableColumns}
-            sortingDisabled={settings.sortingDisabled}
+            stickyColumns={{ first: 1 }}
+            resizableColumns={true}
             selectionType="group"
             selectionInverted={tableData.selectionInverted}
             selectedItems={tableData.selectedItems}
             onSelectionChange={tableData.onSelectionChange}
-            stripedRows={settings.stripedRows}
             columnDefinitions={columnDefinitions}
             items={tableData.items}
             ariaLabels={ariaLabels}
-            wrapLines={preferences.wrapLines}
+            wrapLines={false}
             pagination={settings.usePagination && <Pagination {...tableData.paginationProps} />}
-            columnDisplay={preferences.contentDisplay}
-            preferences={createPreferences({ preferences, setPreferences })}
-            submitEdit={() => {}}
             variant="full-page"
             renderAriaLive={renderAriaLive}
-            loading={tableData.loading}
-            loadingText="Loading transactions"
-            empty={
-              tableData.error ? (
-                <Alert type="error">Error when fetching table data</Alert>
-              ) : (
-                tableData.collectionProps.empty
-              )
-            }
+            empty={tableData.collectionProps.empty}
             header={
               <SpaceBetween size="m">
                 <Header
                   variant="h1"
-                  description="Table with expandable rows test page"
+                  description="Table with grouped rows test page"
                   counter={getHeaderCounterText(tableData.totalItemsCount, selectedIds)}
                   actions={
                     <SpaceBetween size="s" direction="horizontal" alignItems="center">
@@ -224,36 +196,8 @@ export default () => {
                 iconName="add-plus"
                 onClick={() => tableData.actions.loadItems(item?.group ?? 'ROOT')}
               >
-                {item ? `Load more items for ${item.group}` : 'Load more items'}
+                Show more items
               </Button>
-            )}
-            renderLoaderLoading={({ item }) => (
-              <StatusIndicator type="loading">
-                {item ? `Loading more items for ${item.group}` : 'Loading more items'}
-              </StatusIndicator>
-            )}
-            renderLoaderError={({ item }) => (
-              <Box color="text-status-error">
-                <Popover
-                  header="Failed to load transactions"
-                  content={
-                    <Form
-                      actions={
-                        <Button onClick={() => tableData.actions.loadItems(item?.group ?? 'ROOT')}>Retry</Button>
-                      }
-                    >
-                      <Alert type="error">
-                        {item
-                          ? `Error occurred during loading transactions for item ${item.group}. Reason: item ${item.group} not found. Refresh the page.`
-                          : 'Unknown error occurred during loading transactions.'}
-                      </Alert>
-                    </Form>
-                  }
-                  renderWithPortal={true}
-                >
-                  <StatusIndicator type="error">Failed to load transactions</StatusIndicator>
-                </Popover>
-              </Box>
             )}
           />
         }
@@ -262,13 +206,10 @@ export default () => {
   );
 };
 
-const SERVER_DELAY = 1500;
 const ROOT_PAGE_SIZE = 10;
 const NESTED_PAGE_SIZE = 10;
 function useTableData() {
   const settings = usePageSettings();
-  const delay = settings.useServerMock ? SERVER_DELAY : 0;
-
   const [groups, setGroups] = useState<GroupDefinition[]>([
     {
       property: 'date_year',
@@ -283,28 +224,10 @@ function useTableData() {
       sorting: 'asc',
     },
   ]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-
   const allTransactionRows = getGroupedTransactions(groups);
-
-  // Imitate server-side delay when fetching items for the first time.
-  const [readyTransactions, setReadyTransactions] = useState(settings.useServerMock ? [] : allTransactionRows);
-  useEffect(() => {
-    setLoading(true);
-    setError(false);
-    setTimeout(() => {
-      setReadyTransactions(getGroupedTransactions(groups));
-      setLoading(false);
-      setError(settings.emulateServerError);
-    }, delay);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groups, delay, setLoading, setError, setReadyTransactions]);
-
-  const collectionResult = useCollection(readyTransactions, {
+  const collectionResult = useCollection(allTransactionRows, {
     pagination: settings.usePagination ? { pageSize: ROOT_PAGE_SIZE } : undefined,
-    // sorting: {},
-    filtering: {},
+    sorting: {},
     propertyFiltering: {
       filteringProperties,
       noMatch: (
@@ -328,21 +251,6 @@ function useTableData() {
   const [selectionInverted, setSelectionInverted] = useState(false);
   const [selectedItems, setSelectedItems] = useState<TransactionRow[]>([]);
 
-  // Imitate server-side delay when items update.
-  const memoItems = useEqualsMemo(collectionResult.items);
-  const [readyItems, setReadyItems] = useState(memoItems);
-  useEffect(() => {
-    setLoading(true);
-    setError(false);
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-      setReadyItems(memoItems);
-      setError(settings.emulateServerError);
-    }, delay);
-    return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [delay, memoItems, setLoading, setError, setReadyItems]);
-
   // Decorate path options to only show the last node and not the full path.
   collectionResult.propertyFilterProps.filteringOptions = collectionResult.propertyFilterProps.filteringOptions.map(
     option => (option.propertyKey === 'path' ? { ...option, value: option.value.split(',')[0] } : option)
@@ -350,27 +258,9 @@ function useTableData() {
 
   // Using a special id="ROOT" for progressive loading at the root level.
   const [loadingState, setLoadingState] = useState<LoadingState>(new Map([['ROOT', { status: 'pending', pages: 1 }]]));
-  // const resetLoading = (id: string) => (state: LoadingState) => {
-  //   return new Map([...state, [id, { status: 'loading', pages: 0 }]]) as LoadingState;
-  // };
-  const nextLoading = (id: string) => (state: LoadingState) => {
-    return new Map([...state, [id, { status: 'loading', pages: state.get(id)?.pages ?? 0 }]]) as LoadingState;
-  };
-  const nextError = (id: string) => (state: LoadingState) => {
-    return new Map([...state, [id, { status: 'error', pages: state.get(id)?.pages ?? 0 }]]) as LoadingState;
-  };
-  const nextPending = (id: string) => (state: LoadingState) => {
-    return new Map([...state, [id, { status: 'pending', pages: (state.get(id)?.pages ?? 0) + 1 }]]) as LoadingState;
-  };
-
-  const loadItems = (id: string) => {
-    setLoadingState(nextLoading(id));
-    if (delay) {
-      setTimeout(() => setLoadingState(settings.emulateServerError ? nextError(id) : nextPending(id)), delay);
-    } else {
-      setLoadingState(nextPending(id));
-    }
-  };
+  const nextPending = (id: string) => (state: LoadingState) =>
+    new Map([...state, [id, { status: 'pending', pages: (state.get(id)?.pages ?? 0) + 1 }]]) as LoadingState;
+  const loadItems = (id: string) => setLoadingState(nextPending(id));
 
   const getItemChildren = collectionResult.collectionProps.expandableRows
     ? collectionResult.collectionProps.expandableRows.getItemChildren.bind(null)
@@ -390,8 +280,6 @@ function useTableData() {
       onExpandableItemToggle!(event);
       if (event.detail.expanded) {
         loadItems(event.detail.item.group);
-      } else {
-        // setLoadingState(resetLoading(event.detail.item.group));
       }
     };
   }
@@ -399,16 +287,13 @@ function useTableData() {
   const rootPages = loadingState.get('ROOT')!.pages;
   const rootProgressiveLoading = settings.useProgressiveLoading && !settings.usePagination;
 
-  const allItems = settings.useServerMock ? readyItems : memoItems;
+  const allItems = collectionResult.items;
   const paginatedItems = rootProgressiveLoading ? allItems.slice(0, rootPages * ROOT_PAGE_SIZE) : allItems;
 
   const getLoadingStatus = settings.useProgressiveLoading
     ? (item: null | TransactionRow): TableProps.LoadingStatus => {
         const id = item ? item.group : 'ROOT';
         const state = loadingState.get(id);
-        if (settings.useServerMock && state && (state.status === 'loading' || state.status === 'error')) {
-          return state.status;
-        }
         const pages = state?.pages ?? 0;
         const pageSize = item ? NESTED_PAGE_SIZE : ROOT_PAGE_SIZE;
         const totalItems = item ? getItemChildren!(item).length : allItems.length;
@@ -447,7 +332,7 @@ function useTableData() {
     );
   };
 
-  const totalItemsCount = readyTransactions.filter(t => t.children.length === 0).length;
+  const totalItemsCount = allItems.filter(t => t.children.length === 0).length;
 
   let filteredItemsCount = 0;
   function count(item: TransactionRow) {
@@ -465,9 +350,7 @@ function useTableData() {
     ...collectionResult,
     totalItemsCount,
     filteredItemsCount: showFilteredItemsCount ? filteredItemsCount : undefined,
-    error: settings.useServerMock ? error : false,
-    loading: settings.useServerMock ? loading : false,
-    items: settings.useServerMock && error ? [] : paginatedItems,
+    items: paginatedItems,
     groups,
     selectedItems,
     selectionInverted,
@@ -478,15 +361,6 @@ function useTableData() {
     trackBy: (row: TransactionRow) => row.key,
     getItemChildren,
     actions: {
-      expandAll: () => {
-        collectionResult.actions.setExpandedItems(allTransactionRows);
-      },
-      collapseAll: () => {
-        collectionResult.actions.setExpandedItems([]);
-      },
-      clearSelection: () => {
-        collectionResult.actions.setSelectedItems([]);
-      },
       loadItems,
       addGroup,
       deleteGroup,
@@ -500,13 +374,8 @@ function useTableData() {
 function usePageSettings() {
   const { urlParams, setUrlParams } = useContext(AppContext as PageContext);
   return {
-    resizableColumns: urlParams.resizableColumns ?? true,
-    sortingDisabled: urlParams.sortingDisabled ?? false,
-    stripedRows: urlParams.stripedRows ?? false,
     usePagination: urlParams.usePagination ?? false,
     useProgressiveLoading: urlParams.useProgressiveLoading ?? true,
-    useServerMock: urlParams.useServerMock ?? false,
-    emulateServerError: urlParams.emulateServerError ?? false,
     setUrlParams,
   };
 }
@@ -517,27 +386,6 @@ function PageSettings() {
     <Drawer header={<Header variant="h2">Page settings</Header>}>
       <SpaceBetween size="l">
         <FormField label="Table settings">
-          <Checkbox
-            checked={settings.resizableColumns}
-            onChange={event => settings.setUrlParams({ resizableColumns: event.detail.checked })}
-          >
-            Resizable columns
-          </Checkbox>
-
-          <Checkbox
-            checked={settings.sortingDisabled}
-            onChange={event => settings.setUrlParams({ sortingDisabled: event.detail.checked })}
-          >
-            Sorting disabled
-          </Checkbox>
-
-          <Checkbox
-            checked={settings.stripedRows}
-            onChange={event => settings.setUrlParams({ stripedRows: event.detail.checked })}
-          >
-            Striped rows
-          </Checkbox>
-
           <Checkbox
             checked={settings.usePagination}
             onChange={event => settings.setUrlParams({ usePagination: event.detail.checked })}
@@ -552,31 +400,7 @@ function PageSettings() {
             Use progressive loading
           </Checkbox>
         </FormField>
-
-        <FormField label="Mock server settings">
-          <Checkbox
-            checked={settings.useServerMock}
-            onChange={event => settings.setUrlParams({ useServerMock: event.detail.checked })}
-          >
-            Use server mock
-          </Checkbox>
-
-          <Checkbox
-            checked={settings.emulateServerError}
-            onChange={event => settings.setUrlParams({ emulateServerError: event.detail.checked })}
-          >
-            Emulate server error
-          </Checkbox>
-        </FormField>
       </SpaceBetween>
     </Drawer>
   );
-}
-
-function useEqualsMemo<T>(value: T): T {
-  const ref = useRef<T>(value);
-  if (!isEqual(value, ref.current)) {
-    ref.current = value;
-  }
-  return ref.current;
 }
