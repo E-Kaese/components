@@ -23,37 +23,41 @@ export default function () {
   return (
     <ScreenshotArea>
       <h1>Pie chart integration test</h1>
-      <Box padding="l">
-        <Grid
-          gridDefinition={[
-            { colspan: { xxs: 12, s: 12, m: 6, default: 6 } },
-            { colspan: { xxs: 12, s: 12, m: 6, default: 6 } },
-          ]}
-        >
-          <div>
-            <input id="focus-target" aria-label="focus input" placeholder="focus input" />
-            <PieChart<FoodData>
+      <div style={{ paddingBottom: '300px' }}>
+        <Box padding="l">
+          <Grid
+            gridDefinition={[
+              { colspan: { xxs: 12, s: 12, m: 6, default: 6 } },
+              { colspan: { xxs: 12, s: 12, m: 6, default: 6 } },
+            ]}
+          >
+            <div>
+              <input id="focus-target" aria-label="focus input" placeholder="focus input" />
+              <PieChart<FoodData>
+                {...commonProps}
+                id="pie-chart"
+                data={data1}
+                ariaLabel="Food facts"
+                size="medium"
+                onHighlightChange={e => setActiveSegment(e.detail.highlightedSegment)}
+                detailPopoverFooter={segment => <Button>Filter by {segment.title}</Button>}
+              />
+            </div>
+
+            <PieChart
               {...commonProps}
-              id="pie-chart"
+              id="pie-chart-2"
               data={data1}
               ariaLabel="Food facts"
               size="medium"
+              highlightedSegment={activeSegment}
               onHighlightChange={e => setActiveSegment(e.detail.highlightedSegment)}
-              detailPopoverFooter={segment => <Button>Filter by {segment.title}</Button>}
             />
-          </div>
-
-          <PieChart
-            {...commonProps}
-            id="pie-chart-2"
-            data={data1}
-            ariaLabel="Food facts"
-            size="medium"
-            highlightedSegment={activeSegment}
-            onHighlightChange={e => setActiveSegment(e.detail.highlightedSegment)}
-          />
-        </Grid>
-      </Box>
+          </Grid>
+          <div id="show-mouse-over-event"></div>
+          <div id="show-mouse-down-event"></div>
+        </Box>
+      </div>
     </ScreenshotArea>
   );
 }

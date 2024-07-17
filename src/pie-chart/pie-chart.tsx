@@ -186,6 +186,17 @@ export default <T extends PieChartProps.Datum>({
 
   const onMouseDown = useCallback(
     (internalDatum: InternalChartDatum<T>) => {
+      if (document.getElementById('show-mouse-down-event')) {
+        document.getElementById('show-mouse-down-event')!.innerText =
+          document.getElementById('show-mouse-down-event')!.innerText +
+          '\n' +
+          'mousedown ' +
+          (pinnedSegment === internalDatum.datum) +
+          ' ' +
+          pinnedSegment?.title.toString() +
+          ' ' +
+          internalDatum.datum.title.toString();
+      }
       if (pinnedSegment === internalDatum.datum) {
         setPinnedSegment(null);
         clearHighlightedSegment();
@@ -198,6 +209,13 @@ export default <T extends PieChartProps.Datum>({
   );
   const onMouseOver = useCallback(
     (internalDatum: InternalChartDatum<T>) => {
+      if (document.getElementById('show-mouse-over-event')) {
+        document.getElementById('show-mouse-over-event')!.innerText =
+          document.getElementById('show-mouse-over-event')!.innerText +
+          '\n' +
+          'mouseover ' +
+          internalDatum.datum.title.toString();
+      }
       if (escapePressed.current) {
         escapePressed.current = false;
         return;
