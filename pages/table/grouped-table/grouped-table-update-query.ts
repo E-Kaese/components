@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PropertyFilterProps } from '~components';
-import { TransactionRow } from './grouped-table-common';
 import { ItemSelectionTree } from '~components/table/selection/utils';
+
+import { TransactionRow } from './grouped-table-common';
 
 export function findSelectionIds({
   allPageItems: items,

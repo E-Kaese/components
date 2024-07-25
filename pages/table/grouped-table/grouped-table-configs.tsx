@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
-import { Box, Link, PropertyFilterProps, SpaceBetween, TableProps } from '~components';
-import { TransactionRow } from './grouped-table-common';
-import { columnLabel } from '../shared-configs';
 import { format } from 'date-fns';
+
+import { Box, Link, PropertyFilterProps, SpaceBetween, TableProps } from '~components';
+
+import { columnLabel } from '../shared-configs';
+import { TransactionRow } from './grouped-table-common';
 
 export function createColumns(): TableProps.ColumnDefinition<TransactionRow>[] {
   return [

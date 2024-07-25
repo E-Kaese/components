@@ -1,10 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { groupBy, orderBy, sumBy, uniq } from 'lodash';
-import pseudoRandom from '../../utils/pseudo-random';
-import { id as generateId } from '../generate-data';
-import { Transaction, TransactionRow } from './grouped-table-common';
 import {
   addMonths,
   addSeconds,
@@ -17,6 +13,11 @@ import {
   startOfQuarter,
   startOfYear,
 } from 'date-fns';
+import { groupBy, orderBy, sumBy, uniq } from 'lodash';
+
+import pseudoRandom from '../../utils/pseudo-random';
+import { id as generateId } from '../generate-data';
+import { Transaction, TransactionRow } from './grouped-table-common';
 
 export interface GroupDefinition {
   property: string;
