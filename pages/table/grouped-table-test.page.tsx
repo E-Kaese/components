@@ -19,13 +19,7 @@ import {
   Select,
   TableProps,
 } from '~components';
-<<<<<<< HEAD
 import Header from '~components/header';
-=======
-import AppContext, { AppContextType } from '../app/app-context';
-import { GroupDefinition, allTransactions, getGroupedTransactions } from './grouped-table/grouped-table-data';
-import messages from '~components/i18n/messages/all.en';
->>>>>>> c0973ed7 (fix counters)
 import I18nProvider from '~components/i18n';
 import messages from '~components/i18n/messages/all.en';
 import SpaceBetween from '~components/space-between';
@@ -35,7 +29,7 @@ import InternalTable from '~components/table/internal';
 import AppContext, { AppContextType } from '../app/app-context';
 import { getHeaderCounterText, TransactionRow } from './grouped-table/grouped-table-common';
 import { createColumns, filteringProperties } from './grouped-table/grouped-table-configs';
-import { getGroupedTransactions, GroupDefinition } from './grouped-table/grouped-table-data';
+import { allTransactions, getGroupedTransactions, GroupDefinition } from './grouped-table/grouped-table-data';
 import { createIdsQuery, createWysiwygQuery, findSelectionIds } from './grouped-table/grouped-table-update-query';
 import { EmptyState, getMatchesCountText, renderAriaLive } from './shared-configs';
 
