@@ -81,16 +81,6 @@ export interface BaseButtonProps {
    */
   wrapText?: boolean;
 
-  /** Determines the general styling of the button as follows:
-   * * `primary` for primary buttons.
-   * * `normal` for secondary buttons.
-   * * `link` for tertiary buttons.
-   * * `icon` to display an icon only (no text).
-   * * `inline-icon` to display an icon-only (no text) button within a text context.
-   * * `inline-link` to display a tertiary button with no outer padding.
-   */
-  variant?: ButtonProps.Variant;
-
   /**
    * Text displayed in the button element.
    * @displayname text
@@ -98,25 +88,9 @@ export interface BaseButtonProps {
   children?: React.ReactNode;
 
   /**
-   * Called when the user clicks on the button and the button is not disabled or in loading state.
-   */
-  onClick?: CancelableEventHandler<ButtonProps.ClickDetail>;
-
-  /**
-   * Called when the user clicks on the button with the left mouse button without pressing
-   * modifier keys (that is, CTRL, ALT, SHIFT, META), and the button has an `href` set.
-   */
-  onFollow?: CancelableEventHandler<ButtonProps.FollowDetail>;
-
-  /**
    * Adds `aria-controls` to the button. Use when the button controls the contents or presence of an element.
    */
   ariaControls?: string;
-
-  /**
-   * Sets the button width to be 100% of the parent container width. Button content is centered.
-   */
-  fullWidth?: boolean;
 }
 
 export interface ButtonProps extends BaseComponentProps, BaseButtonProps {
@@ -164,6 +138,32 @@ export interface ButtonProps extends BaseComponentProps, BaseButtonProps {
    * Adds aria-expanded to the button element. Use when the button controls an expandable element.
    */
   ariaExpanded?: boolean;
+
+  /**
+   * Called when the user clicks on the button and the button is not disabled or in loading state.
+   */
+  onClick?: CancelableEventHandler<ButtonProps.ClickDetail>;
+
+  /**
+   * Called when the user clicks on the button with the left mouse button without pressing
+   * modifier keys (that is, CTRL, ALT, SHIFT, META), and the button has an `href` set.
+   */
+  onFollow?: CancelableEventHandler<ButtonProps.FollowDetail>;
+
+  /**
+   * Sets the button width to be 100% of the parent container width. Button content is centered.
+   */
+  fullWidth?: boolean;
+
+  /** Determines the general styling of the button as follows:
+   * * `primary` for primary buttons.
+   * * `normal` for secondary buttons.
+   * * `link` for tertiary buttons.
+   * * `icon` to display an icon only (no text).
+   * * `inline-icon` to display an icon-only (no text) button within a text context.
+   * * `inline-link` to display a tertiary button with no outer padding.
+   */
+  variant?: ButtonProps.Variant;
 }
 
 export namespace ButtonProps {

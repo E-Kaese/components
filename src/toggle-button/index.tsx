@@ -29,10 +29,7 @@ const ToggleButton = React.forwardRef(
       wrapText = true,
       ariaLabel,
       ariaDescribedby,
-      onClick,
-      onFollow,
       ariaControls,
-      fullWidth,
       pressed = false,
       onChange,
       ...props
@@ -40,7 +37,7 @@ const ToggleButton = React.forwardRef(
     ref: React.Ref<ToggleButtonProps.Ref>
   ) => {
     const baseComponentProps = useBaseComponent('ToggleButton', {
-      props: { fullWidth, iconName, pressedIconName, pressed, variant, wrapText },
+      props: { iconName, pressedIconName, pressed, variant, wrapText },
     });
     const baseProps = getBaseProps(props);
 
@@ -61,10 +58,7 @@ const ToggleButton = React.forwardRef(
         wrapText={wrapText}
         ariaLabel={ariaLabel}
         ariaDescribedby={ariaDescribedby}
-        onClick={onClick}
-        onFollow={onFollow}
         ariaControls={ariaControls}
-        fullWidth={fullWidth}
         pressedIconName={pressedIconName}
         pressedIconUrl={pressedIconUrl}
         pressedIconSvg={pressedIconSvg}
