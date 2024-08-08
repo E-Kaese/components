@@ -43,9 +43,42 @@ export interface ToolbarProps {
   onActiveDrawerChange?: (drawerId: string | null) => void;
 }
 
+// support compatibility with changes before this commit: cf0f2b0755af1a28ac7c3c9476418a7ea807d0fd
+interface AppLayoutInternalsCompat {
+  ariaLabels?: AppLayoutInternals['ariaLabels'];
+  activeDrawer?: AppLayoutInternals['activeDrawer'];
+  drawers?: AppLayoutInternals['drawers'];
+  drawersFocusControl?: AppLayoutInternals['drawersFocusControl'];
+  onNavigationToggle: AppLayoutInternals['onNavigationToggle'];
+  navigationOpen?: AppLayoutInternals['navigationOpen'];
+  navigation?: AppLayoutInternals['navigation'];
+  navigationFocusControl?: AppLayoutInternals['navigationFocusControl'];
+  splitPanelControlId?: AppLayoutInternals['splitPanelControlId'];
+  splitPanelPosition?: AppLayoutInternals['splitPanelPosition'];
+  splitPanelToggleConfig?: AppLayoutInternals['splitPanelToggleConfig'];
+  splitPanelFocusControl?: AppLayoutInternals['splitPanelFocusControl'];
+  onSplitPanelToggle?: AppLayoutInternals['onSplitPanelToggle'];
+  splitPanelOpen?: AppLayoutInternals['splitPanelOpen'];
+  onActiveDrawerChange?: AppLayoutInternals['onActiveDrawerChange'];
+}
+
 interface AppLayoutToolbarImplementationProps {
-  appLayoutInternals: AppLayoutInternals;
+  appLayoutInternals: AppLayoutInternals & AppLayoutInternalsCompat;
   toolbarProps: ToolbarProps;
+}
+
+function getSplitPanelToggleProps(
+  props: Pick<
+    AppLayoutInternals,
+    'splitPanelToggleConfig' | 'splitPanelOpen' | 'splitPanelControlId' | 'splitPanelPosition'
+  >
+) {
+  return {
+    ...props.splitPanelToggleConfig,
+    active: props.splitPanelOpen,
+    controlId: props.splitPanelControlId,
+    position: props.splitPanelPosition,
+  };
 }
 
 export function AppLayoutToolbarImplementation({
@@ -62,21 +95,22 @@ export function AppLayoutToolbarImplementation({
     toolbarState,
     setToolbarState,
     setToolbarHeight,
+    ...legacyProps
   } = appLayoutInternals;
   const {
-    ariaLabels,
-    activeDrawerId,
-    drawers,
-    drawersFocusRef,
-    onActiveDrawerChange,
-    hasNavigation,
-    navigationOpen,
-    navigationFocusRef,
-    onNavigationToggle,
-    hasSplitPanel,
-    splitPanelFocusRef,
-    splitPanelToggleProps,
-    onSplitPanelToggle,
+    ariaLabels = legacyProps.ariaLabels,
+    activeDrawerId = legacyProps.activeDrawer?.id,
+    drawers = legacyProps.drawers,
+    drawersFocusRef = legacyProps.drawersFocusControl?.refs.toggle,
+    onActiveDrawerChange = legacyProps.onActiveDrawerChange,
+    hasNavigation = !!legacyProps.navigation,
+    navigationOpen = legacyProps.navigationOpen,
+    navigationFocusRef = legacyProps.navigationFocusControl?.refs.toggle,
+    onNavigationToggle = legacyProps.onNavigationToggle,
+    hasSplitPanel = true,
+    splitPanelFocusRef = legacyProps.splitPanelFocusControl?.refs.toggle,
+    splitPanelToggleProps = getSplitPanelToggleProps(legacyProps),
+    onSplitPanelToggle = legacyProps.onSplitPanelToggle,
   } = toolbarProps;
   // TODO: expose configuration property
   const pinnedToolbar = true;
