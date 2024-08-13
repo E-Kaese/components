@@ -18,7 +18,7 @@ import { InternalBaseComponentProps } from '../internal/hooks/use-base-component
 import { useMergeRefs } from '../internal/hooks/use-merge-refs';
 import { useVisualRefresh } from '../internal/hooks/use-visual-mode';
 import { awsuiPluginsInternal } from '../internal/plugins/api';
-import { createUseDiscoveredAction } from '../internal/plugins/helpers';
+import { createUseDiscoveredAction, createUseDiscoveredContent } from '../internal/plugins/helpers';
 import { SomeRequired } from '../internal/types';
 import { ActionsWrapper } from './actions-wrapper';
 import { AlertProps } from './interfaces';
@@ -35,6 +35,7 @@ const typeToIcon: Record<AlertProps.Type, IconProps['name']> = {
 type InternalAlertProps = SomeRequired<AlertProps, 'type'> & InternalBaseComponentProps<HTMLDivElement>;
 
 const useDiscoveredAction = createUseDiscoveredAction(awsuiPluginsInternal.alert.onActionRegistered);
+const useDiscoveredContent = createUseDiscoveredContent(awsuiPluginsInternal.alertContent.onContentRegistered);
 
 const InternalAlert = React.forwardRef(
   (
@@ -64,10 +65,23 @@ const InternalAlert = React.forwardRef(
     const [breakpoint, breakpointRef] = useContainerBreakpoints(['xs']);
     const mergedRef = useMergeRefs(breakpointRef, __internalRootRef);
 
-    const isRefresh = useVisualRefresh();
-    const size = isRefresh ? 'normal' : header && children ? 'big' : 'normal';
+    const { discoveredActions, headerRef: headerRefAction, contentRef: contentRefAction } = useDiscoveredAction(type);
+    const {
+      hasDiscoveredHeader,
+      hasDiscoveredContent,
+      headerRef: headerRefContent,
+      contentRef: contentRefContent,
+    } = useDiscoveredContent({ type, header, children });
 
-    const { discoveredActions, headerRef, contentRef } = useDiscoveredAction(type);
+    const headerRef = useMergeRefs(headerRefAction, headerRefContent);
+    const contentRef = useMergeRefs(contentRefAction, contentRefContent);
+
+    const isRefresh = useVisualRefresh();
+    const size = isRefresh
+      ? 'normal'
+      : (header || hasDiscoveredHeader) && (children || hasDiscoveredContent)
+        ? 'big'
+        : 'normal';
 
     const hasAction = Boolean(action || buttonText || discoveredActions.length);
 
@@ -100,11 +114,9 @@ const InternalAlert = React.forwardRef(
                   <InternalIcon name={typeToIcon[type]} size={size} />
                 </div>
                 <div className={clsx(styles.message, styles.text)}>
-                  {header && (
-                    <div className={styles.header} ref={headerRef}>
-                      {header}
-                    </div>
-                  )}
+                  <div className={header || hasDiscoveredHeader ? styles.header : undefined} ref={headerRef}>
+                    {header}
+                  </div>
                   <div className={styles.content} ref={contentRef}>
                     {children}
                   </div>
