@@ -24,7 +24,7 @@ export function createUseDiscoveredContent(onContentRegistered: AlertContentCont
     useEffect(() => {
       return onContentRegistered(providers => {
         const controller = new AbortController();
-        const run = async () => {
+        const runHeader = async () => {
           for (const provider of providers) {
             if (
               headerRef.current &&
@@ -34,12 +34,19 @@ export function createUseDiscoveredContent(onContentRegistered: AlertContentCont
                 headerRef,
                 contentRef,
                 signal: controller.signal,
-              })) &&
-              !controller.signal.aborted
+              }))
             ) {
+              if (controller.signal.aborted) {
+                console.warn('[AwsUi] [runtime alert content] Async header returned after alert unmounted');
+                return;
+              }
               foundHeaderProviderRef.current = provider;
               setFoundHeaderProvider(provider);
             }
+          }
+        };
+        const runContent = async () => {
+          for (const provider of providers) {
             if (
               contentRef.current &&
               !foundContentProvider &&
@@ -48,15 +55,19 @@ export function createUseDiscoveredContent(onContentRegistered: AlertContentCont
                 headerRef,
                 contentRef,
                 signal: controller.signal,
-              })) &&
-              !controller.signal.aborted
+              }))
             ) {
+              if (controller.signal.aborted) {
+                console.warn('[AwsUi] [runtime alert content] Async content returned after alert unmounted');
+                return;
+              }
               foundContentProviderRef.current = provider;
               setFoundContentProvider(provider);
             }
           }
         };
-        run();
+        runHeader();
+        runContent();
         return () => {
           controller.abort();
           headerRef.current && foundHeaderProviderRef.current?.unmountHeader?.(headerRef.current);
