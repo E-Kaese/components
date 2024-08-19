@@ -12,18 +12,22 @@ export interface AlertContentContext {
   type: string;
   headerRef: RefShim<HTMLElement>;
   contentRef: RefShim<HTMLElement>;
+  signal: AbortSignal;
 }
 
 export interface AlertContentConfig {
   id: string;
   orderPriority?: number;
-  mountHeader?: (container: HTMLElement, context: AlertContentContext) => boolean;
-  mountContent?: (container: HTMLElement, context: AlertContentContext) => boolean;
+  mountHeader?: (container: HTMLElement, context: AlertContentContext) => boolean | Promise<boolean>;
+  mountContent?: (container: HTMLElement, context: AlertContentContext) => boolean | Promise<boolean>;
   unmountHeader?: (container: HTMLElement) => void;
   unmountContent?: (container: HTMLElement) => void;
 }
 
-export type AlertContentRegistrationListener = (providers: Array<AlertContentConfig>) => void;
+export interface AlertContentRegistrationListener {
+  (providers: Array<AlertContentConfig>): void | (() => void);
+  cleanup?: void | (() => void);
+}
 
 export interface AlertContentApiPublic {
   registerContent(config: AlertContentConfig): void;
@@ -39,7 +43,9 @@ export class AlertContentController {
   private providers: Array<AlertContentConfig> = [];
 
   private scheduleUpdate = debounce(() => {
-    this.listeners.forEach(listener => listener(this.providers));
+    this.listeners.forEach(listener => {
+      listener.cleanup = listener(this.providers);
+    });
   }, 0);
 
   registerContent = (content: AlertContentConfig) => {
@@ -56,6 +62,7 @@ export class AlertContentController {
     this.listeners.push(listener);
     this.scheduleUpdate();
     return () => {
+      listener.cleanup?.();
       this.listeners = this.listeners.filter(item => item !== listener);
     };
   };

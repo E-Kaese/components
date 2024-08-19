@@ -16,30 +16,51 @@ export function createUseDiscoveredContent(onContentRegistered: AlertContentCont
   }) {
     const headerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
+    const foundHeaderProviderRef = useRef<AlertContentConfig>();
+    const foundContentProviderRef = useRef<AlertContentConfig>();
     const [foundHeaderProvider, setFoundHeaderProvider] = useState<AlertContentConfig | null>(null);
     const [foundContentProvider, setFoundContentProvider] = useState<AlertContentConfig | null>(null);
 
     useEffect(() => {
-      return onContentRegistered(contents => {
-        for (const content of contents) {
-          if (
-            headerRef.current &&
-            !foundHeaderProvider &&
-            content.mountHeader?.(headerRef.current, { type, headerRef, contentRef })
-          ) {
-            setFoundHeaderProvider(content);
+      return onContentRegistered(providers => {
+        const controller = new AbortController();
+        const run = async () => {
+          for (const provider of providers) {
+            if (
+              headerRef.current &&
+              !foundHeaderProvider &&
+              (await provider.mountHeader?.(headerRef.current, {
+                type,
+                headerRef,
+                contentRef,
+                signal: controller.signal,
+              })) &&
+              !controller.signal.aborted
+            ) {
+              foundHeaderProviderRef.current = provider;
+              setFoundHeaderProvider(provider);
+            }
+            if (
+              contentRef.current &&
+              !foundContentProvider &&
+              (await provider.mountContent?.(contentRef.current, {
+                type,
+                headerRef,
+                contentRef,
+                signal: controller.signal,
+              })) &&
+              !controller.signal.aborted
+            ) {
+              foundContentProviderRef.current = provider;
+              setFoundContentProvider(provider);
+            }
           }
-          if (
-            contentRef.current &&
-            !foundContentProvider &&
-            content.mountContent?.(contentRef.current, { type, headerRef, contentRef })
-          ) {
-            setFoundContentProvider(content);
-          }
-        }
+        };
+        run();
         return () => {
-          headerRef.current && foundHeaderProvider?.unmountContent?.(headerRef.current);
-          contentRef.current && foundContentProvider?.unmountContent?.(contentRef.current);
+          controller.abort();
+          headerRef.current && foundHeaderProviderRef.current?.unmountHeader?.(headerRef.current);
+          contentRef.current && foundContentProviderRef.current?.unmountContent?.(contentRef.current);
         };
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
