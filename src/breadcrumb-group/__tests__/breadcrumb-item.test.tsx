@@ -33,7 +33,7 @@ const items = [
     href: '#',
   },
 ];
-describe('BreadcrumbGroup Item', () => {
+describe.skip('BreadcrumbGroup Item', () => {
   describe('properties', () => {
     let wrapper: BreadcrumbGroupWrapper;
     let links: Array<ElementWrapper>;

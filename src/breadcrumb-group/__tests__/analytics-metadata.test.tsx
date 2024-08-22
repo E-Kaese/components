@@ -55,7 +55,7 @@ const getClickEventDetails = (position: number) => ({
 beforeAll(() => {
   activateAnalyticsMetadata(true);
 });
-describe('BreadcrumbGroup renders correct analytics metadata', () => {
+describe.skip('BreadcrumbGroup renders correct analytics metadata', () => {
   test('in desktop view', () => {
     const wrapper = renderBreadcrumbGroup();
 

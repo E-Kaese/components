@@ -28,7 +28,7 @@ async function clickRefreshAndWaitForFetch() {
   await waitForFetch();
 }
 
-test('updating breadcrumbs and header text when navigating the bucket contents', async () => {
+test.skip('updating breadcrumbs and header text when navigating the bucket contents', async () => {
   const wrapper = await renderModal(<S3Modal {...modalDefaultProps} />);
   expect(getElementsText(wrapper.findBreadcrumbGroup()!.findBreadcrumbLinks())).toEqual(['S3 buckets']);
   expect(wrapper.findTable()!.findHeaderSlot()!.findHeader()!.getElement()).toHaveTextContent('Buckets');

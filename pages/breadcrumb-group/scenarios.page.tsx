@@ -20,6 +20,7 @@ const testCases = [
     'Even-longer-without-white-space',
     'And if it was not enough, another breadcrumb here',
   ],
+  ['A', 'AB', 'ABC', 'ABCD', 'ABCDEF', 'ABCDEFGHIJsjbdkasbdhjabsjdhasjhdabsjd'],
 ];
 
 export default function ButtonDropdownPage() {

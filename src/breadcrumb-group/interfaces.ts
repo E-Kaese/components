@@ -39,6 +39,8 @@ export interface BreadcrumbGroupProps<T extends BreadcrumbGroupProps.Item = Brea
    * without pressing modifier keys (that is, CTRL, ALT, SHIFT, META).
    */
   onFollow?: CancelableEventHandler<BreadcrumbGroupProps.ClickDetail<T>>;
+
+  minBreadcrumbWidth?: number;
 }
 
 export namespace BreadcrumbGroupProps {

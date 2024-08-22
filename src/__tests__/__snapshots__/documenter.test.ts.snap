@@ -2973,6 +2973,11 @@ attributed with the proper \`aria-current\` value and rendered as inactive.
       "optional": false,
       "type": "ReadonlyArray<T>",
     },
+    Object {
+      "name": "minBreadcrumbWidth",
+      "optional": true,
+      "type": "number",
+    },
   ],
   "regions": Array [],
   "releaseStatus": "stable",

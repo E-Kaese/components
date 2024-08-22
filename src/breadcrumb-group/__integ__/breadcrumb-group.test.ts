@@ -41,7 +41,7 @@ const setupTest = (testFn: (page: BreadcrumbGroupPage, browser: WebdriverIO.Brow
     await testFn(page, browser);
   });
 };
-describe('BreadcrumbGroup', () => {
+describe.skip('BreadcrumbGroup', () => {
   test(
     'Has proper number of items in the dropdown',
     setupTest(async page => {

@@ -27,7 +27,7 @@
     margin-inline: 0;
     list-style: none;
     inline-size: 100%;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 
     > .item,
     > .ellipsis {
@@ -62,9 +62,6 @@
       }
       > .item {
         min-inline-size: 0;
-        &:not(:first-child):not(:last-child) {
-          display: none;
-        }
       }
     }
   }

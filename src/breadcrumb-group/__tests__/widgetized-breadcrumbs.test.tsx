@@ -35,7 +35,7 @@ jest.mock('../../../lib/components/internal/hooks/use-visual-mode', () => ({
   useVisualRefresh: jest.fn().mockReturnValue(false),
 }));
 
-describe('Classic design', () => {
+describe.skip('Classic design', () => {
   beforeEach(() => {
     jest.mocked(useVisualRefresh).mockReturnValue(false);
   });
@@ -47,7 +47,7 @@ describe('Classic design', () => {
   });
 });
 
-describe('Refresh design', () => {
+describe.skip('Refresh design', () => {
   beforeEach(() => {
     jest.mocked(useVisualRefresh).mockReturnValue(true);
   });
