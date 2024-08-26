@@ -74,6 +74,7 @@ export default function Form({ variant = 'full-page', ...props }: FormProps) {
       funnelIdentifier={analyticsMetadata?.instanceIdentifier}
       funnelFlowType={analyticsMetadata?.flowType}
       funnelErrorContext={analyticsMetadata?.errorContext}
+      funnelResourceType={analyticsMetadata?.resourceType}
       funnelType="single-page"
       optionalStepNumbers={[]}
       totalFunnelSteps={1}
