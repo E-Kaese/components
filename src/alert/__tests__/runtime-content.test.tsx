@@ -4,6 +4,7 @@ import * as React from 'react';
 import { act, render, screen } from '@testing-library/react';
 
 import Alert from '../../../lib/components/alert';
+import Button from '../../../lib/components/button';
 import awsuiPlugins from '../../../lib/components/internal/plugins';
 import { awsuiPluginsInternal } from '../../../lib/components/internal/plugins/api';
 import { AlertContentConfig } from '../../../lib/components/internal/plugins/controllers/alert-content';
@@ -30,32 +31,6 @@ const defaultContent: AlertContentConfig = {
   unmountContent: jest.fn(),
   unmountHeader: jest.fn(),
 };
-
-// const conditionalContent: AlertContentConfig = {
-//   id: 'test-content',
-//   mountContent: (container, {type}) => {
-//     if (type === 'success') {
-//       return false;
-//     }
-//     const content = document.createElement('div');
-//     content.append('Conditional content')
-//     content.dataset.testid = 'test-content-conditional';
-//     container.replaceChildren(content);
-//     return true;
-//   },
-//   mountHeader: (container, {type}) => {
-//     if (type === 'success') {
-//       return false;
-//     }
-//     const content = document.createElement('div');
-//     content.append('Conditional header')
-//     content.dataset.testid = 'test-header-conditional';
-//     container.replaceChildren(content);
-//     return true;
-//   },
-//   unmountContent: container => (container.innerHTML = ''),
-//   unmountHeader: container => (container.innerHTML = ''),
-// };
 
 function delay(advanceBy = 1) {
   const promise = act(() => new Promise(resolve => setTimeout(resolve)));
@@ -109,6 +84,38 @@ describe.each([true, false])('existing header:%p', existingHeader => {
     await delay();
     expect(screen.queryByTestId('test-header')).toBeTruthy();
     expect(alertWrapper.findHeader()!.getElement().textContent).toBe('New header');
+  });
+});
+
+describe('mountContent arguments', () => {
+  const mountContent = jest.fn();
+  beforeEach(() => {
+    const plugin: AlertContentConfig = {
+      id: 'test-content',
+      mountContent,
+    };
+    awsuiPlugins.alertContent.registerContent(plugin);
+  });
+  test('refs', async () => {
+    render(
+      <Alert header="Alert header" action={<Button>Action button</Button>}>
+        Alert content
+      </Alert>
+    );
+    await delay();
+    expect(mountContent.mock.lastCall[1].headerRef.current).toHaveTextContent('Alert header');
+    expect(mountContent.mock.lastCall[1].contentRef.current).toHaveTextContent('Alert content');
+    expect(mountContent.mock.lastCall[1].actionsRef.current).toHaveTextContent('Action button');
+  });
+  test('type - default', async () => {
+    render(<Alert />);
+    await delay();
+    expect(mountContent.mock.lastCall[1].type).toBe('info');
+  });
+  test('type - custom', async () => {
+    render(<Alert type="error" />);
+    await delay();
+    expect(mountContent.mock.lastCall[1].type).toBe('error');
   });
 });
 
@@ -203,50 +210,3 @@ describe('asynchronous rendering', () => {
     expect(rendered).toBeFalsy();
   });
 });
-
-// test('renders runtime content on multiple instances', async () => {
-//   awsuiPlugins.alertContent.registerContent(defaultContent);
-//   render(
-//     <>
-//       <Alert />
-//       <Alert />
-//     </>
-//   );
-//   await delay();
-//   expect(screen.queryAllByTestId('test-content')).toHaveLength(2);
-// });
-
-// test('allows skipping rendering content', async () => {
-//   const testContent: AlertContentConfig = {
-//     ...defaultContent,
-//     mountContent: (container, context) => {
-//       if (context.type !== 'error') {
-//         return;
-//       }
-//       defaultContent.mountContent(container, context);
-//     },
-//   };
-//   awsuiPlugins.alertContent.registerContent(testContent);
-//   const { rerender } = render(<Alert type="info" />);
-//   await delay();
-//   expect(screen.queryByTestId('test-content')).toBeFalsy();
-//   rerender(<Alert type="error" />);
-//   await delay();
-//   expect(screen.queryByTestId('test-content')).toBeTruthy();
-// });
-
-// test('cleans up on unmount', async () => {
-//   const testContent: AlertContentConfig = {
-//     ...defaultContent,
-//     mountContent: jest.fn(),
-//     unmountContent: jest.fn(),
-//   };
-//   awsuiPlugins.alertContent.registerContent(testContent);
-//   const { rerender } = render(<Alert />);
-//   await delay();
-//   expect(testContent.mountContent).toHaveBeenCalledTimes(1);
-//   expect(testContent.unmountContent).toHaveBeenCalledTimes(0);
-//   rerender(<></>);
-//   expect(testContent.mountContent).toHaveBeenCalledTimes(1);
-//   expect(testContent.unmountContent).toHaveBeenCalledTimes(1);
-// });

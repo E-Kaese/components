@@ -71,6 +71,7 @@ const InternalAlert = React.forwardRef(
       hasDiscoveredContent,
       headerRef: headerRefContent,
       contentRef: contentRefContent,
+      actionsRef,
     } = useDiscoveredContent({ type, header, children });
 
     const headerRef = useMergeRefs(headerRefAction, headerRefContent);
@@ -123,6 +124,7 @@ const InternalAlert = React.forwardRef(
                 </div>
               </div>
               <ActionsWrapper
+                ref={actionsRef}
                 className={styles.action}
                 testUtilClasses={{
                   actionSlot: styles['action-slot'],

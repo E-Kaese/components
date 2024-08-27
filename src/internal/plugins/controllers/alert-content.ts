@@ -12,6 +12,7 @@ export interface AlertContentContext {
   type: string;
   headerRef: RefShim<HTMLElement>;
   contentRef: RefShim<HTMLElement>;
+  actionsRef: RefShim<HTMLElement>;
   signal: AbortSignal;
 }
 

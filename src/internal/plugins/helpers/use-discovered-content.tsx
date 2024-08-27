@@ -16,6 +16,7 @@ export function createUseDiscoveredContent(onContentRegistered: AlertContentCont
   }) {
     const headerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
+    const actionsRef = useRef<HTMLDivElement>(null);
     const foundHeaderProviderRef = useRef<AlertContentConfig>();
     const foundContentProviderRef = useRef<AlertContentConfig>();
     const [foundHeaderProvider, setFoundHeaderProvider] = useState<AlertContentConfig | null>(null);
@@ -33,6 +34,7 @@ export function createUseDiscoveredContent(onContentRegistered: AlertContentCont
                 type,
                 headerRef,
                 contentRef,
+                actionsRef,
                 signal: controller.signal,
               }))
             ) {
@@ -54,6 +56,7 @@ export function createUseDiscoveredContent(onContentRegistered: AlertContentCont
                 type,
                 headerRef,
                 contentRef,
+                actionsRef,
                 signal: controller.signal,
               }))
             ) {
@@ -82,6 +85,7 @@ export function createUseDiscoveredContent(onContentRegistered: AlertContentCont
       hasDiscoveredContent: !!foundContentProvider,
       headerRef,
       contentRef,
+      actionsRef,
     };
   };
 }
