@@ -97,6 +97,7 @@ export default function () {
                   filteringOptions={filteringOptions}
                   virtualScroll={true}
                   countText={`${items.length} matches`}
+                  enableTokenGroups={true}
                   expandToViewport={true}
                   filteringEmpty="No properties"
                 />

@@ -86,11 +86,7 @@ export class FilteringTokenWrapper extends ComponentWrapper {
     const popoverBody = root.findByClassName(popoverStyles.body);
     return popoverBody ? new PropertyFilterEditorDropdownWrapper(popoverBody.getElement()) : null;
   }
-}
 
-// The internal wrapper has two extra methods that are not available publicly
-// until the property filter token grouping is supported.
-export class InternalFilteringTokenWrapper extends FilteringTokenWrapper {
   findEditButton(): ElementWrapper<HTMLButtonElement> {
     return this.findByClassName<HTMLButtonElement>(testUtilStyles['filtering-token-edit-button'])!;
   }
@@ -129,38 +125,6 @@ export class PropertyFilterEditorDropdownWrapper extends ComponentWrapper {
 
   findForm(): ElementWrapper {
     return this.findByClassName(styles['token-editor-form'])!;
-  }
-
-  findPropertyField(): FormFieldWrapper {
-    return this.findComponent(`.${testUtilStyles['token-editor-field-property']}`, FormFieldWrapper)!;
-  }
-
-  findOperatorField(): FormFieldWrapper {
-    return this.findComponent(`.${testUtilStyles['token-editor-field-operator']}`, FormFieldWrapper)!;
-  }
-
-  findValueField(): FormFieldWrapper {
-    return this.findComponent(`.${testUtilStyles['token-editor-field-value']}`, FormFieldWrapper)!;
-  }
-
-  findCancelButton(): ButtonWrapper {
-    return this.findComponent(`.${testUtilStyles['token-editor-cancel']}`, ButtonWrapper)!;
-  }
-
-  findSubmitButton(): ButtonWrapper {
-    return this.findComponent(`.${testUtilStyles['token-editor-submit']}`, ButtonWrapper)!;
-  }
-}
-
-// The internal wrapper has extra methods that are not available publicly
-// until the property filter token grouping is supported.
-export class InternalPropertyFilterEditorDropdownWrapper extends ComponentWrapper {
-  findHeader(): ElementWrapper {
-    return this.findByClassName(popoverStyles.header)!;
-  }
-
-  findDismissButton(): ButtonWrapper {
-    return this.findComponent(`.${popoverStyles['dismiss-control']}`, ButtonWrapper)!;
   }
 
   findPropertyField(index = 1): FormFieldWrapper {

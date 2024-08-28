@@ -241,16 +241,16 @@ describe('tokens show-more toggle', () => {
         operation: 'or',
       },
     });
-    expect(wrapper.findTokenToggle()!.getElement()).toHaveTextContent(i18nStrings.tokenLimitShowMore);
+    expect(wrapper.findTokenToggle()!.getElement()).toHaveTextContent(i18nStrings.tokenLimitShowMore!);
     expect(wrapper.findTokens()!).toHaveLength(1);
     expect(wrapper.findTokens()![0].findLabel().getElement()).toHaveTextContent('string : first');
     // show more
     act(() => wrapper.findTokenToggle()!.click());
-    expect(wrapper.findTokenToggle()!.getElement()).toHaveTextContent(i18nStrings.tokenLimitShowFewer);
+    expect(wrapper.findTokenToggle()!.getElement()).toHaveTextContent(i18nStrings.tokenLimitShowFewer!);
     expect(wrapper.findTokens()!).toHaveLength(2);
     // show fewer
     act(() => wrapper.findTokenToggle()!.click());
-    expect(wrapper.findTokenToggle()!.getElement()).toHaveTextContent(i18nStrings.tokenLimitShowMore);
+    expect(wrapper.findTokenToggle()!.getElement()).toHaveTextContent(i18nStrings.tokenLimitShowMore!);
     expect(wrapper.findTokens()!).toHaveLength(1);
   });
 });
@@ -265,7 +265,7 @@ describe('tokens remove all button', () => {
     const { propertyFilterWrapper: wrapper } = renderComponent({
       query: { tokens: [{ propertyKey: 'string', value: 'first', operator: ':' }], operation: 'or' },
     });
-    expect(wrapper.findRemoveAllButton()!.getElement()).toHaveTextContent(i18nStrings.clearFiltersText);
+    expect(wrapper.findRemoveAllButton()!.getElement()).toHaveTextContent(i18nStrings.clearFiltersText!);
   });
 
   test('causes onChange to fire, removing all tokens', () => {
@@ -293,5 +293,100 @@ describe('tokens remove all button', () => {
       query: { tokens: [{ propertyKey: 'string', value: 'first', operator: ':' }], operation: 'or' },
     });
     expect(wrapper.findRemoveAllButton()!.getElement()).toBeDisabled();
+  });
+});
+
+describe('grouped token', () => {
+  const tokenJohn = { propertyKey: 'string', operator: '=', value: 'John' };
+  const tokenJane = { propertyKey: 'string', operator: '=', value: 'Jane' };
+  const tokenJack = { propertyKey: 'string', operator: '=', value: 'Jack' };
+
+  function render(props: Partial<PropertyFilterProps>) {
+    const { propertyFilterWrapper: wrapper } = renderComponent({ ...props, enableTokenGroups: true });
+    return wrapper;
+  }
+
+  test('token group has correct ARIA label and edit button ARIA label', () => {
+    const wrapper = render({
+      query: { operation: 'and', tokenGroups: [{ operation: 'or', tokens: [tokenJohn, tokenJane] }], tokens: [] },
+    });
+
+    expect(wrapper.findTokens()[0].getElement()).toHaveAccessibleName('string equals John or string equals Jane');
+    expect(wrapper.findTokens()[0].findEditButton()!.getElement()).toHaveAccessibleName(
+      'Edit filter, string equals John or string equals Jane'
+    );
+  });
+
+  test('changes group operation', () => {
+    const onChange = jest.fn();
+    const wrapper = render({
+      query: { operation: 'and', tokenGroups: [{ operation: 'and', tokens: [tokenJohn, tokenJane] }], tokens: [] },
+      onChange,
+    });
+
+    wrapper.findTokens()[0].findGroupTokens()[1].findTokenOperation()!.openDropdown();
+    wrapper.findTokens()[0].findGroupTokens()[1].findTokenOperation()!.selectOption(2);
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toBeCalledWith(
+      expect.objectContaining({
+        detail: {
+          operation: 'and',
+          tokenGroups: [{ operation: 'or', tokens: [tokenJohn, tokenJane] }],
+          tokens: [],
+        },
+      })
+    );
+  });
+
+  test('removes token from group', () => {
+    const onChange = jest.fn();
+    const wrapper = render({
+      query: {
+        operation: 'and',
+        tokenGroups: [{ operation: 'and', tokens: [tokenJohn, tokenJane, tokenJack] }],
+        tokens: [],
+      },
+      onChange,
+    });
+
+    wrapper.findTokens()[0].findGroupTokens()[0].findRemoveButton()!.click();
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toBeCalledWith(
+      expect.objectContaining({
+        detail: {
+          operation: 'and',
+          tokenGroups: [{ operation: 'and', tokens: [tokenJane, tokenJack] }],
+          tokens: [],
+        },
+      })
+    );
+
+    wrapper.findTokens()[0].findGroupTokens()[1].findRemoveButton()!.click();
+
+    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(onChange).toBeCalledWith(
+      expect.objectContaining({
+        detail: {
+          operation: 'and',
+          tokenGroups: [{ operation: 'and', tokens: [tokenJohn, tokenJack] }],
+          tokens: [],
+        },
+      })
+    );
+
+    wrapper.findTokens()[0].findGroupTokens()[2].findRemoveButton()!.click();
+
+    expect(onChange).toHaveBeenCalledTimes(3);
+    expect(onChange).toBeCalledWith(
+      expect.objectContaining({
+        detail: {
+          operation: 'and',
+          tokenGroups: [{ operation: 'and', tokens: [tokenJohn, tokenJane] }],
+          tokens: [],
+        },
+      })
+    );
   });
 });

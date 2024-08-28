@@ -13,8 +13,10 @@ import {
   PropertyFilterOperatorFormProps,
   PropertyFilterOption,
   PropertyFilterProperty,
+  PropertyFilterQuery,
   PropertyFilterToken,
 } from '@cloudscape-design/collection-hooks';
+import { PropertyFilterTokenGroup } from '@cloudscape-design/collection-hooks/cjs/interfaces';
 
 import { AutosuggestProps } from '../autosuggest/interfaces';
 import { BaseComponentProps } from '../internal/base-component';
@@ -62,6 +64,11 @@ export interface PropertyFilterProps extends BaseComponentProps, ExpandToViewpor
    * operations are communicated to the user in another way.
    */
   hideOperations?: boolean;
+  /*
+   * Activates token grouping mechanism to support tokens nesting (up to one level).
+   * When `true`, the `query.tokens` property is ignored and `query.tokenGroups` is used instead.
+   */
+  enableTokenGroups?: boolean;
   /**
    * Fired when the `query` gets changed. Filter the dataset in response to this event using the values in the `detail` object.
    */
@@ -147,7 +154,7 @@ export interface PropertyFilterProps extends BaseComponentProps, ExpandToViewpor
    */
   customFilterActions?: React.ReactNode;
   /**
-   * Set `asyncProperties` if you need to load `filteringProperties` asynchronousely. This would cause extra `onLoadMore`
+   * Set `asyncProperties` if you need to load `filteringProperties` asynchronously. This would cause extra `onLoadMore`
    * events to fire calling for more properties.
    */
   asyncProperties?: boolean;
@@ -214,6 +221,7 @@ export interface PropertyFilterProps extends BaseComponentProps, ExpandToViewpor
 
 export namespace PropertyFilterProps {
   export type Token = PropertyFilterToken;
+  export type TokenGroup = PropertyFilterTokenGroup;
   export type JoinOperation = PropertyFilterOperation;
   export type ComparisonOperator = PropertyFilterOperator;
   export type ExtendedOperator<TokenValue> = PropertyFilterOperatorExtended<TokenValue>;
@@ -223,11 +231,7 @@ export namespace PropertyFilterProps {
   export type FilteringOption = PropertyFilterOption;
   export type FilteringProperty = PropertyFilterProperty;
   export type FreeTextFiltering = PropertyFilterFreeTextFiltering;
-
-  export interface Query {
-    tokens: ReadonlyArray<PropertyFilterProps.Token>;
-    operation: PropertyFilterProps.JoinOperation;
-  }
+  export type Query = PropertyFilterQuery;
 
   export interface LoadItemsDetail {
     filteringProperty?: FilteringProperty;
@@ -284,6 +288,22 @@ export namespace PropertyFilterProps {
     tokenOperatorAriaLabel?: string;
     removeTokenButtonAriaLabel?: (token: FormattedToken) => string;
     enteredTextLabel?: AutosuggestProps.EnteredTextLabel;
+
+    groupEditAriaLabel?: (group: FormattedTokenGroup) => string;
+    tokenEditorTokenActionsAriaLabel?: (token: FormattedToken) => string;
+    tokenEditorTokenRemoveAriaLabel?: (token: FormattedToken) => string;
+    tokenEditorTokenRemoveLabel?: string;
+    tokenEditorTokenRemoveFromGroupLabel?: string;
+    tokenEditorAddNewTokenLabel?: string;
+    tokenEditorAddTokenActionsAriaLabel?: string;
+    tokenEditorAddExistingTokenAriaLabel?: (token: FormattedToken) => string;
+    tokenEditorAddExistingTokenLabel?: (token: FormattedToken) => string;
+  }
+
+  export interface FormattedTokenGroup {
+    tokens: FormattedToken[];
+    operation: string;
+    operationLabel: string;
   }
 
   export interface FormattedToken {
@@ -315,6 +335,7 @@ export namespace PropertyFilterProps {
 // Re-exported namespace interfaces to use module-style imports internally
 
 export type Token = PropertyFilterProps.Token;
+export type TokenGroup = PropertyFilterProps.TokenGroup;
 export type JoinOperation = PropertyFilterProps.JoinOperation;
 export type ComparisonOperator = PropertyFilterProps.ComparisonOperator;
 export type ExtendedOperator<TokenValue> = PropertyFilterOperatorExtended<TokenValue>;
@@ -329,6 +350,7 @@ export type I18nStrings = PropertyFilterProps.I18nStrings;
 export type GroupText = PropertyFilterProps.GroupText;
 export type FilteringChangeDetail = PropertyFilterProps.FilteringChangeDetail;
 export type FormattedToken = PropertyFilterProps.FormattedToken;
+export type FormattedTokenGroup = PropertyFilterProps.FormattedTokenGroup;
 export type Ref = PropertyFilterProps.Ref;
 
 // Utility types
@@ -359,15 +381,18 @@ export interface InternalFreeTextFiltering {
 }
 
 export interface InternalToken<TokenValue = any> {
+  standaloneIndex?: number;
   property: null | InternalFilteringProperty<TokenValue>;
   operator: PropertyFilterOperator;
   value: TokenValue;
 }
 
-export interface InternalQuery {
+export interface InternalTokenGroup<TokenValue = any> {
   operation: PropertyFilterOperation;
-  tokens: readonly InternalToken[];
+  tokens: readonly (InternalToken<TokenValue> | InternalTokenGroup<TokenValue>)[];
 }
+
+export type InternalQuery = InternalTokenGroup;
 
 export type ParsedText =
   | { step: 'property'; property: InternalFilteringProperty; operator: ComparisonOperator; value: string }

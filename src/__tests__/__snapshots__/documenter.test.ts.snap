@@ -12031,18 +12031,7 @@ Object {
       "description": "Fired when the \`query\` gets changed. Filter the dataset in response to this event using the values in the \`detail\` object.",
       "detailInlineType": Object {
         "name": "PropertyFilterProps.Query",
-        "properties": Array [
-          Object {
-            "name": "operation",
-            "optional": false,
-            "type": "PropertyFilterProps.JoinOperation",
-          },
-          Object {
-            "name": "tokens",
-            "optional": false,
-            "type": "ReadonlyArray<PropertyFilterProps.Token>",
-          },
-        ],
+        "properties": Array [],
         "type": "object",
       },
       "detailType": "PropertyFilterProps.Query",
@@ -12128,7 +12117,7 @@ To use it correctly, define an ID for the element you want to use as label and s
       "type": "string",
     },
     Object {
-      "description": "Set \`asyncProperties\` if you need to load \`filteringProperties\` asynchronousely. This would cause extra \`onLoadMore\`
+      "description": "Set \`asyncProperties\` if you need to load \`filteringProperties\` asynchronously. This would cause extra \`onLoadMore\`
 events to fire calling for more properties.",
       "name": "asyncProperties",
       "optional": true,
@@ -12185,6 +12174,12 @@ instead of a specific property. This would stop the user from creating such toke
 Use it, for example, if you are fetching new items upon filtering change
 in order to prevent the user from changing the filtering query.",
       "name": "disabled",
+      "optional": true,
+      "type": "boolean",
+    },
+    Object {
+      "defaultValue": "false",
+      "name": "enableTokenGroups",
       "optional": true,
       "type": "boolean",
     },
@@ -12383,6 +12378,11 @@ operations are communicated to the user in another way.",
             "type": "(token: PropertyFilterProps.FormattedToken) => string",
           },
           Object {
+            "name": "groupEditAriaLabel",
+            "optional": true,
+            "type": "(group: PropertyFilterProps.FormattedTokenGroup) => string",
+          },
+          Object {
             "name": "groupPropertiesText",
             "optional": true,
             "type": "string",
@@ -12473,6 +12473,46 @@ operations are communicated to the user in another way.",
             "type": "(token: PropertyFilterProps.FormattedToken) => string",
           },
           Object {
+            "name": "tokenEditorAddExistingTokenAriaLabel",
+            "optional": true,
+            "type": "(token: PropertyFilterProps.FormattedToken) => string",
+          },
+          Object {
+            "name": "tokenEditorAddExistingTokenLabel",
+            "optional": true,
+            "type": "(token: PropertyFilterProps.FormattedToken) => string",
+          },
+          Object {
+            "name": "tokenEditorAddNewTokenLabel",
+            "optional": true,
+            "type": "string",
+          },
+          Object {
+            "name": "tokenEditorAddTokenActionsAriaLabel",
+            "optional": true,
+            "type": "string",
+          },
+          Object {
+            "name": "tokenEditorTokenActionsAriaLabel",
+            "optional": true,
+            "type": "(token: PropertyFilterProps.FormattedToken) => string",
+          },
+          Object {
+            "name": "tokenEditorTokenRemoveAriaLabel",
+            "optional": true,
+            "type": "(token: PropertyFilterProps.FormattedToken) => string",
+          },
+          Object {
+            "name": "tokenEditorTokenRemoveFromGroupLabel",
+            "optional": true,
+            "type": "string",
+          },
+          Object {
+            "name": "tokenEditorTokenRemoveLabel",
+            "optional": true,
+            "type": "string",
+          },
+          Object {
             "name": "tokenLimitShowFewer",
             "optional": true,
             "type": "string",
@@ -12520,18 +12560,7 @@ Each token has the following properties:
 ",
       "inlineType": Object {
         "name": "PropertyFilterProps.Query",
-        "properties": Array [
-          Object {
-            "name": "operation",
-            "optional": false,
-            "type": "PropertyFilterProps.JoinOperation",
-          },
-          Object {
-            "name": "tokens",
-            "optional": false,
-            "type": "ReadonlyArray<PropertyFilterProps.Token>",
-          },
-        ],
+        "properties": Array [],
         "type": "object",
       },
       "name": "query",

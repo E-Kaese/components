@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 import { PropertyFilterProps } from '~components/property-filter';
-import { I18nStringsExt } from '~components/property-filter/i18n-utils';
 
 import {
   DateForm,
@@ -146,7 +145,7 @@ export const labels = {
   filteringPlaceholder: 'Search',
 };
 
-export const i18nStrings: PropertyFilterProps.I18nStrings & I18nStringsExt = {
+export const i18nStrings: PropertyFilterProps.I18nStrings = {
   dismissAriaLabel: 'Dismiss',
 
   groupValuesText: 'Values',
