@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 import { ReactNode, useEffect, useRef, useState } from 'react';
 
-import { AlertContentConfig, AlertContentController } from '../controllers/alert-content';
+import { AlertFlashContentConfig, AlertFlashContentController } from '../controllers/alert-flash-content';
 
-export function createUseDiscoveredContent(onContentRegistered: AlertContentController['onContentRegistered']) {
+export function createUseDiscoveredContent(onContentRegistered: AlertFlashContentController['onContentRegistered']) {
   return function useDiscoveredContent({
     type,
     header,
@@ -17,10 +17,10 @@ export function createUseDiscoveredContent(onContentRegistered: AlertContentCont
     const headerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const actionsRef = useRef<HTMLDivElement>(null);
-    const foundHeaderProviderRef = useRef<AlertContentConfig>();
-    const foundContentProviderRef = useRef<AlertContentConfig>();
-    const [foundHeaderProvider, setFoundHeaderProvider] = useState<AlertContentConfig | null>(null);
-    const [foundContentProvider, setFoundContentProvider] = useState<AlertContentConfig | null>(null);
+    const foundHeaderProviderRef = useRef<AlertFlashContentConfig>();
+    const foundContentProviderRef = useRef<AlertFlashContentConfig>();
+    const [foundHeaderProvider, setFoundHeaderProvider] = useState<AlertFlashContentConfig | null>(null);
+    const [foundContentProvider, setFoundContentProvider] = useState<AlertFlashContentConfig | null>(null);
 
     useEffect(() => {
       return onContentRegistered(providers => {
@@ -39,7 +39,7 @@ export function createUseDiscoveredContent(onContentRegistered: AlertContentCont
               }))
             ) {
               if (controller.signal.aborted) {
-                console.warn('[AwsUi] [runtime alert content] Async header returned after alert unmounted');
+                console.warn('[AwsUi] [Runtime alert/flash content] Async header returned after component unmounted');
                 return;
               }
               foundHeaderProviderRef.current = provider;
@@ -61,7 +61,7 @@ export function createUseDiscoveredContent(onContentRegistered: AlertContentCont
               }))
             ) {
               if (controller.signal.aborted) {
-                console.warn('[AwsUi] [runtime alert content] Async content returned after alert unmounted');
+                console.warn('[AwsUi] [Runtime alert/flash content] Async content returned after component unmounted');
                 return;
               }
               foundContentProviderRef.current = provider;

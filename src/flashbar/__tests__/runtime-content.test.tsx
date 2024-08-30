@@ -3,12 +3,12 @@
 import * as React from 'react';
 import { act, render, screen } from '@testing-library/react';
 
-import Alert from '../../../lib/components/alert';
 import Button from '../../../lib/components/button';
+import Flashbar from '../../../lib/components/flashbar';
 import awsuiPlugins from '../../../lib/components/internal/plugins';
 import { awsuiPluginsInternal } from '../../../lib/components/internal/plugins/api';
 import { AlertFlashContentConfig } from '../../../lib/components/internal/plugins/controllers/alert-flash-content';
-import { AlertWrapper } from '../../../lib/components/test-utils/dom';
+import { FlashbarWrapper } from '../../../lib/components/test-utils/dom';
 
 const pause = (timeout: number) => new Promise(resolve => setTimeout(resolve, timeout));
 
@@ -42,48 +42,82 @@ beforeEach(() => {
   jest.useFakeTimers();
 });
 afterEach(() => {
-  awsuiPluginsInternal.alertContent.clearRegisteredContent();
+  awsuiPluginsInternal.flashContent.clearRegisteredContent();
   jest.useRealTimers();
   jest.resetAllMocks();
 });
 
 test('renders runtime content initially', async () => {
-  awsuiPlugins.alertContent.registerContent(defaultContent);
-  const { container } = render(<Alert>Alert content</Alert>);
-  const alertWrapper = new AlertWrapper(container);
+  awsuiPlugins.flashContent.registerContent(defaultContent);
+  const { container } = render(
+    <Flashbar
+      items={[
+        {
+          content: 'Flash content',
+        },
+      ]}
+    />
+  );
+  const wrapper = new FlashbarWrapper(container);
   await delay();
   expect(screen.queryByTestId('test-content')).toBeTruthy();
-  expect(alertWrapper.findContent().getElement().textContent).toBe('New content');
+  expect(wrapper.findItems()[0]!.findContent()!.getElement().textContent).toBe('New content');
 });
 
 test('renders runtime content asynchronously', async () => {
-  render(<Alert />);
+  render(
+    <Flashbar
+      items={[
+        {
+          content: 'Flash content',
+        },
+      ]}
+    />
+  );
   await delay();
   expect(screen.queryByTestId('test-content')).toBeFalsy();
-  awsuiPlugins.alertContent.registerContent(defaultContent);
+  awsuiPlugins.flashContent.registerContent(defaultContent);
   await delay();
   expect(screen.queryByTestId('test-content')).toBeTruthy();
 });
 
 describe.each([true, false])('existing header:%p', existingHeader => {
   test('renders runtime header initially', async () => {
-    awsuiPlugins.alertContent.registerContent(defaultContent);
-    const { container } = render(<Alert header={existingHeader ? 'Header content' : undefined}>Alert content</Alert>);
-    const alertWrapper = new AlertWrapper(container);
+    awsuiPlugins.flashContent.registerContent(defaultContent);
+    const { container } = render(
+      <Flashbar
+        items={[
+          {
+            content: 'Flash content',
+            header: existingHeader ? 'Flash header' : undefined,
+          },
+        ]}
+      />
+    );
+    const wrapper = new FlashbarWrapper(container);
     await delay();
     expect(screen.queryByTestId('test-header')).toBeTruthy();
-    expect(alertWrapper.findHeader()!.getElement().textContent).toBe('New header');
+    expect(wrapper.findItems()[0].findHeader()!.getElement().textContent).toBe('New header');
   });
 
   test('renders runtime header asynchronously', async () => {
-    const { container } = render(<Alert header={existingHeader ? 'Header content' : undefined}>Alert content</Alert>);
-    const alertWrapper = new AlertWrapper(container);
+    const { container } = render(
+      <Flashbar
+        items={[
+          {
+            content: 'Flash content',
+            header: existingHeader ? 'Flash header' : undefined,
+          },
+        ]}
+      />
+    );
+    const wrapper = new FlashbarWrapper(container);
     await delay();
     expect(screen.queryByTestId('test-header')).toBeFalsy();
-    awsuiPlugins.alertContent.registerContent(defaultContent);
+    awsuiPlugins.flashContent.registerContent(defaultContent);
     await delay();
     expect(screen.queryByTestId('test-header')).toBeTruthy();
-    expect(alertWrapper.findHeader()!.getElement().textContent).toBe('New header');
+    expect(wrapper.findItems()[0].findHeader()!.getElement().textContent).toBe('New header');
   });
 });
 
@@ -94,29 +128,71 @@ describe('mountContent arguments', () => {
       id: 'test-content',
       mountContent,
     };
-    awsuiPlugins.alertContent.registerContent(plugin);
+    awsuiPlugins.flashContent.registerContent(plugin);
   });
   test('refs', async () => {
     render(
-      <Alert header="Alert header" action={<Button>Action button</Button>}>
-        Alert content
-      </Alert>
+      <Flashbar
+        items={[
+          {
+            header: 'Flash header',
+            action: <Button>Action button</Button>,
+            content: 'Flash content',
+          },
+        ]}
+      />
     );
     await delay();
-    expect(mountContent.mock.lastCall[1].headerRef.current).toHaveTextContent('Alert header');
-    expect(mountContent.mock.lastCall[1].contentRef.current).toHaveTextContent('Alert content');
+    expect(mountContent.mock.lastCall[1].headerRef.current).toHaveTextContent('Flash header');
+    expect(mountContent.mock.lastCall[1].contentRef.current).toHaveTextContent('Flash content');
     expect(mountContent.mock.lastCall[1].actionsRef.current).toHaveTextContent('Action button');
   });
   test('type - default', async () => {
-    render(<Alert />);
+    render(<Flashbar items={[{}]} />);
     await delay();
     expect(mountContent.mock.lastCall[1].type).toBe('info');
   });
   test('type - custom', async () => {
-    render(<Alert type="error" />);
+    render(
+      <Flashbar
+        items={[
+          {
+            type: 'error',
+          },
+        ]}
+      />
+    );
     await delay();
     expect(mountContent.mock.lastCall[1].type).toBe('error');
   });
+});
+
+test('multiple flashes', async () => {
+  const plugin: AlertFlashContentConfig = {
+    id: 'test-content',
+    mountContent: (container, context) => {
+      if (context.type === 'error') {
+        container.innerHTML = 'Replaced content';
+        return true;
+      }
+      return false;
+    },
+  };
+  awsuiPlugins.flashContent.registerContent(plugin);
+  const { container } = render(
+    <Flashbar
+      items={[
+        { content: 'Flash content', type: 'error' },
+        { content: 'Flash content', type: 'info' },
+        { content: 'Flash content', type: 'error' },
+      ]}
+    />
+  );
+  await delay();
+  const wrapper = new FlashbarWrapper(container);
+  expect(wrapper.findItems()[0].findContent()?.getElement()).toHaveTextContent('Replaced content');
+  expect(wrapper.findItems()[1].findContent()?.getElement()).toHaveTextContent('Flash content');
+  expect(wrapper.findItems()[2].findContent()?.getElement()).toHaveTextContent('Replaced content');
 });
 
 describe('unmounting', () => {
@@ -128,12 +204,30 @@ describe('unmounting', () => {
       unmountContent: jest.fn(),
       unmountHeader: jest.fn(),
     };
-    awsuiPlugins.alertContent.registerContent(plugin);
-    const { unmount } = render(<Alert>Alert content</Alert>);
+    awsuiPlugins.flashContent.registerContent(plugin);
+    const { unmount } = render(<Flashbar items={[{}]} />);
     await delay();
     expect(plugin.unmountContent).toBeCalledTimes(0);
     expect(plugin.unmountHeader).toBeCalledTimes(0);
     unmount();
+    await delay();
+    expect(plugin.unmountContent).toBeCalledTimes(1);
+    expect(plugin.unmountHeader).toBeCalledTimes(1);
+  });
+  test('unmounts content and header (individual flash)', async () => {
+    const plugin: AlertFlashContentConfig = {
+      id: 'test-content',
+      mountContent: () => true,
+      mountHeader: () => true,
+      unmountContent: jest.fn(),
+      unmountHeader: jest.fn(),
+    };
+    awsuiPlugins.flashContent.registerContent(plugin);
+    const { rerender } = render(<Flashbar items={[{}]} />);
+    await delay();
+    expect(plugin.unmountContent).toBeCalledTimes(0);
+    expect(plugin.unmountHeader).toBeCalledTimes(0);
+    rerender(<Flashbar items={[]} />);
     await delay();
     expect(plugin.unmountContent).toBeCalledTimes(1);
     expect(plugin.unmountHeader).toBeCalledTimes(1);
@@ -152,9 +246,9 @@ describe('unmounting', () => {
       unmountContent: jest.fn(),
       unmountHeader: jest.fn(),
     };
-    awsuiPlugins.alertContent.registerContent(contentOnly);
-    awsuiPlugins.alertContent.registerContent(headerOnly);
-    const { unmount } = render(<Alert>Alert content</Alert>);
+    awsuiPlugins.flashContent.registerContent(contentOnly);
+    awsuiPlugins.flashContent.registerContent(headerOnly);
+    const { unmount } = render(<Flashbar items={[{}]} />);
     await delay();
     unmount();
     await delay();
@@ -178,15 +272,23 @@ describe('asynchronous rendering', () => {
         return true;
       },
     };
-    awsuiPlugins.alertContent.registerContent(asyncContent);
-    const { container } = render(<Alert>Alert content</Alert>);
-    const alertWrapper = new AlertWrapper(container);
+    awsuiPlugins.flashContent.registerContent(asyncContent);
+    const { container } = render(
+      <Flashbar
+        items={[
+          {
+            content: 'Flash content',
+          },
+        ]}
+      />
+    );
+    const wrapper = new FlashbarWrapper(container);
     await delay();
     expect(screen.queryByTestId('test-content-async')).toBeFalsy();
-    expect(alertWrapper.findContent().getElement().textContent).toBe('Alert content');
+    expect(wrapper.findItems()[0].findContent()!.getElement().textContent).toBe('Flash content');
     await delay(1000);
     expect(screen.queryByTestId('test-content-async')).toBeTruthy();
-    expect(alertWrapper.findContent().getElement().textContent).toBe('New content');
+    expect(wrapper.findItems()[0].findContent()!.getElement().textContent).toBe('New content');
   });
 
   test('cancels asynchronous rendering when unmounting', async () => {
@@ -202,8 +304,8 @@ describe('asynchronous rendering', () => {
         return false;
       },
     };
-    awsuiPlugins.alertContent.registerContent(asyncContent);
-    const { unmount } = render(<Alert>Alert content</Alert>);
+    awsuiPlugins.flashContent.registerContent(asyncContent);
+    const { unmount } = render(<Flashbar items={[{}]} />);
     await delay(500);
     unmount();
     await delay(1000);

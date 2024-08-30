@@ -8,7 +8,7 @@ interface RefShim<T> {
   current: T | null;
 }
 
-export interface AlertContentContext {
+export interface AlertFlashContentContext {
   type: string;
   headerRef: RefShim<HTMLElement>;
   contentRef: RefShim<HTMLElement>;
@@ -16,32 +16,32 @@ export interface AlertContentContext {
   signal: AbortSignal;
 }
 
-export interface AlertContentConfig {
+export interface AlertFlashContentConfig {
   id: string;
   orderPriority?: number;
-  mountHeader?: (container: HTMLElement, context: AlertContentContext) => boolean | Promise<boolean>;
-  mountContent?: (container: HTMLElement, context: AlertContentContext) => boolean | Promise<boolean>;
+  mountHeader?: (container: HTMLElement, context: AlertFlashContentContext) => boolean | Promise<boolean>;
+  mountContent?: (container: HTMLElement, context: AlertFlashContentContext) => boolean | Promise<boolean>;
   unmountHeader?: (container: HTMLElement) => void;
   unmountContent?: (container: HTMLElement) => void;
 }
 
-export interface AlertContentRegistrationListener {
-  (providers: Array<AlertContentConfig>): void | (() => void);
+export interface AlertFlashContentRegistrationListener {
+  (providers: Array<AlertFlashContentConfig>): void | (() => void);
   cleanup?: void | (() => void);
 }
 
-export interface AlertContentApiPublic {
-  registerContent(config: AlertContentConfig): void;
+export interface AlertFlashContentApiPublic {
+  registerContent(config: AlertFlashContentConfig): void;
 }
 
-export interface AlertContentApiInternal {
+export interface AlertFlashContentApiInternal {
   clearRegisteredContent(): void;
-  onContentRegistered(listener: AlertContentRegistrationListener): () => void;
+  onContentRegistered(listener: AlertFlashContentRegistrationListener): () => void;
 }
 
-export class AlertContentController {
-  private listeners: Array<AlertContentRegistrationListener> = [];
-  private providers: Array<AlertContentConfig> = [];
+export class AlertFlashContentController {
+  private listeners: Array<AlertFlashContentRegistrationListener> = [];
+  private providers: Array<AlertFlashContentConfig> = [];
 
   private scheduleUpdate = debounce(() => {
     this.listeners.forEach(listener => {
@@ -49,7 +49,7 @@ export class AlertContentController {
     });
   }, 0);
 
-  registerContent = (content: AlertContentConfig) => {
+  registerContent = (content: AlertFlashContentConfig) => {
     this.providers.push(content);
     this.providers = sortByPriority(this.providers);
     this.scheduleUpdate();
@@ -59,7 +59,7 @@ export class AlertContentController {
     this.providers = [];
   };
 
-  onContentRegistered = (listener: AlertContentRegistrationListener) => {
+  onContentRegistered = (listener: AlertFlashContentRegistrationListener) => {
     this.listeners.push(listener);
     this.scheduleUpdate();
     return () => {
@@ -68,14 +68,14 @@ export class AlertContentController {
     };
   };
 
-  installPublic(api: Partial<AlertContentApiPublic> = {}): AlertContentApiPublic {
+  installPublic(api: Partial<AlertFlashContentApiPublic> = {}): AlertFlashContentApiPublic {
     api.registerContent ??= this.registerContent;
-    return api as AlertContentApiPublic;
+    return api as AlertFlashContentApiPublic;
   }
 
-  installInternal(internalApi: Partial<AlertContentApiInternal> = {}): AlertContentApiInternal {
+  installInternal(internalApi: Partial<AlertFlashContentApiInternal> = {}): AlertFlashContentApiInternal {
     internalApi.clearRegisteredContent ??= this.clearRegisteredContent;
     internalApi.onContentRegistered ??= this.onContentRegistered;
-    return internalApi as AlertContentApiInternal;
+    return internalApi as AlertFlashContentApiInternal;
   }
 }

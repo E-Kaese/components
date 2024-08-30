@@ -17,7 +17,7 @@ import { PACKAGE_VERSION } from '../internal/environment';
 import { useMergeRefs } from '../internal/hooks/use-merge-refs';
 import { isDevelopment } from '../internal/is-development';
 import { awsuiPluginsInternal } from '../internal/plugins/api';
-import { createUseDiscoveredAction } from '../internal/plugins/helpers';
+import { createUseDiscoveredAction, createUseDiscoveredContent } from '../internal/plugins/helpers';
 import { throttle } from '../internal/utils/throttle';
 import InternalSpinner from '../spinner/internal';
 import { FlashbarProps } from './interfaces';
@@ -35,6 +35,7 @@ const ICON_TYPES = {
 } as const;
 
 const useDiscoveredAction = createUseDiscoveredAction(awsuiPluginsInternal.flashbar.onActionRegistered);
+const useDiscoveredContent = createUseDiscoveredContent(awsuiPluginsInternal.flashContent.onContentRegistered);
 
 function dismissButton(
   dismissLabel: FlashbarProps.MessageDefinition['dismissLabel'],
@@ -110,7 +111,16 @@ export const Flash = React.forwardRef(
     const analyticsMetadata = getAnalyticsMetadataProps(props as BasePropsWithAnalyticsMetadata);
     const elementRef = useComponentMetadata('Flash', PACKAGE_VERSION, { ...analyticsMetadata });
     const mergedRef = useMergeRefs(ref, elementRef);
-    const { discoveredActions, headerRef, contentRef } = useDiscoveredAction(type);
+
+    const { discoveredActions, headerRef: headerRefAction, contentRef: contentRefAction } = useDiscoveredAction(type);
+    const {
+      headerRef: headerRefContent,
+      contentRef: contentRefContent,
+      actionsRef,
+    } = useDiscoveredContent({ type, header, children: content });
+
+    const headerRef = useMergeRefs(headerRefAction, headerRefContent);
+    const contentRef = useMergeRefs(contentRefAction, contentRefContent);
 
     const iconType = ICON_TYPES[type];
 
@@ -174,6 +184,7 @@ export const Flash = React.forwardRef(
             </div>
           </div>
           <ActionsWrapper
+            ref={actionsRef}
             className={styles['action-button-wrapper']}
             testUtilClasses={{
               actionSlot: styles['action-slot'],
@@ -186,7 +197,7 @@ export const Flash = React.forwardRef(
           />
         </div>
         {dismissible && dismissButton(dismissLabel, handleDismiss)}
-        {ariaRole === 'status' && <LiveRegion source={[statusIconAriaLabel, headerRef, contentRef]} />}
+        {ariaRole === 'status' && <LiveRegion source={[statusIconAriaLabel, headerRefAction, contentRefAction]} />}
       </div>
     );
   }
