@@ -39,16 +39,17 @@ $guide-line-offset: -2px; // Negative to expand 2px beyond the element
 }
 
 .anchor-item {
-  @include styles.with-motion {
-    transition: awsui.$motion-duration-slow;
-    transition-property: all;
-  }
   @include styles.font-body-m;
 
   color: awsui.$color-text-body-secondary;
   font-weight: styles.$font-weight-normal;
   margin-block: awsui.$space-scaled-xxs;
   margin-inline: 0;
+
+  @include styles.with-motion {
+    transition: awsui.$motion-duration-slow;
+    transition-property: all;
+  }
 
   &--active {
     position: relative;
