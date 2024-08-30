@@ -11,7 +11,12 @@ import InternalIcon from '../icon/internal';
 import { isDevelopment } from '../internal/is-development';
 import { GeneratedAnalyticsMetadataExpandableSectionExpand } from './analytics-metadata/interfaces';
 import { ExpandableSectionProps, InternalVariant } from './interfaces';
-import { variantSupportsActions, variantSupportsDescription, variantSupportsInfoLink } from './utils';
+import {
+  variantSupportsActions,
+  variantSupportsDescription,
+  variantSupportsDisabledPaddings,
+  variantSupportsInfoLink,
+} from './utils';
 
 import analyticsSelectors from './analytics-metadata/styles.css.js';
 import styles from './styles.css.js';
@@ -54,6 +59,7 @@ interface ExpandableSectionHeaderProps extends Omit<ExpandableDefaultHeaderProps
   headerActions?: ReactNode;
   headingTagOverride?: ExpandableSectionProps.HeadingTag;
   ariaLabelledBy?: string;
+  disablePaddings?: boolean;
 }
 
 const getExpandActionAnalyticsMetadataAttribute = (expanded: boolean) => {
@@ -251,6 +257,7 @@ export const ExpandableSectionHeader = ({
   ariaControls,
   ariaLabel,
   ariaLabelledBy,
+  disablePaddings,
   onKeyUp,
   onKeyDown,
   onClick,
@@ -288,10 +295,15 @@ export const ExpandableSectionHeader = ({
     warnOnce(componentName, `The \`headerDescription\` prop is not supported for the ${variant} variant.`);
   }
 
+  if (disablePaddings && !variantSupportsDisabledPaddings(variant) && isDevelopment) {
+    warnOnce(componentName, `The \`disablePaddings\` prop is not supported for the ${variant} variant.`);
+  }
+
   const wrapperClassName = clsx(
     styles.wrapper,
     styles[`wrapper-${variant}`],
-    (expanded || alwaysShowDivider) && styles['wrapper-expanded']
+    (expanded || alwaysShowDivider) && styles['wrapper-expanded'],
+    !disablePaddings && styles['with-padding']
   );
   if (variant === 'navigation') {
     return (

@@ -149,6 +149,20 @@ const permutations = createPermutations<ExpandableSectionProps>([
     headerActions: [<Button variant="inline-link">Some action</Button>],
     children: ['Sample content'],
   },
+  {
+    disablePaddings: [true],
+    defaultExpanded: [false, true],
+    variant: ['default', 'footer', 'navigation', 'stacked', 'container'],
+    headerText: ['No paddings (headerText)'],
+    children: ['Sample content'],
+  },
+  {
+    disablePaddings: [true],
+    defaultExpanded: [false, true],
+    variant: ['default', 'footer', 'navigation', 'stacked', 'container'],
+    header: ['No paddings (header)'],
+    children: ['Sample content'],
+  },
 ]);
 /* eslint-enable react/jsx-key */
 

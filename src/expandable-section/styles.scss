@@ -94,28 +94,39 @@ $icon-total-space-medium: calc(#{$icon-width-medium} + #{$icon-margin-left} + #{
     letter-spacing: awsui.$letter-spacing-heading-s;
   }
 
-  &-default {
+  &.with-padding {
     padding-block: awsui.$space-scaled-xxs;
-    padding-inline-end: awsui.$space-xxs;
-    &.header-deprecated {
-      padding-inline-start: awsui.$space-xxs;
-    }
-    &:not(.header-deprecated) {
-      padding-inline-start: $icon-total-space-normal;
+  }
+
+  &-default {
+    &.with-padding {
+      padding-inline-end: awsui.$space-xxs;
+      &.header-deprecated {
+        padding-inline-start: awsui.$space-xxs;
+      }
     }
   }
 
   &-footer {
-    padding-block: awsui.$space-scaled-xxs;
+    &.with-padding {
+      padding-block: awsui.$space-scaled-xxs;
+    }
   }
 
   &-footer,
   &-compact {
-    padding-inline-end: 0;
-    &.header-deprecated {
-      padding-inline-start: 0;
+    &.with-padding {
+      padding-inline-end: 0;
+      &.header-deprecated {
+        padding-inline-start: 0;
+      }
     }
-    &:not(.header-deprecated) {
+  }
+
+  &-footer,
+  &-default,
+  &-compact {
+    &.with-padding:not(.header-deprecated) {
       padding-inline-start: $icon-total-space-normal;
     }
   }
@@ -143,6 +154,7 @@ $icon-total-space-medium: calc(#{$icon-width-medium} + #{$icon-margin-left} + #{
   }
 
   &-default.wrapper-expanded {
+    padding-block-end: awsui.$space-scaled-xxs;
     border-block-end-color: awsui.$color-border-divider-default;
   }
 }

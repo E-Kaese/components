@@ -57,6 +57,11 @@ export interface ExpandableSectionProps extends BaseComponentProps {
   disableContentPaddings?: boolean;
 
   /**
+   * Determines whether padding around the component is removed.
+   */
+  disablePaddings?: boolean;
+
+  /**
    * Primary content displayed in the expandable section element.
    */
   children?: React.ReactNode;

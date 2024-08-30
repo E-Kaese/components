@@ -37,6 +37,7 @@ export default function InternalExpandableSection({
   headerActions,
   headingTagOverride,
   disableContentPaddings,
+  disablePaddings,
   headerAriaLabel,
   __internalRootRef,
   __injectAnalyticsComponentMetadata,
@@ -118,6 +119,7 @@ export default function InternalExpandableSection({
           headerInfo={headerInfo}
           headerActions={headerActions}
           headingTagOverride={headingTagOverride}
+          disablePaddings={disablePaddings}
           {...triggerProps}
         />
       }

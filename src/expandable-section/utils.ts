@@ -13,3 +13,7 @@ export function variantSupportsActions(variant: InternalVariant) {
 export function variantSupportsInfoLink(variant: InternalVariant) {
   return ['container', 'compact'].includes(variant);
 }
+
+export function variantSupportsDisabledPaddings(variant: InternalVariant) {
+  return ['default', 'footer', 'navigation', 'compact'].includes(variant);
+}
